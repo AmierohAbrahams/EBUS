@@ -107,7 +107,19 @@ dimnames(u_10) <- list(lon = nc$dim$lon$vals,
                        time = nc$dim$time$vals)
 nc_close(nc)
 u_10_df <- as_tibble(melt(u_10, value.name = "u_10"))
-u_10_df$time <- as.POSIXct(u_10_df$time * 60 * 60, origin = "1900-01-01 00:00:00")
+u_10_df$time <- as.POSIXct(u_10_df$time * 60 * 60, origin = "1900-01-01")
+tidy <- u_10_df %>%
+  separate(col = time, into = c("year", "month","day1"), sep = "-")
+t2 <- tidy %>%
+  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
+  select(day)
+new <- cbind(t2, tidy)
+new <- new %>% 
+  select(lon,lat,year,month ,day,u_10)
+u_10_df_BC <- new %>%
+  unite(year, month, day, col = "date", sep = "-")
+
+# save(u_10_df_BC , file = "data/u_10_df_BC.RData")
 
 
 ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/wind_daily81-99_166.nc'
@@ -120,7 +132,19 @@ dimnames(v_10.2_df) <- list(lon = nc$dim$lon$vals,
                             time = nc$dim$time$vals)
 nc_close(nc)
 v_10.2_df <- as_tibble(melt(v_10.2, value.name = "v_10"))
-v_10.2_df$time <- as.POSIXct(v_10.2_df$time * 3600, origin = "1900-01-01")
+v_10.2_df$time <- as.POSIXct(v_10.2_df$time * 60 * 60, origin = "1900-01-01")
+tidy <- u_10_df %>%
+  separate(col = time, into = c("year", "month","day1"), sep = "-")
+t2 <- tidy %>%
+  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
+  select(day)
+new <- cbind(t2, tidy)
+new <- new %>% 
+  select(lon,lat,year,month ,day,u_10)
+u_10_df <- new %>%
+  unite(year, month, day, col = "date", sep = "-")
+
+
 
 
 
@@ -134,7 +158,20 @@ dimnames(u_10.2) <- list(lon = nc$dim$lon$vals,
                          time = nc$dim$time$vals)
 nc_close(nc)
 u_10.2_df <- as_tibble(melt(u_10.2, value.name = "u_10"))
-u_10.2_df$time <- as.POSIXct(u_10.2_df$time * 3600, origin = "1900-01-01")
+u_10.2_df$time <- as.POSIXct(u_10.2_df$time * 60 * 60, origin = "1900-01-01")
+tidy <- u_10.2_df %>%
+  separate(col = time, into = c("year", "month","day1"), sep = "-")
+t2 <- tidy %>%
+  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
+  select(day)
+new <- cbind(t2, tidy)
+new <- new %>% 
+  select(lon,lat,year,month ,day,u_10)
+u_10.2df_BC <- new %>%
+  unite(year, month, day, col = "date", sep = "-")
+
+
+# save(u_10.2df_BC , file = "data/u_10.2df_BC.RData")
 #######
 
 ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/u_v_seperate/wu_daily08-19.nc'
@@ -147,7 +184,19 @@ dimnames(u_10.3_df) <- list(lon = nc$dim$lon$vals,
                             time = nc$dim$time$vals)
 nc_close(nc)
 u_10.3_df <- as_tibble(melt(u_10.3_df, value.name = "u_10"))
-u_10.3_df$time <- as.POSIXct(u_10.3_df$time * 3600, origin = "1900-01-01")
+u_10.3_df$time <- as.POSIXct(u_10.3_df$time * 60 * 60, origin = "1900-01-01")
+tidy <- u_10.3_df %>%
+  separate(col = time, into = c("year", "month","day1"), sep = "-")
+t2 <- tidy %>%
+  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
+  select(day)
+new <- cbind(t2, tidy)
+new <- new %>% 
+  select(lon,lat,year,month ,day,u_10)
+u_10.2df <- new %>%
+  unite(year, month, day, col = "date", sep = "-")
+
+
 #####
 
 ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/u_v_seperate/wv_daily08-19.nc'
@@ -160,8 +209,17 @@ dimnames(v_10.3_df) <- list(lon = nc$dim$lon$vals,
                             time = nc$dim$time$vals)
 nc_close(nc)
 v_10.3_df <- as_tibble(melt(v_10.3_df, value.name = "u_10"))
-v_10.3_df$time <- as.POSIXct(v_10.3_df$time * 3600, origin = "1900-01-01")
-
+v_10.3_df$time <- as.POSIXct(v_10.3_df$time * 60 * 60, origin = "1900-01-01")
+tidy <- v_10.3_df %>%
+  separate(col = time, into = c("year", "month","day1"), sep = "-")
+t2 <- tidy %>%
+  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
+  select(day)
+new <- cbind(t2, tidy)
+new <- new %>% 
+  select(lon,lat,year,month ,day,u_10)
+u_10.2df <- new %>%
+  unite(year, month, day, col = "date", sep = "-")
 
 ERA_5_wind <- rbind(u_10_df, u_10.2_df, u_10.3_df)
 
