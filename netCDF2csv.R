@@ -222,14 +222,3 @@ u_10.2df <- new %>%
   unite(year, month, day, col = "date", sep = "-")
 
 ERA_5_wind <- rbind(u_10_df, u_10.2_df, u_10.3_df)
-
-
-
-
-
-
-
-
-
-
-
