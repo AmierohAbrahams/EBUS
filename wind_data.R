@@ -20,7 +20,8 @@
 #Integrated Forecasting System. This variable can be combined with the U component of 10m wind to give the speed and direction of the horizontal 10m wind.
 
 #################################################################################################################################################################3
-
+library(tidyverse)
+library(lubridate)
 
 # Converting U and V wind variables to wind speed and direction
 
@@ -35,7 +36,7 @@
 
 #save(BC_wind_fin , file = "data/BC_wind_fin.RData")
 
-load("data/BC_wind_fin.RData")
+# load("data/BC_wind_fin.RData")
 # Wind speed
 BC_wind_fin$u_squared ='^'(BC_wind_fin$u_10,2)
 BC_wind_fin$v_squared ='^'(BC_wind_fin$v_10,2)
@@ -50,7 +51,86 @@ BC_wind_fin <- BC_wind_fin %>%
 BC_wind_complete <- BC_wind_fin %>% 
   select(lon,lat,date,u_10,v_10,speed,wind_dir)
 
+BC_wind_complete <- BC_wind_complete %>% 
+  mutate(date = as.Date(as.character(date)))
+
 # save(BC_wind_complete , file = "data/BC_wind_complete.RData")
+# Creating seasonal column and comparing changes in wind patterns over years
+
+BC_wind_season <- BC_wind_complete %>% 
+  mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
+         year = year(date)) %>% 
+  mutate(season = ifelse(month %in% c("Jan", "Feb", "Mar"), "Summer",        
+                         ifelse(month %in% c("Apr", "May", "Jun"), "Autumn",
+                                ifelse(month %in% c("Jul", "Aug", "Sep"), "Winter",
+                                       ifelse(month %in% c("Oct", "Nov", "Dec"), "Spring","Error")))))
+
+
+# save(BC_wind_season , file = "data/BC_wind_season.RData")
+
+# Match the wind with the BC temperature
+match_func <- function(df){
+  match <- df  %>%  
+    left_join(BC_wind_season, by = c("date")) #%>% 
+    #na.trim()
+  return(match)
+}
+
+wind_temp_match <- match_func(df = BC)
+############
+
+wind_func <- function(df){
+  wind <- df %>% 
+    mutate(dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
+    dplyr::rename(spd = speed) %>%
+    filter(spd > 0)
+}
+
+wind_BC_renamed <- wind_func(df = BC_wind_season)
+
+# First filter out only the SE data
+SE_renamed <-wind_BC_renamed %>% # Chnaged the names with the data 
+  filter(dir >= 180, dir <= 270)
+# Then create diifferent temporal results
+SE_annual <- SE_renamed %>% 
+  group_by(year) %>% 
+  summarise(count = n(),
+            mean_dir = mean(dir, na.rm = T)) #,
+            #mean_temp = mean(temp, na.rm = T))
+SE_summer <- SE_renamed %>% 
+  filter(season == "Summer") %>% 
+  group_by(year, season) %>% 
+  summarise(count = n(),
+            mean_dir = mean(dir, na.rm = T)) #,
+            #mean_temp = mean(temp, na.rm = T))
+SE_monthly <- SE_renamed %>% 
+  filter(season == "Summer") %>% 
+  group_by(year, season, month) %>% 
+  summarise(count = n(),
+            mean_dir = mean(dir, na.rm = T)) #,
+           # mean_temp = mean(temp, na.rm = T))
+
+ggplot(data = SE_annual, aes(x = year, y = count)) +
+  geom_line() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~site)
+## Annual count of SE wind in Summer
+### The trends between annual and summer SE wind counts are remarkably similar
+ggplot(data = SE_summer, aes(x = year, y = count)) +
+  geom_line() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~site)
+## Summer month count of SE winds
+ggplot(data = SE_monthly, aes(x = year, y = count)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~site)
+
+site_map <- ggplot() + 
+  geom_raster(data = wind_BC_renamed, aes(x = lon, y = lat, fill = spd))
+
+
+
 
 
 
