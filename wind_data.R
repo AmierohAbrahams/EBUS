@@ -28,13 +28,13 @@ library(lubridate)
 # load("data/BC_wind.RData")
 # load("data/BC_vwind.RData")
 # 
-# BC_vwind <- BC_vwind %>% 
-#   select(v_10)
-# BC_wind <- cbind(BC_vwind,BC_wind)
-# BC_wind_fin <- BC_wind %>% 
-#   select(lon,lat,date,u_10,v_10)
+BC_vwind <- BC_vwind %>%
+  select(v_10)
+BC_wind <- cbind(BC_vwind,BC_wind)
+BC_wind_fin <- BC_wind %>%
+  select(lon,lat,date,u_10,v_10)
 
-#save(BC_wind_fin , file = "data/BC_wind_fin.RData")
+# save(BC_wind_fin , file = "data/BC_wind_fin.RData")
 
 # load("data/BC_wind_fin.RData")
 # Wind speed
@@ -56,7 +56,7 @@ BC_wind_complete <- BC_wind_complete %>%
 
 # save(BC_wind_complete , file = "data/BC_wind_complete.RData")
 # Creating seasonal column and comparing changes in wind patterns over years
-
+load("~/Documents/EBUS/data/BC_wind_complete.RData")
 BC_wind_season <- BC_wind_complete %>% 
   mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
          year = year(date)) %>% 
@@ -65,8 +65,7 @@ BC_wind_season <- BC_wind_complete %>%
                                 ifelse(month %in% c("Jul", "Aug", "Sep"), "Winter",
                                        ifelse(month %in% c("Oct", "Nov", "Dec"), "Spring","Error")))))
 
-
-# save(BC_wind_season , file = "data/BC_wind_season.RData")
+# save(BC_wind_season, file = "data/BC_wind_season.RData")
 
 # Match the wind with the BC temperature
 match_func <- function(df){

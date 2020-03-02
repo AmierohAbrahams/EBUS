@@ -6,7 +6,7 @@ library(ncdf4)
 library(data.table)
 library(tidyverse)
 library(reshape2)
-library(plyr)
+# library(plyr)
 library(lubridate)
 library(stringr)
 library(doMC); doMC::registerDoMC(cores = 4)
@@ -83,7 +83,7 @@ library(stringr)
 library(tidyverse)
 library(reshape2)
 library(ncdf4) # library for processing netCDFs
-library(plyr)
+# library(plyr)
 library(lubridate)
 library(data.table)
 library(doMC); doMC::registerDoMC(cores = 7)
@@ -98,7 +98,7 @@ library(doMC); doMC::registerDoMC(cores = 7)
 
 
 
-ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/wind_daily81-99_165.nc'
+ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/BC/wind_daily81-99_165.nc'
 nc <- nc_open(ncFile)
 fNameStem <- substr(basename(ncFile), 1, 13)
 u_10 <- ncvar_get(nc, varid = "u10") %>%
@@ -123,7 +123,7 @@ u_10_df_BC <- new %>%
 # save(u_10_df_BC , file = "data/u_10_df_BC.RData")
 
 
-ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/wind_daily_165.nc'
+ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/BC/wind_165.nc'
 nc <- nc_open(ncFile)
 fNameStem <- substr(basename(ncFile), 1, 14)
 u_10.2 <- ncvar_get(nc, varid = "u10") %>%
@@ -146,7 +146,11 @@ u_10.2df_BC <- new %>%
   unite(year, month, day, col = "date", sep = "-")
 
 # BC_wind <- rbind(u_10_df_BC,u_10.2df_BC)
+
 load("data/BC_wind.RData")
+BC_wind <-rbind(BC_wind,u_10.2df_BC)
+
+# save(BC_wind , file = "data/BC_wind.RData")
 # THis file too big- Get from 2008-2012
 ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/u_v_seperate/wu_daily08-19.nc'
 nc <- nc_open(ncFile)
@@ -231,7 +235,7 @@ v_10_df_BC <- new %>%
 # save(v_10_df_BC , file = "data/v_10_df_BC.RData")
 
 
-ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/wind_daily00-07_166.nc'
+ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/BC/wind_166.nc'
 nc <- nc_open(ncFile)
 fNameStem <- substr(basename(ncFile), 1, 14)
 v_10.2 <- ncvar_get(nc, varid = "v10") %>%
@@ -257,5 +261,6 @@ v_10.2df_BC <- new %>%
 # save(v_10.2df_BC , file = "data/v_10.2df_BC.RData")
 # BC_vwind <- rbind(v_10_df_BC,v_10.2df_BC)
 # save(BC_vwind , file = "data/BC_vwind.RData")
+#BC_vwind <- rbind(BC_vwind,v_10.2df_BC)
 
 ###################
