@@ -67,6 +67,18 @@ BC_wind_season <- BC_wind_complete %>%
 
 # save(BC_wind_season, file = "data/BC_wind_season.RData")
 
+BC_wind_season <- BC_wind_season %>% 
+  mutate(lat_new = lat + 0.125,
+         lon_new = lon + 0.125)
+
+BC_wind_season <- BC_wind_season %>% 
+  select(-lon,-lat) %>% 
+  rename(lat = lat_new,
+         lon = lon_new)
+
+# save(BC_wind_season , file = "data/BC_wind_season.RData")
+
+
 # Match the wind with the BC temperature
 match_func <- function(df){
   match <- df  %>%  
@@ -128,9 +140,7 @@ ggplot(data = SE_monthly, aes(x = year, y = count)) +
 site_map <- ggplot() + 
   geom_raster(data = wind_BC_renamed, aes(x = lon, y = lat, fill = spd))
 
-
-
-
+######
 
 
 
