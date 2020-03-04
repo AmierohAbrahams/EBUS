@@ -100,8 +100,8 @@ wind_func <- function(df){
     filter(spd > 0)
 }
 
-BC_data <- wind_func(df = wind_temp_match )
-
+BC_wind_temp <- wind_func(df = wind_temp_match )
+# save(BC_wind_temp, file = "data/BC_wind_temp.RData")
 # First filter out only the SE data
 SE_renamed <-BC_data %>% # Chnaged the names with the data 
   filter(dir >= 180, dir <= 270)
