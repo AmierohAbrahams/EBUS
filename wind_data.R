@@ -82,63 +82,62 @@ BC_wind_season <- BC_wind_season %>%
 # Match the wind with the BC temperature
 match_func <- function(df){
   match <- df  %>%  
-    left_join(BC_wind_season, by = c("date")) #%>% 
+    left_join(BC_wind_season, by = c("lat","lon","date")) #%>% 
     #na.trim()
   return(match)
 }
 
 wind_temp_match <- match_func(df = BC)
+wind_temp_match <- wind_temp_match %>% 
+  select(lon,lat,temp,date,speed,wind_dir,year,month,season)
+# save(wind_temp_match , file = "data/wind_temp_match.RData")
 ############
-
+load("data/wind_temp_match.RData")
 wind_func <- function(df){
-  wind <- df %>% 
+  wind <- df %>%  
     mutate(dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
     dplyr::rename(spd = speed) %>%
     filter(spd > 0)
 }
 
-wind_BC_renamed <- wind_func(df = BC_wind_season)
+BC_data <- wind_func(df = wind_temp_match )
 
 # First filter out only the SE data
-SE_renamed <-wind_BC_renamed %>% # Chnaged the names with the data 
+SE_renamed <-BC_data %>% # Chnaged the names with the data 
   filter(dir >= 180, dir <= 270)
 # Then create diifferent temporal results
 SE_annual <- SE_renamed %>% 
   group_by(year) %>% 
   summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T)) #,
-            #mean_temp = mean(temp, na.rm = T))
+            mean_dir = mean(dir, na.rm = T),
+            mean_temp = mean(temp, na.rm = T))
 SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(year, season) %>% 
   summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T)) #,
-            #mean_temp = mean(temp, na.rm = T))
+            mean_dir = mean(dir, na.rm = T),
+            mean_temp = mean(temp, na.rm = T))
 SE_monthly <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(year, season, month) %>% 
   summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T)) #,
-           # mean_temp = mean(temp, na.rm = T))
+            mean_dir = mean(dir, na.rm = T),
+           mean_temp = mean(temp, na.rm = T))
 
 ggplot(data = SE_annual, aes(x = year, y = count)) +
   geom_line() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~site)
+  geom_smooth(method = "lm") 
 ## Annual count of SE wind in Summer
 ### The trends between annual and summer SE wind counts are remarkably similar
 ggplot(data = SE_summer, aes(x = year, y = count)) +
   geom_line() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~site)
+  geom_smooth(method = "lm") #+
+ # facet_wrap(~site)
 ## Summer month count of SE winds
 ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~site)
-
-site_map <- ggplot() + 
-  geom_raster(data = wind_BC_renamed, aes(x = lon, y = lat, fill = spd))
+  geom_smooth(aes(colour = month), method = "lm") #+
+  #facet_wrap(~site)
 
 ######
 
