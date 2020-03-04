@@ -8,6 +8,7 @@ library("sf")
 library("ggspatial")
 library("rnaturalearth")
 library("rnaturalearthdata")
+library("PBSmapping")
 # Default CRS
 # +proj=longlat +datum=WGS84 +no_defs
 
@@ -76,36 +77,10 @@ ggsave("indian_ocean.png", scale = 1, width = 170, height = 110, units = "mm", d
 require(rgeos); require(maptools) # maptools must be loaded after rgeos
 library(PBSmapping)
 
-chwaka <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
-                      xlim = c(39.350, 39.60), ylim = c(-6.250, -6.007), maxLevel = 1, useWest = FALSE)
-(chwaka_map <- ggplot() +
-    geom_polygon(data = chwaka, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
-    coord_fixed(ratio = 1, expand = FALSE) +
-    scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01),
-                       breaks = c(39.40, 39.45, 39.50)) +
-    scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01),
-                       breaks = seq(from = -6.20, to = -6.05, by = 0.05)) +
-    labs(title = NULL, x = NULL, y = NULL) +
-    theme_opts) +
-  theme(axis.text = element_text(size = 12))
-ggsave("chwaka.png", scale = 1, width = 170, height = 110, units = "mm", dpi = 300)
-
-nw_aus <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
-                      xlim = c(107.75, 134.00), ylim = c(-25.00, -10.00), maxLevel = 1, useWest = FALSE)
-(nw_aus_map <- ggplot() +
-    geom_polygon(data = nw_aus, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
-    coord_fixed(ratio = 1, expand = FALSE) +
-    scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01)) +
-    scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01)) +
-    labs(title = NULL, x = NULL, y = NULL) +
-    theme_opts +
-    theme(axis.text = element_text(size = 12)))
-ggsave("australia.png", scale = 1, width = 170, height = 110, units = "mm", dpi = 300)
-
-tanzania <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
-                        xlim = c(37.00, 44.60), ylim = c(-12.30, -2.70), maxLevel = 1, useWest = FALSE)
-(tanzania_map <- ggplot() +
-    geom_polygon(data = tanzania, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
+BC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
+                  xlim = c(15.00, 20.00), ylim = c(-35.00, -25.00), maxLevel = 1, useWest = FALSE)
+(BC_map <- ggplot() +
+    geom_polygon(data = BC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
     coord_fixed(ratio = 1, expand = FALSE) +
     scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01),
                        breaks = c(39.00, 41.00, 43.00)) +
@@ -113,12 +88,30 @@ tanzania <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
     labs(title = NULL, x = NULL, y = NULL) +
     theme_opts +
     theme(axis.text = element_text(size = 12)))
-ggsave("tanzania.png", scale = 1, width = 170, height = 110, units = "mm", dpi = 300)
 
-zanzibar <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
-                        xlim = c(38.65, 39.75), ylim = c(-6.60, -5.60), maxLevel = 1, useWest = FALSE)
-(zanzibar_map <- ggplot() +
-    geom_polygon(data = zanzibar, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
+bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
+                   CC = c(25, 35, 340, 355), # Canary Current
+                   CalC = c(35, 45, 225, 240), # California Current
+                   HC = c(-17.5, -7.5, 275, 290), # Humboldt Current
+                   row.names = c("latmin", "latmax", "lonmin", "lonmax"))
+
+HC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
+                  xlim = c(275.00, 290.00), ylim = c(-17.5, -7.5), maxLevel = 1, useWest = FALSE)
+(HC_map <- ggplot() +
+    geom_polygon(data = HC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
+    coord_fixed(ratio = 1, expand = FALSE) +
+    scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01),
+                       breaks = c(39.00, 41.00, 43.00)) +
+    scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01)) +
+    labs(title = NULL, x = NULL, y = NULL) +
+    theme_opts +
+    theme(axis.text = element_text(size = 12)))
+
+
+CC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
+                  xlim = c(340.00, 355.00), ylim = c(25.00, 35.00), maxLevel = 1, useWest = FALSE)
+(CC_map <- ggplot() +
+    geom_polygon(data = CC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
     coord_fixed(ratio = 1, expand = FALSE) +
     scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01)) +
     scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01),
@@ -126,6 +119,24 @@ zanzibar <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
     labs(title = NULL, x = NULL, y = NULL) +
     theme_opts +
     theme(axis.text = element_text(size = 12)))
-ggsave("zanzibar.png", scale = 1, width = 170, height = 110, units = "mm", dpi = 300)
+
+
+
+CalC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
+                    xlim = c(225.00, 240.00), ylim = c(35.00, 45.00), maxLevel = 1, useWest = FALSE)
+(CalC_map <- ggplot() +
+    geom_polygon(data = CalC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
+    coord_fixed(ratio = 1, expand = FALSE) +
+    scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01)) +
+    scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01),
+                       breaks = seq(from = -6.40, to = -5.80, by = 0.20)) +
+    labs(title = NULL, x = NULL, y = NULL) +
+    theme_opts +
+    theme(axis.text = element_text(size = 12)))
+
+
+
+
+
 
 
