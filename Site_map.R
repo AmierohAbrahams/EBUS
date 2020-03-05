@@ -1,6 +1,3 @@
-# Plotting '
-
-
 library("ggplot2")
 library(dplyr)
 library("raster")
@@ -19,7 +16,7 @@ locations <- data.frame(site = c("Long Reef", "Malus Island", "Mapopwe Creek"),
 
 # Load the Global Self-consistent, Hierarchical, High-resolution Geography Database
 # Use the full resolution version
-gshhsDir <- "/Users/ajsmit/spatial/gshhg-bin-2.3.7"
+gshhsDir <- "/home/amieroh/Documents/Data/Datasets/gshhg-bin-2.3.7"
 
 # Make a coastline for the world in sf format
 coastline <- importGSHHS(paste0(gshhsDir, "/gshhs_l.b"),
@@ -133,7 +130,7 @@ CalC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
     labs(title = NULL, x = NULL, y = NULL) +
     theme_opts +
     theme(axis.text = element_text(size = 12)))
-
+  
 
 
 
