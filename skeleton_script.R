@@ -64,14 +64,49 @@ match_func <- function(df){
 wind_temp_match <- match_func(df = HC_30yr)
 
 ############################
-# Calafornia current
 
+ncFile <- '/home/amieroh/Documents/EBUS/data/HC/165/wind_1982_165b.nc'
+nc <- nc_open(ncFile)
+u_10.2 <- ncvar_get(nc, varid = "u10") %>%
+  round(4)
+dimnames(u_10.2) <- list(lon = nc$dim$lon$vals,
+                         lat = nc$dim$lat$vals,
+                         time = nc$dim$time$vals)
+nc_close(nc)
+u_10.2_df <- as_tibble(melt(u_10.2, value.name = "u_10"))
+u_10.2_df$time <- as.POSIXct(u_10.2_df$time * 60 * 60, origin = "1900-01-01")
+tidy <- u_10.2_df %>%
+  separate(col = time, into = c("year", "month","day1"), sep = "-")
+t2 <- tidy %>%
+  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
+  select(day)
+new <- cbind(t2, tidy)
+new <- new %>% 
+  select(lon,lat,year,month ,day,u_10)
+u_10.2df_hc <- new %>%
+  unite(year, month, day, col = "date", sep = "-")
+save(u_10.2df_hc , file = "data/u_10.2df_hc.RData")
+rm(new)
+rm(t2)
+rm(tidy)
+rm(u_10.2_df)
+
+# HC_wind <- rbind(u_10.2df_hc,u_10.1df_hc)
+# save(HC_wind , file = "data/HC_wind.RData")
+library(stringr)
 library(tidyverse)
-CalC_30yr <- CalC%>%
-  slice(1:21461937)
+library(reshape2)
+library(ncdf4) # library for processing netCDFs
+# library(plyr)
+library(lubridate)
+library(data.table)
+library(doMC); doMC::registerDoMC(cores = 4)
 
-save(CalC_30yr , file = "data/CalC_30yr.RData")
-##
+HC_30yr <- HC%>%
+  slice(1:15800999)
+#save(HC_30yr , file = "data/HC_30yr.RData")
+
+### EXtracting and creating the wind script
 ncFile <- '/home/amieroh/HC/165/wind_2012_165b.nc'
 
 nc <- nc_open(ncFile)
@@ -99,6 +134,8 @@ HC_wind <- rbind(u_10.2df_hc1,u_10.2df_hc)
 load("~/Documents/EBUS/data/u_10.2df_hc1.RData")
 # BC_wind <- cbind(BC_vwind,BC_wind)
 
+# Matching it with temperature 
+
 HC_wind_season <- u_10.2df_hc1 %>% 
   mutate(lat_new = lat + 0.125,
          lon_new = lon + 0.125)%>% 
@@ -120,4 +157,102 @@ match_func <- function(df){
 }
 
 wind_temp_match <- match_func(df = HC_30yr)
+
+############################
+
+ncFile <- '/home/amieroh/Documents/EBUS/data/HC/165/wind_1982_165.nc'
+nc <- nc_open(ncFile)
+u_10.2 <- ncvar_get(nc, varid = "u10") %>%
+  round(4)
+dimnames(u_10.2) <- list(lon = nc$dim$lon$vals,
+                         lat = nc$dim$lat$vals,
+                         time = nc$dim$time$vals)
+nc_close(nc)
+u_10.2_df <- as_tibble(melt(u_10.2, value.name = "u_10"))
+u_10.2_df$time <- as.POSIXct(u_10.2_df$time * 60 * 60, origin = "1900-01-01")
+tidy <- u_10.2_df %>%
+  separate(col = time, into = c("year", "month","day1"), sep = "-")
+t2 <- tidy %>%
+  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
+  select(day)
+new <- cbind(t2, tidy)
+new <- new %>% 
+  select(lon,lat,year,month ,day,u_10)
+u_10.2df_hc <- new %>%
+  unite(year, month, day, col = "date", sep = "-")
+save(u_10.2df_hc , file = "data/u_10.2df_hc.RData")
+rm(new)
+rm(t2)
+rm(tidy)
+rm(u_10.2_df)
+
+# HC_wind <- rbind(u_10.2df_hc,u_10.1df_hc)
+# save(HC_wind , file = "data/HC_wind.RData")
+
+HC_wind_season.test <- u_10.2df_hc %>% 
+  mutate(lat_new = lat + 0.125,
+         lon_new = lon + 0.125)%>% 
+  mutate(lon_newest =lon_new +360) %>% 
+  select(date,u_10,lat_new,lon_newest)
+rm(u_10.2df_hc)
+
+HC_wind_season  <- HC_wind_season.test  %>% 
+  mutate(date = as.Date(as.character(date)))
+
+HC_wind_season <- HC_wind_season %>% 
+  rename(lat = lat_new,
+         lon = lon_newest)
+
+save(HC_wind_season , file = "data/HC_wind_season.RData")
+
+
+HC_wind_season.test <- u_10.2df_hc %>% 
+  mutate(lat_new = lat + 0.125,
+         lon_new = lon + 0.125)%>% 
+  mutate(lon_newest =lon_new +360) %>% 
+  select(date,u_10,lat_new,lon_newest)
+rm(u_10.2df_hc)
+
+HC_wind_season  <- HC_wind_season.test  %>% 
+  mutate(date = as.Date(as.character(date)))
+
+HC_wind_season <- HC_wind_season %>% 
+  rename(lat = lat_new,
+         lon = lon_newest)
+
+save(HC_wind_season , file = "data/HC_wind_season.RData")
+
+match_func <- function(df){
+  match <- df  %>%  
+    left_join(HC_wind_season, by = c("lat","lon","date")) #%>% 
+  #na.trim()
+  return(match)
+}
+
+wind_temp_match2 <- match_func(df = HC_30yr)
+save(wind_temp_match2 , file = "data/wind_temp_match2.RData")
+wind_temp_match1<- rbind(wind_temp_match, HC_wind_season)
+save(wind_temp_match , file = "data/wind_temp_match.RData")
+#################################################
+
+# Calafornia current
+
+library(tidyverse)
+CalC_30yr <- CalC%>%
+  slice(1:21461937)
+
+save(CalC_30yr , file = "data/CalC_30yr.RData")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
