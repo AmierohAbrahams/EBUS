@@ -57,7 +57,8 @@ BC_wind_complete <- BC_wind_complete %>%
 # save(BC_wind_complete , file = "data/BC_wind_complete.RData")
 # Creating seasonal column and comparing changes in wind patterns over years
 load("~/Documents/EBUS/data/BC_wind_complete.RData")
-BC_wind_season <- BC_wind_complete %>% 
+load("~/Documents/EBUS/data/HC_semi_complete_fin.RData")
+HC_wind_season <- HC_semi_complete_fin %>% 
   mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
          year = year(date)) %>% 
   mutate(season = ifelse(month %in% c("Jan", "Feb", "Mar"), "Summer",        
@@ -65,7 +66,8 @@ BC_wind_season <- BC_wind_complete %>%
                                 ifelse(month %in% c("Jul", "Aug", "Sep"), "Winter",
                                        ifelse(month %in% c("Oct", "Nov", "Dec"), "Spring","Error")))))
 
-# save(BC_wind_season, file = "data/BC_wind_season.RData")
+save(HC_wind_season, file = "data/HC_wind_season.RData")
+save(BC_wind_season, file = "data/BC_wind_season.RData")
 
 BC_wind_season <- BC_wind_season %>% 
   mutate(lat_new = lat + 0.125,
