@@ -38,15 +38,18 @@ BC_wind_fin <- BC_wind %>%
 
 # load("data/BC_wind_fin.RData")
 # Wind speed
-BC_wind_fin$u_squared ='^'(BC_wind_fin$u_10,2)
-BC_wind_fin$v_squared ='^'(BC_wind_fin$v_10,2)
-BC_wind_fin <- BC_wind_fin %>% 
+CalC_semi_complete$u_squared ='^'(CalC_semi_complete$u,2)
+CalC_semi_complete$v_squared ='^'(CalC_semi_complete$v,2)
+CalC_semi_complete <- CalC_semi_complete %>% 
   mutate(speed = sqrt(u_squared + v_squared))
 # Wind direction 
 
-BC_wind_fin <- BC_wind_fin %>% 
-  mutate(wind_dir_trig_to = atan2(u_10/speed, v_10/speed),
+CalC_semi_complete <- CalC_semi_complete %>% 
+  mutate(wind_dir_trig_to = atan2(u/speed, v/speed),
          wind_dir = wind_dir_trig_to * 180/pi)
+
+CalC <- CalC_semi_complete %>% 
+  select(lon,lat,temp,date,speed,wind_dir)
 
 BC_wind_complete <- BC_wind_fin %>% 
   select(lon,lat,date,u_10,v_10,speed,wind_dir)
@@ -141,8 +144,11 @@ ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_smooth(aes(colour = month), method = "lm") #+
   #facet_wrap(~site)
 
-######
+##########################################################################
+#############Creating the final datasets
 
+BC <- BC %>% 
+save(BC, file = "data_complete/BC.RData")
 
-
-
+BC <- BC_data %>% 
+  select(lon,lat,temp,date,spd,wind_dir,year,month,season,wind_dir)
