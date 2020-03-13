@@ -22,6 +22,7 @@
 #################################################################################################################################################################3
 library(tidyverse)
 library(lubridate)
+library(ggpubr)
 
 # Converting U and V wind variables to wind speed and direction
 # load("data/BC_wind.RData")
@@ -57,7 +58,7 @@ BC_wind_complete <- BC_wind_complete %>%
 
 # save(BC_wind_complete , file = "data/BC_wind_complete.RData")
 # Creating seasonal column and comparing changes in wind patterns over years
-load("~/Documents/EBUS/data_complete/BC.RData")
+load("~/Documents/EBUS/data_complete/BC_.RData")
 load("~/Documents/EBUS/data_complete/HC.RData")
 load("~/Documents/EBUS/data_complete/CalC.RData")
 load("~/Documents/EBUS/data_complete/CC.RData")
@@ -96,22 +97,28 @@ save(CalC_season, file = "data_complete/CalC_seasodn.RData")
 ##############################################################################################################################################
 ##############################################################################################################################################S
 
-load("data_complete/CalC_seasodn.RData")
-load("data_complete/CC_season.RData")
-load("data_complete/BC_season.RData")
-load("data_complete/HC_season.RData")
+load("data_complete/CalC_complete.RData")
+load("data_complete/CC_complete.RData")
+load("data_complete/BC_complete.RData")
+load("data_complete/HC_complete.RData")
+
+
+# CC_complete <- CC_season %>% 
+#   na.omit()
+# save(CC_complete, file = "data_complete/CC_complete.RData")
+# 
 
 wind_func <- function(df){
   wind <- df %>%  
     mutate(dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
-    dplyr::rename(spd = speed) %>%
+    #dplyr::rename(spd = speed) %>%
     filter(spd > 0)
 }
 
-CalC_wind_temp <- wind_func(df = CalC_season )
+BC_wind_temp <- wind_func(df = BC_complete )
 # save(BC_wind_temp, file = "data/BC_wind_temp.RData")
 # First filter out only the SE data
-SE_renamed <-CalC_wind_temp %>% # Chnaged the names with the data 
+SE_renamed <-BC_wind_temp %>% # Chnaged the names with the data 
   filter(dir >= 180, dir <= 270)
 # Then create diifferent temporal results
 SE_annual <- SE_renamed %>% 
@@ -142,9 +149,13 @@ ggplot(data = SE_summer, aes(x = year, y = count)) +
   geom_smooth(method = "lm") #+
  # facet_wrap(~site)
 ## Summer month count of SE winds
-ggplot(data = SE_monthly, aes(x = year, y = count)) +
+BC_plot <- ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") #+
   #facet_wrap(~site)
 
+
+ggarrange(CalC_plot, CC_plot, HC_plot, BC_plot,
+          ncol = 2, nrow = 2, # Set number of rows and columns
+          labels = c("A","B", "C", "D")) # Create common legend
 ##########################################################################
