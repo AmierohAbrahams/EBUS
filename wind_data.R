@@ -24,7 +24,6 @@ library(tidyverse)
 library(lubridate)
 
 # Converting U and V wind variables to wind speed and direction
-
 # load("data/BC_wind.RData")
 # load("data/BC_vwind.RData")
 # 
@@ -36,14 +35,13 @@ BC_wind_fin <- BC_wind %>%
 
 # save(BC_wind_fin , file = "data/BC_wind_fin.RData")
 
-# load("data/BC_wind_fin.RData")
 # Wind speed
 CalC_semi_complete$u_squared ='^'(CalC_semi_complete$u,2)
 CalC_semi_complete$v_squared ='^'(CalC_semi_complete$v,2)
 CalC_semi_complete <- CalC_semi_complete %>% 
   mutate(speed = sqrt(u_squared + v_squared))
-# Wind direction 
 
+# Wind direction 
 CalC_semi_complete <- CalC_semi_complete %>% 
   mutate(wind_dir_trig_to = atan2(u/speed, v/speed),
          wind_dir = wind_dir_trig_to * 180/pi)
@@ -59,45 +57,50 @@ BC_wind_complete <- BC_wind_complete %>%
 
 # save(BC_wind_complete , file = "data/BC_wind_complete.RData")
 # Creating seasonal column and comparing changes in wind patterns over years
-load("~/Documents/EBUS/data/BC_wind_complete.RData")
-load("~/Documents/EBUS/data/HC_semi_complete_fin.RData")
-HC_wind_season <- HC_semi_complete_fin %>% 
-  mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
+load("~/Documents/EBUS/data_complete/BC.RData")
+load("~/Documents/EBUS/data_complete/HC.RData")
+load("~/Documents/EBUS/data_complete/CalC.RData")
+load("~/Documents/EBUS/data_complete/CC.RData")
+
+### Southern Hemisphere
+
+seasons_func <- function(df){
+  BC_seaons <- df %>% 
+    mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
          year = year(date)) %>% 
-  mutate(season = ifelse(month %in% c("Jan", "Feb", "Mar"), "Summer",        
-                         ifelse(month %in% c("Apr", "May", "Jun"), "Autumn",
-                                ifelse(month %in% c("Jul", "Aug", "Sep"), "Winter",
-                                       ifelse(month %in% c("Oct", "Nov", "Dec"), "Spring","Error")))))
-
-save(HC_wind_season, file = "data/HC_wind_season.RData")
-save(BC_wind_season, file = "data/BC_wind_season.RData")
-
-BC_wind_season <- BC_wind_season %>% 
-  mutate(lat_new = lat + 0.125,
-         lon_new = lon + 0.125)
-
-BC_wind_season <- BC_wind_season %>% 
-  select(-lon,-lat) %>% 
-  rename(lat = lat_new,
-         lon = lon_new)
-
-# save(BC_wind_season , file = "data/BC_wind_season.RData")
-
-
-# Match the wind with the BC temperature
-match_func <- function(df){
-  match <- df  %>%  
-    left_join(BC_wind_season, by = c("lat","lon","date")) #%>% 
-    #na.trim()
-  return(match)
+    mutate(season = ifelse(month %in% c("Dec", "Jan", "Feb"), "Summer",        
+                         ifelse(month %in% c("Mar", "Apr", "May"), "Autumn",
+                                ifelse(month %in% c("Jun", "Jul", "Aug"), "Winter",
+                                       ifelse(month %in% c("Sep", "Oct", "Nov"), "Spring","Error")))))
 }
 
-wind_temp_match <- match_func(df = BC)
-wind_temp_match <- wind_temp_match %>% 
-  select(lon,lat,temp,date,speed,wind_dir,year,month,season)
-# save(wind_temp_match , file = "data/wind_temp_match.RData")
-############
-load("data/wind_temp_match.RData")
+BC_season <- seasons_func(df = BC)
+HC_season <- seasons_func(df = HC)
+save(BC_season, file = "data_complete/BC_season.RData")
+save(HC_season, file = "data_complete/HC_season.RData")
+####################### Northern Hemisphere
+seasons_func <- function(df){
+  seasons <- df %>% 
+    mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
+         year = year(date)) %>% 
+    mutate(season = ifelse(month %in% c("Dec", "Jan", "Feb"), "Winter",        
+                         ifelse(month %in% c("Mar", "Apr", "May"), "Spring",
+                                ifelse(month %in% c("Jun", "Jul", "Aug"), "Summer",
+                                       ifelse(month %in% c("Sep", "Oct", "Nov"), "Autumn","Error")))))
+}
+
+CC_season <- seasons_func(df = CC)
+CalC_season <- seasons_func(df = CalC)
+save(CC_season, file = "data_complete/CC_season.RData")
+save(CalC_season, file = "data_complete/CalC_seasodn.RData")
+##############################################################################################################################################
+##############################################################################################################################################S
+
+load("data_complete/CalC_seasodn.RData")
+load("data_complete/CC_season.RData")
+load("data_complete/BC_season.RData")
+load("data_complete/HC_season.RData")
+
 wind_func <- function(df){
   wind <- df %>%  
     mutate(dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
@@ -105,10 +108,10 @@ wind_func <- function(df){
     filter(spd > 0)
 }
 
-BC_wind_temp <- wind_func(df = wind_temp_match )
+CalC_wind_temp <- wind_func(df = CalC_season )
 # save(BC_wind_temp, file = "data/BC_wind_temp.RData")
 # First filter out only the SE data
-SE_renamed <-BC_data %>% # Chnaged the names with the data 
+SE_renamed <-CalC_wind_temp %>% # Chnaged the names with the data 
   filter(dir >= 180, dir <= 270)
 # Then create diifferent temporal results
 SE_annual <- SE_renamed %>% 
@@ -145,10 +148,3 @@ ggplot(data = SE_monthly, aes(x = year, y = count)) +
   #facet_wrap(~site)
 
 ##########################################################################
-#############Creating the final datasets
-
-BC <- BC %>% 
-save(BC, file = "data_complete/BC.RData")
-
-BC <- BC_data %>% 
-  select(lon,lat,temp,date,spd,wind_dir,year,month,season,wind_dir)
