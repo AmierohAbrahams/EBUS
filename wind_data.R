@@ -115,44 +115,6 @@ wind_func <- function(df){
     filter(spd > 0)
 }
 
-BC_wind_temp <- wind_func(df = BC_complete )
-# save(BC_wind_temp, file = "data/BC_wind_temp.RData")
-# First filter out only the SE data
-SE_renamed <-BC_wind_temp %>% # Chnaged the names with the data 
-  filter(dir >= 180, dir <= 270)
-# Then create diifferent temporal results
-SE_annual <- SE_renamed %>% 
-  group_by(year) %>% 
-  summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T),
-            mean_temp = mean(temp, na.rm = T))
-SE_summer <- SE_renamed %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, season) %>% 
-  summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T),
-            mean_temp = mean(temp, na.rm = T))
-SE_monthly <- SE_renamed %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, season, month) %>% 
-  summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T),
-           mean_temp = mean(temp, na.rm = T))
-
-ggplot(data = SE_annual, aes(x = year, y = count)) +
-  geom_line() +
-  geom_smooth(method = "lm") 
-## Annual count of SE wind in Summer
-### The trends between annual and summer SE wind counts are remarkably similar
-ggplot(data = SE_summer, aes(x = year, y = count)) +
-  geom_line() +
-  geom_smooth(method = "lm") #+
- # facet_wrap(~site)
-## Summer month count of SE winds
-BC_plot <- ggplot(data = SE_monthly, aes(x = year, y = count)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") #+
-  #facet_wrap(~site)
 
 
 ggarrange(CalC_plot, CC_plot, HC_plot, BC_plot,

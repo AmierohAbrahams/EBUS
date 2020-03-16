@@ -37,46 +37,11 @@ theme_opts <- list(theme(panel.border = element_rect(colour = "black", size = 0.
                          panel.grid.major = element_line(colour = "black", linetype = "dashed", size = 0.2),
                          axis.ticks = element_line(colour = "black")))
 
-# Make a wrapper function for the combined map of the Indian Ocean region
-make_maps <- function(crs = crs) {
-  
-  world_ne <- st_transform(ne_countries(scale = "small", returnclass = "sf"), crs = crs)
-  # names(world_ne)
-  # world_ne$iso_a2
-  # world_ne$continent
-  
-  # Some continents
-  # africa_ne <- st_union(world_ne[world_ne$continent == "Africa", ])
-  # asia_ne <- st_union(world_ne[world_ne$continent == "Asia", ])
-  # oceania_ne <- st_union(world_ne[world_ne$continent == "Oceania", ])
-  
-  # Tanzania and Australia
-  tanzania_ne <- world_ne[world_ne$iso_a2 == "TZ", ]
-  australia_ne <- world_ne[world_ne$iso_a2 == "AU", ]
-  
-  # Put it together
-  map <- ggplot(data = polygon) +
-    geom_sf(col = "black", fill = "grey80", size = 0.2) +
-    geom_sf(data = tanzania_ne, fill = "grey60", size = 0.2, col = "black") +
-    # geom_sf(data = australia_ne, fill = "grey60", size = 0.2, col = "black") +
-    # geom_point(data = locations, aes(x = lon, y = lat), col = "black", shape = 18, size = 4) +
-    coord_sf(xlim = c(28, 130), ylim = c(-40, 15), expand = FALSE) +
-    labs(x = NULL, y = NULL) +
-    theme_opts
-  return(map)
-}
-
-# Now make the map of the Indian Ocean Region
-(indian_ocean <- make_maps(crs = "+proj=merc"))
-
-ggsave("indian_ocean.png", scale = 1, width = 170, height = 110, units = "mm", dpi = 300)
-
-require(rgeos); require(maptools) # maptools must be loaded after rgeos
-library(PBSmapping)
 
 BC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
                   xlim = c(15.00, 20.00), ylim = c(-35.00, -25.00), maxLevel = 1, useWest = FALSE)
 (BC_map <- ggplot() +
+    geom_raster(data = BC_complete, aes(x = lon, y = lat, fill = temp)) +
     geom_polygon(data = BC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
     coord_fixed(ratio = 1, expand = FALSE) +
     scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01),
@@ -95,6 +60,7 @@ bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
 HC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
                   xlim = c(275.00, 290.00), ylim = c(-17.5, -7.5), maxLevel = 1, useWest = FALSE)
 (HC_map <- ggplot() +
+    geom_raster(data = HC_complete, aes(x = lon, y = lat, fill = temp)) +
     geom_polygon(data = HC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
     coord_fixed(ratio = 1, expand = FALSE) +
     scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01),
@@ -122,6 +88,7 @@ CC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
 CalC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
                     xlim = c(225.00, 240.00), ylim = c(35.00, 45.00), maxLevel = 1, useWest = FALSE)
 (CalC_map <- ggplot() +
+    geom_raster(data = CalC_complete, aes(x = lon, y = lat, fill = temp)) +
     geom_polygon(data = CalC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
     coord_fixed(ratio = 1, expand = FALSE) +
     scale_x_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°E", sep = "", accuracy = .01)) +
