@@ -72,7 +72,7 @@ HC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
 
 
 CC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
-                  xlim = c(340.00, 355.00), ylim = c(25.00, 35.00), maxLevel = 1, useWest = FALSE)
+                  xlim = c(340.00, 355.00), ylim = c(25.00, 35.00), maxLevel = 1, useWest = TRUE)
 (CC_map <- ggplot() +
     geom_polygon(data = CC, aes(x = X, y = Y, group = PID), col = "black", fill = "grey60", size = 0.2) +
     coord_fixed(ratio = 1, expand = FALSE) +
