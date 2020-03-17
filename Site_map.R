@@ -6,17 +6,21 @@ library("ggspatial")
 library("rnaturalearth")
 library("rnaturalearthdata")
 library("PBSmapping")
+library(viridis)
 # Default CRS
 # +proj=longlat +datum=WGS84 +no_defs
-
-# make a data frame with the site data
-locations <- data.frame(site = c("Long Reef", "Malus Island", "Mapopwe Creek"),
-                        lon = c(125.73798096, 116.96664647, 39.52190208),
-                        lat = c(-13.89397919, -20.29871945, -6.12515592))
-
 # Load the Global Self-consistent, Hierarchical, High-resolution Geography Database
 # Use the full resolution version
 gshhsDir <- "/home/amieroh/Documents/Data/Datasets/gshhg-bin-2.3.7"
+b <- c(5, 10, 15, 20, 25,30)
+colors <- c('#EFF573', '#EFF573', '#EFF573', '#3DA394', '#3A828C', '#456075')
+
+
+bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
+                   CC = c(25, 35, 340, 355), # Canary Current
+                   CalC = c(35, 45, 225, 240), # California Current
+                   HC = c(-17.5, -7.5, 275, 290), # Humboldt Current
+                   row.names = c("latmin", "latmax", "lonmin", "lonmax"))
 
 # Make a coastline for the world in sf format
 coastline <- importGSHHS(paste0(gshhsDir, "/gshhs_l.b"),
@@ -48,14 +52,9 @@ BC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
                        breaks = c(39.00, 41.00, 43.00)) +
     scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01)) +
     labs(title = NULL, x = NULL, y = NULL) +
+  scale_fill_gradientn(colors = colors,breaks = b)+
     theme_opts +
     theme(axis.text = element_text(size = 12)))
-
-bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
-                   CC = c(25, 35, 340, 355), # Canary Current
-                   CalC = c(35, 45, 225, 240), # California Current
-                   HC = c(-17.5, -7.5, 275, 290), # Humboldt Current
-                   row.names = c("latmin", "latmax", "lonmin", "lonmax"))
 
 HC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
                   xlim = c(275.00, 290.00), ylim = c(-17.5, -7.5), maxLevel = 1, useWest = FALSE)
@@ -67,6 +66,7 @@ HC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
                        breaks = c(39.00, 41.00, 43.00)) +
     scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01)) +
     labs(title = NULL, x = NULL, y = NULL) +
+    scale_fill_gradientn(colors = colors,breaks = b)+
     theme_opts +
     theme(axis.text = element_text(size = 12)))
 
@@ -80,6 +80,7 @@ CC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
     scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01),
                        breaks = seq(from = -6.40, to = -5.80, by = 0.20)) +
     labs(title = NULL, x = NULL, y = NULL) +
+    scale_fill_gradientn(colors = colors,breaks = b)+
     theme_opts +
     theme(axis.text = element_text(size = 12)))
 
@@ -95,6 +96,7 @@ CalC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
     scale_y_continuous(expand = c(0, 0), labels = scales::unit_format(unit = "°S", sep = "", accuracy = .01),
                        breaks = seq(from = -6.40, to = -5.80, by = 0.20)) +
     labs(title = NULL, x = NULL, y = NULL) +
+    scale_fill_gradientn(colors = colors,breaks = b)+
     theme_opts +
     theme(axis.text = element_text(size = 12)))
   
