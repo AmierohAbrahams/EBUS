@@ -93,34 +93,44 @@ HC_exceed <- exceed_func(df = HC_UI_trim)
 CC_exceed <- exceed_func(df = CC_UI_trim)
 CalC_exceed <- exceed_func(df = CalC_UI_trim)
 
+load("data_complete/BC_complete.RData") 
+load("data_complete/HC_complete.RData") 
+load("data_complete/CC_complete.RData") 
+load("data_complete/CalC_complete.RData") 
 
-# Detect event: 
+
+HC_complete <- HC_complete %>% 
+  mutate(lon = lon - 360)
+
+CC_complete <- CC_complete %>% 
+  mutate(lon = lon - 360)
+
+CalC_complete <- CalC_complete %>% 
+  mutate(lon = lon - 360)
+
 detect_event_custom <- function(df){
   res <- detect_event(df, threshClim2 = df$exceedance, minDuration = 3, coldSpells = T)
   return(res)
 }
+
 # Calculate the upwelling event metrics
-SACTN_upwell_base <- BC_complete %>% 
+upwell_base <- CalC_complete %>% 
   dplyr::rename(t = date) %>% 
-  #group_by(lat,lon) %>% 
+  group_by(lon, lat) %>%
   nest() %>% 
-  # The climatology base period used here is up for debate...
-  # The choice of the 30th percentile threshold also needs to be justified and sensitivty tested
-  mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1981-09-01", "2012-12-31"))) %>%
+  mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2011-12-31"))) %>%
   select(-data) %>% 
-  unnest() %>%
-  left_join(BC_exceed, by = c("lat","lon", "t")) %>%
+  unnest(cols = clim) %>%
+  left_join(CalC_exceed, by = c("lon", "lat", "t")) %>%
   filter(!is.na(exceedance)) %>%
-  # mutate(thresh = mean(seas, na.rm = T)-sd(seas, na.rm = T)) %>% # Manually set threshold to the mean
-  # mutate(thresh = 10) %>% # Manually set threshold to a static value. Doesn't work across all sites
-  # mutate(thresh = quantile(temp, 0.3, na.rm = T)) %>% # Manually set threshold to a single quantile
   nest() %>% 
   mutate(exceed = purrr::map(data, detect_event_custom)) %>% 
-  select(-data) #%>% 
-# unnest() %>% 
-# filter(row_number() %% 2 == 0) %>% # Select event summary metrics
-# filter(row_number() %% 2 == 1) %>% # Select daily values
-# unnest()
+  select(-data) %>% 
+  unnest(cols = exceed) %>%
+  filter(row_number() %% 2 == 0) %>% # Select event summary metrics
+  # filter(row_number() %% 2 == 1) %>% # Select daily values
+  unnest(cols = exceed)
+
 
 ###################################################
 # Unpack the event metric reults
