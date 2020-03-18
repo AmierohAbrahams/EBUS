@@ -184,7 +184,7 @@ upwell_season_CalC <- seasons_func(df = upwell_prep_CalC)
 save(upwell_season_CC, file = "data_complete/upwell_season_CC.RData")
 save(upwell_season_CalC, file = "data_complete/upwell_season_CalC.RData")
 
-
-
-
-
+# write_csv(upwell_season_BC, path = "data_complete/upwell_season_BC.csv")
+# write_csv(upwell_season_HC, path = "data_complete/upwell_season_HC.csv")
+# write_csv(upwell_season_CalC, path = "data_complete/upwell_season_CalC.csv")
+# write_csv(upwell_season_CC, path = "data_complete/upwell_season_CC.csv")
