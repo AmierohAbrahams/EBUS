@@ -194,10 +194,21 @@ CalC_upwelling_occurances <- read_csv("data_complete/CalC_upwelling_occurances.c
 CC_upwelling_occurances <- read_csv("data_complete/CC_upwelling_occurances.csv")
 HC_upwelling_occurances <- read_csv("data_complete/HC_upwelling_occurances.csv")
 
+total_count_func <- function(df){
+  total_count <- df %>% 
+  group_by(year,season) %>% 
+  count()
+}
 
+BC_total_count <- total_count_func(df = BC_upwelling_occurance) %>% 
+  mutate(current = "BC")
+HC_total_count <- total_count_func(df = HC_upwelling_occurances) %>% 
+  mutate(current = "HC")
+CC_total_count <- total_count_func(df = CC_upwelling_occurances) %>% 
+  mutate(current = "CC")
+CalC_total_count <- total_count_func(df = CalC_upwelling_occurances) %>% 
+  mutate(current = "CalC")
 
-
-
-
-
+total_count_current <- rbind(BC_total_count,HC_total_count,CC_total_count,CalC_total_count)
+write_csv(total_count_current, path = "data_complete/total_count_current.csv")
 
