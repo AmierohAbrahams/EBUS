@@ -188,3 +188,16 @@ save(upwell_season_CalC, file = "data_complete/upwell_season_CalC.RData")
 # write_csv(upwell_season_HC, path = "data_complete/upwell_season_HC.csv")
 # write_csv(upwell_season_CalC, path = "data_complete/upwell_season_CalC.csv")
 # write_csv(upwell_season_CC, path = "data_complete/upwell_season_CC.csv")
+
+BC_upwelling_occurance <- read_csv("data_complete/BC_upwelling_occurance.csv")
+CalC_upwelling_occurances <- read_csv("data_complete/CalC_upwelling_occurances.csv")
+CC_upwelling_occurances <- read_csv("data_complete/CC_upwelling_occurances.csv")
+HC_upwelling_occurances <- read_csv("data_complete/HC_upwelling_occurances.csv")
+
+
+
+
+
+
+
+
