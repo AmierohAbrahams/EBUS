@@ -131,29 +131,60 @@ upwell_base <- CalC_complete %>%
   # filter(row_number() %% 2 == 1) %>% # Select daily values
   unnest(cols = exceed)
 
+#############################################################
+library(tidyverse)
+library(lubridate)
+library(ggpubr)
 
-###################################################
-# Unpack the event metric reults
+load("~/Documents/EBUS/data_complete/upwell_base_BC_2012.RData")
+load("~/Documents/EBUS/data_complete/upwell_base_CC_2012.RData")
+load("~/Documents/EBUS/data_complete/upwell_base_CalC_2012.RData")
+load("~/Documents/EBUS/data_complete/upwell_base_HC_2012.RData")
+
+
+upwell_prep <- function(df){
+  upwell_prep <- df %>% 
+    mutate(date = date_start)
+}
+
+upwell_prep_BC = upwell_prep(df = upwell_base_BC_2012)
+upwell_prep_HC = upwell_prep(df = upwell_base_HC_2012)
+upwell_prep_CC = upwell_prep(df = upwell_base_CC_2012)
+upwell_prep_CalC = upwell_prep(df = upwell_base_CalC_2012)
+
+### Southern Hemisphere
+
+seasons_func <- function(df){
+  BC_seaons <- df %>% 
+    mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
+           year = year(date)) %>% 
+    mutate(season = ifelse(month %in% c("Dec", "Jan", "Feb"), "Summer",        
+                           ifelse(month %in% c("Mar", "Apr", "May"), "Autumn",
+                                  ifelse(month %in% c("Jun", "Jul", "Aug"), "Winter",
+                                         ifelse(month %in% c("Sep", "Oct", "Nov"), "Spring","Error")))))
+}
+
+upwell_season_BC <- seasons_func(df = upwell_prep_BC)
+upwell_season_HC <- seasons_func(df = upwell_prep_HC)
+save(upwell_season_BC, file = "data_complete/upwell_season_BC.RData")
+save(upwell_season_HC, file = "data_complete/upwell_season_HC.RData")
+####################### Northern Hemisphere
+seasons_func <- function(df){
+  seasons <- df %>% 
+    mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
+           year = year(date)) %>% 
+    mutate(season = ifelse(month %in% c("Dec", "Jan", "Feb"), "Winter",        
+                           ifelse(month %in% c("Mar", "Apr", "May"), "Spring",
+                                  ifelse(month %in% c("Jun", "Jul", "Aug"), "Summer",
+                                         ifelse(month %in% c("Sep", "Oct", "Nov"), "Autumn","Error")))))
+}
+
+upwell_season_CC <- seasons_func(df = upwell_prep_CC)
+upwell_season_CalC <- seasons_func(df = upwell_prep_CalC)
+save(upwell_season_CC, file = "data_complete/upwell_season_CC.RData")
+save(upwell_season_CalC, file = "data_complete/upwell_season_CalC.RData")
 
 
 
-SACTN_upwell_events <- SACTN_upwell_base %>% 
-  unnest() %>%
-  filter(row_number() %% 2 == 0) %>%
-  unnest()
-# save(SACTN_upwell_events, file = "Data/SACTN_upwell_events.RData")
-# Unpack the daily climatology results
-SACTN_upwell_clims <- SACTN_upwell_base %>% 
-  unnest() %>%
-  filter(row_number() %% 2 == 1) %>% 
-  unnest()
-# save(SACTN_upwell_clims, file = "Data/SACTN_upwell_clims.RData")
-# The above chunk of code appears to work as expected.
-# What needs to be done now is that the thresholds for duration and UI strength need to be justified/decided uopn. 
-# Min duration for an upwelling event - 1day and threshold -1
-# What also needs to be decided is if we are interested in any upwelling results throughout the year,
-# or only during the upwelling season, whenever that may be for each site.
-# I think we have demonstrated the technical capability needed to answer the question of whether or not upwelling
-# is changing over time.
-# Now we really need to focus on which of these parameters need to best be tweaked to answer that question.
+
 
