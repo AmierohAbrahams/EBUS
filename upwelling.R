@@ -6,6 +6,54 @@ library(tidyverse)
 library(heatwaveR)
 library(coastR)
 
+
+theme_Publication <- function(base_size=14, base_family="helvetica") {
+  library(grid)
+  library(ggthemes)
+  (theme_foundation(base_size=base_size, base_family=base_family)
+    + theme(plot.title = element_text(face = "bold",
+                                      size = rel(1.2), hjust = 0.5),
+            text = element_text(),
+            panel.background = element_rect(colour = NA),
+            plot.background = element_rect(colour = NA),
+            panel.border = element_rect(colour = NA),
+            axis.title = element_text(face = "bold",size = rel(1)),
+            axis.title.y = element_text(angle=90,vjust =2),
+            axis.title.x = element_text(vjust = -0.2),
+            axis.text = element_text(), 
+            axis.line = element_line(colour="black"),
+            axis.ticks = element_line(),
+            panel.grid.major = element_line(colour="#f0f0f0"),
+            panel.grid.minor = element_blank(),
+            legend.key = element_rect(colour = NA),
+            legend.position = "bottom",
+            legend.direction = "horizontal",
+            legend.key.size= unit(0.2, "cm"),
+            legend.margin = unit(0, "cm"),
+            #legend.title = element_text(face="italic"),
+            plot.margin=unit(c(10,5,5,5),"mm"),
+            strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+            strip.text = element_text(face="bold")
+    ))
+  
+}
+
+scale_fill_Publication <- function(...){
+  library(scales)
+  discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+  
+}
+
+scale_colour_Publication <- function(...){
+  library(scales)
+  discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+  
+}
+
+
+
+
+
 load("data_complete/BC_complete.RData") 
 load("data_complete/HC_complete.RData") 
 load("data_complete/CC_complete.RData") 
@@ -210,5 +258,52 @@ CalC_total_count <- total_count_func(df = CalC_upwelling_occurances) %>%
   mutate(current = "CalC")
 
 total_count_current <- rbind(BC_total_count,HC_total_count,CC_total_count,CalC_total_count)
-write_csv(total_count_current, path = "data_complete/total_count_current.csv")
+# write_csv(total_count_current, path = "data_complete/total_count_current.csv")
+
+ggplot(data = total_count_current, aes(x = year, y = n, colour = current)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~season) +
+  labs(x = "Year", y =" Number of signals detected") +
+  theme_Publication()
+
+#### Creating a tableS
+mean_SD_func_1982 <- function(df){
+  mean_SD<- df %>% 
+    filter(year == 1982) %>% 
+    group_by(season) %>% 
+    summarise( mean_duration = mean(duration),
+              mean_intensity = mean(intensity_mean),
+              SD_duration = sd(duration),
+              SD_intensity = sd(intensity_mean))
+}
+
+variance_BC <- mean_SD_func_1982(df = upwell_season_BC)
+variance_HC <- mean_SD_func_1982(df = upwell_season_HC)
+variance_CC <- mean_SD_func_1982(df = upwell_season_CC)
+variance_CalC <- mean_SD_func_1982(df = upwell_season_CalC)
+  
+mean_SD_func_2012 <- function(df){
+  mean_SD<- df %>% 
+    filter(year == 2012) %>% 
+    group_by(season) %>% 
+    summarise( mean_duration = mean(duration),
+               mean_intensity = mean(intensity_mean),
+               SD_duration = sd(duration),
+               SD_intensity = sd(intensity_mean))
+}
+
+variance_BC_2012 <- mean_SD_func_2012(df = upwell_season_BC)
+variance_HC_2012 <- mean_SD_func_2012(df = upwell_season_HC)
+variance_CC_2012 <- mean_SD_func_2012(df = upwell_season_CC)
+variance_CalC_2012 <- mean_SD_func_2012(df = upwell_season_CalC)
+
+#### Table showing the largest signal detected and the lowest signal detected
+
+
+
+
+
+
+
 
