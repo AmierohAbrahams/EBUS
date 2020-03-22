@@ -50,10 +50,6 @@ scale_colour_Publication <- function(...){
   
 }
 
-
-
-
-
 load("data_complete/BC_complete.RData") 
 load("data_complete/HC_complete.RData") 
 load("data_complete/CC_complete.RData") 
@@ -68,6 +64,12 @@ CC_complete <- CC_complete %>%
 
 CalC_complete <- CalC_complete %>% 
   mutate(lon = lon - 360)
+
+test <- BC_complete %>%
+  dplyr::group_by(lon, lat) %>%
+  dplyr::summarise(temp = round(mean(temp, na.rm = TRUE), 4)) %>%
+  dplyr::ungroup()
+
 
 BC_angle <- coastR::transects(BC_complete, spread = 30)
 CC_angle <- coastR::transects(CC_complete, spread = 30)
@@ -245,7 +247,7 @@ HC_upwelling_occurances <- read_csv("data_complete/HC_upwelling_occurances.csv")
 total_count_func <- function(df){
   total_count <- df %>% 
   group_by(year,season) %>% 
-  count()
+  summarise(n = n())
 }
 
 BC_total_count <- total_count_func(df = BC_upwelling_occurance) %>% 

@@ -7,6 +7,17 @@ library("rnaturalearth")
 library("rnaturalearthdata")
 library("PBSmapping")
 library(viridis)
+
+
+# Packages used in this vignette
+library(tidyverse) # Base suite of functions
+library(heatwaveR) # For detecting MHWs
+# cat(paste0("heatwaveR version = ", packageDescription("heatwaveR")$Version))
+library(FNN) # For fastest nearest neighbour searches
+library(tidync) # For a more tidy approach to managing NetCDF data
+library(SDMTools) # For finding points within polygons
+library(lubridate)
+
 # Default CRS
 # +proj=longlat +datum=WGS84 +no_defs
 # Load the Global Self-consistent, Hierarchical, High-resolution Geography Database
