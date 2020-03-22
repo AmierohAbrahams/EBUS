@@ -28,10 +28,15 @@ final_dataset <- function(df){
 final <- df %>%
   group_by(date) %>% 
   summarise(mean_temp = mean(temp),
-            mean_speed = mean(speed), # change spd to speed
+            mean_speed = mean(spd), # change spd to speed
             mean_wind = mean(wind_dir),
             mean_lat = mean(lat),
-            mean_lon = mean(lon))
+            mean_lon = mean(lon)) %>% 
+  rename(temp = mean_temp,
+         speed = mean_speed,
+         wind = mean_wind,
+         lat = mean_lat,
+         lon = mean_lon)
 }
 
 CC_final <- final_dataset(df = CC_complete)
