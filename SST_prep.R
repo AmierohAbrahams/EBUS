@@ -28,7 +28,7 @@ final_dataset <- function(df){
 final <- df %>%
   group_by(date) %>% 
   summarise(mean_temp = mean(temp),
-            mean_speed = mean(spd), # change spd to speed
+            mean_speed = mean(speed), # change spd to speed
             mean_wind = mean(wind_dir),
             mean_lat = mean(lat),
             mean_lon = mean(lon)) %>% 
@@ -44,11 +44,22 @@ HC_final <- final_dataset(df = HC_complete)
 CalC_final <- final_dataset(df = CalC_complete)
 BC_final <- final_dataset(df = BC_complete)
 
+HC_final <- HC_final %>% 
+  select(-coast_angle) %>% 
+  mutate(coast_angle = 260.846741)
+
 save(CC_final, file = "data_complete/CC_final.RData")
 save(HC_final, file = "data_complete/HC_final.RData")
 save(CalC_final, file = "data_complete/CalC_final.RData")
 save(BC_final, file = "data_complete/BC_final.RData")
 
 
+
+
+
+write_csv(CC_final, path = "CC_final.csv")
+write_csv(BC_final, path = "BC_final.csv")
+write_csv(HC_final, path = "HC_final.csv")
+write_csv(CalC_final, path = "CalC_final.csv")
 
 
