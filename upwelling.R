@@ -193,10 +193,6 @@ library(tidyverse)
 library(lubridate)
 library(ggpubr)
 
-load("~/Documents/EBUS/data_complete/upwell_base_BC.RData")
-load("~/Documents/EBUS/data_complete/upwell_base_CC.RData")
-load("~/Documents/EBUS/data_complete/upwell_base_CalC.RData")
-load("~/Documents/EBUS/data_complete/upwell_base_HC.RData")
 
 
 upwell_prep <- function(df){
@@ -305,10 +301,99 @@ mean_SD_func_2012 <- function(df){
   variance_CalC_2012 <- mean_SD_func_2012(df = upwell_season_CalC)
 
 #### Table showing the largest signal detected and the lowest signal detected
+#### Anuual trends
+  
+
+totalCntFun <- function(df) {
+  freq <- df %>%
+    dplyr::group_by(year, season) %>%
+    dplyr::summarise(y = n()) %>% 
+    rename(total_count = y)
+}
+
+BC_totalCntFun <- totalCntFun(upwell_season_BC)
+HC_totalCntFun <- totalCntFun(upwell_season_HC)
+CC_totalCntFun <- totalCntFun(upwell_season_CC)
+CalC_totalCntFun <- totalCntFun(upwell_season_CalC)
+
+MeanInt <- function(df) {
+  totMax <- df %>%
+    dplyr::group_by(year, season) %>%
+    dplyr::summarise(y = mean(intensity_mean, na.rm = TRUE)) %>% 
+    rename(mean_intensity = y) 
+}
+
+BC_MeanInt <- MeanInt(upwell_season_BC)
+HC_MeanInt <- MeanInt(upwell_season_HC)
+CC_MeanInt <- MeanInt(upwell_season_CC)
+CalC_MeanInt <- MeanInt(upwell_season_CalC)
+
+MeanDur <- function(df) {
+  totMax <- df %>%
+    dplyr::group_by(year, season) %>%
+    dplyr::summarise(y = mean(duration, na.rm = TRUE)) %>% 
+    rename(mean_dur = y) 
+}
+
+BC_MeanDur <- MeanDur(upwell_season_BC)
+HC_MeanDur<- MeanDur(upwell_season_HC)
+CC_MeanDur<- MeanDur(upwell_season_CC)
+CalC_MeanDur <- MeanDur(upwell_season_CalC)
+
+
+MeanOns <- function(df) {
+  totMax <- df %>%
+    dplyr::group_by(year, season) %>%
+    dplyr::summarise(y = mean(rate_onset, na.rm = TRUE)) %>% 
+    rename(mean_ons = y) 
+}
+
+BC_MeanOns <- MeanOns(upwell_season_BC)
+HC_MeanOns<- MeanOns(upwell_season_HC)
+CC_MeanOns<- MeanOns(upwell_season_CC)
+CalC_MeanOns <- MeanOns(upwell_season_CalC)
+
+
+
+cumInt <- function(df) {
+  totMax <- df %>%
+    dplyr::group_by(year, season) %>%
+    dplyr::summarise(y = mean(intensity_cumulative, na.rm = TRUE)) %>% 
+    rename(cum_intensity = y) 
+}
+
+BC_cumInt<- cumInt(upwell_season_BC)
+HC_cumInt<- cumInt(upwell_season_HC)
+CC_cumInt<- cumInt(upwell_season_CC)
+CalC_cumInt <- cumInt(upwell_season_CalC)
 
 
 
 
+BC_metrics <- cbind(BC_cumInt,BC_MeanDur,BC_MeanInt, BC_MeanOns,BC_totalCntFun) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+
+HC_metrics <- cbind(HC_cumInt,HC_MeanDur,HC_MeanInt, HC_MeanOns,HC_totalCntFun) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+
+CC_metrics <- cbind(CC_cumInt,CC_MeanDur,CC_MeanInt, CC_MeanOns,CC_totalCntFun) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+
+CalC_metrics <- cbind(CalC_cumInt,CalC_MeanDur,CalC_MeanInt, CalC_MeanOns,CalC_totalCntFun) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+
+
+save(BC_metrics, file = "data/BC_metrics.RData")
+save(HC_metrics, file = "data/HC_metrics.RData")
+save(CC_metrics, file = "data/CC_metrics.RData")
+save(CalC_metrics, file = "data/CalC_metrics.RData")
+
+######## Loading Metrics
+
+load("data/BC_metrics.RData")
+load("data/HC_metrics.RData")
+load("data/CC_metrics.RData")
+load("data/CalC_metrics.RData")
 
 
 
