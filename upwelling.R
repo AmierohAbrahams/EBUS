@@ -353,8 +353,6 @@ HC_MeanOns<- MeanOns(upwell_season_HC)
 CC_MeanOns<- MeanOns(upwell_season_CC)
 CalC_MeanOns <- MeanOns(upwell_season_CalC)
 
-
-
 cumInt <- function(df) {
   totMax <- df %>%
     dplyr::group_by(year, season) %>%
@@ -366,8 +364,6 @@ BC_cumInt<- cumInt(upwell_season_BC)
 HC_cumInt<- cumInt(upwell_season_HC)
 CC_cumInt<- cumInt(upwell_season_CC)
 CalC_cumInt <- cumInt(upwell_season_CalC)
-
-
 
 
 BC_metrics <- cbind(BC_cumInt,BC_MeanDur,BC_MeanInt, BC_MeanOns,BC_totalCntFun) %>% 

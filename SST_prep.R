@@ -52,14 +52,3 @@ save(CC_final, file = "data_complete/CC_final.RData")
 save(HC_final, file = "data_complete/HC_final.RData")
 save(CalC_final, file = "data_complete/CalC_final.RData")
 save(BC_final, file = "data_complete/BC_final.RData")
-
-
-
-
-
-write_csv(CC_final, path = "CC_final.csv")
-write_csv(BC_final, path = "BC_final.csv")
-write_csv(HC_final, path = "HC_final.csv")
-write_csv(CalC_final, path = "CalC_final.csv")
-
-
