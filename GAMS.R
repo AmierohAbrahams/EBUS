@@ -95,7 +95,7 @@ gam_func <- function(df){
 }
 
 BC_meanInt<- gam_func(df = BC_metrics)
-Hc_meanInt <- gam_func(df = HC_metrics)
+HC_meanInt <- gam_func(df = HC_metrics)
 CC_meanInt <- gam_func(df = CC_metrics)
 CalC_meanInt<- gam_func(df = CalC_metrics)
 
@@ -124,7 +124,7 @@ gam_func <- function(df){
 }
 
 BC_totalC<- gam_func(df = BC_metrics)
-Hc_totalC <- gam_func(df = HC_metrics)
+HC_totalC <- gam_func(df = HC_metrics)
 CC_totalC <- gam_func(df = CC_metrics)
 CalC_totalC<- gam_func(df = CalC_metrics)
 
@@ -142,6 +142,76 @@ CC_totalC <- marginal_smooths(CC_totalC)
 CC_totalC_plot <- plot(CC_totalC)
 CalC_totalC <- marginal_smooths(CalC_totalC)
 CalC_totalC_plot <- plot(CalC_totalC)
+########################################################333
+library(gamair)
+options(scipen=999)
+# Fit the model
+
+# Loading data
+
+load("data/BC_metrics.RData")
+load("data/HC_metrics.RData")
+load("data/CC_metrics.RData")
+load("data/CalC_metrics.RData")
+
+
+cumInt_func <- function(df){
+  cumInt <- gam(cum_intensity~ s(year),data = df, method = "REML")
+}
+
+BC_cumInt <- cumInt_func(df = BC_metrics)
+HC_cumInt <- cumInt_func(df = HC_metrics)
+CC_cumInt <- cumInt_func(df = CC_metrics)
+CalC_cumInt <- cumInt_func(df = CalC_metrics)
+
+summary(BC_cumInt)
+summary(HC_cumInt)
+summary(CC_cumInt)
+summary(CalC_cumInt)
+
+  meanDur_func <- function(df){
+  meanDur <- gam(mean_dur~ s(year),data = df, method = "REML")
+}
+
+BC_meanDur <- meanDur_func(df = BC_metrics)
+HC_meanDur <- meanDur_func(df = HC_metrics)
+CC_meanDur <- meanDur_func(df = CC_metrics)
+CalC_meanDur <- meanDur_func(df = CalC_metrics)
+
+summary(BC_meanDur)
+summary(HC_meanDur)
+summary(CC_meanDur)
+summary(CalC_meanDur)
+
+intensity_func <- function(df){
+  intensity <- gam(mean_intensity~ s(year),data = df, method = "REML")
+}
+
+BC_intensity <- intensity_func(df = BC_metrics)
+HC_intensity <- intensity_func(df = HC_metrics)
+CC_intensity <- intensity_func(df = CC_metrics)
+CalC_intensity <- intensity_func(df = CalC_metrics)
+
+summary(BC_intensity)
+summary(HC_intensity)
+summary(CC_intensity)
+summary(CalC_intensity)
+
+
+totalC_func <- -function(df){
+  totalC <- gam(total_count~ s(year),data = df, method = "REML")
+}
+
+BC_totalC <- totalC_func(df = BC_metrics)
+HC_totalC <- totalC_func(df = HC_metrics)
+CC_totalC <- totalC_func(df = CC_metrics)
+CalC_totalC <- totalC_func(df = CalC_metrics)
+
+summary(BC_totalC)
+summary(HC_totalC)
+summary(CC_totalC)
+summary(CalC_totalC)
+
 
 
 
