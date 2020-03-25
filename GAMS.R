@@ -212,7 +212,9 @@ summary(HC_totalC)
 summary(CC_totalC)
 summary(CalC_totalC)
 
+AIC(BC_totalC)
+logLik.gam(BC_totalC)
+plot(BC_totalC)
+plot(BC_totalC, pages=1, scale=F, shade=T)
 
-
-
-
+plot(BC_totalC, residuals = TRUE)
