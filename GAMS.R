@@ -218,3 +218,9 @@ plot(BC_totalC)
 plot(BC_totalC, pages=1, scale=F, shade=T)
 
 plot(BC_totalC, residuals = TRUE)
+################################################################################################
+###GAMS Dave Thesis
+
+
+
+
