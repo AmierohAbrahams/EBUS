@@ -218,7 +218,7 @@ plot(BC_totalC, pages=1, scale=F, shade=T)
 
 plot(BC_totalC, residuals = TRUE)
 
-########################
+#######################################################################################################################################################
 ######## Loading Metrics
 
 load("data/BC_metrics.RData")
@@ -244,7 +244,6 @@ CalC_metrics <- CalC_metrics %>%
   mutate(current = "HC")
 
 combined_metrics <- rbind(BC_metrics,HC_metrics,CC_metrics,CalC_metrics)
-#################################################################################
 
 # Benguela Current
 ####Total count and wind direction
@@ -258,22 +257,6 @@ plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seW
 plot(BC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ####Total count and wind speed
 BC_totalC_wind_spd<- gam(total_count ~ s(mean_speed) + season, data = BC_metrics, method = "REML")
 summary(BC_totalC_wind_spd)
@@ -285,39 +268,14 @@ plot(BC_totalC_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seW
 plot(BC_totalC_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
 
 
-
-
-
-
-
-
-
-
-
-
 ### Mean_intensity and wind direction
 BC_meanInt_wind_dir<- gam(mean_intensity ~ s(mean_wind) + season, data = BC_metrics, method = "REML")
 summary(BC_meanInt_wind_dir)
 # This model includes the effect of the wind direction as a smooth term, and it generalises
-# to asking the question of whether there is a gradient in mean_intesnity. The model accounts
-# for season 
+# to asking the question of whether there is a gradient in mean_intesnity. The model accounts for season 
 plot(BC_meanInt_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
 plot(BC_meanInt_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
 plot(BC_meanInt_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ### Mean_intensity and wind speed
 BC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + season, data = BC_metrics, method = "REML")
