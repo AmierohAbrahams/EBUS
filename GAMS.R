@@ -219,6 +219,16 @@ plot(BC_totalC, pages=1, scale=F, shade=T)
 plot(BC_totalC, residuals = TRUE)
 
 #######################################################################################################################################################
+### LOading libraries
+
+library('mgcv')
+library('brms')
+library('ggplot2')
+library('schoenberg')
+library(lubridate)
+library(ggpubr)
+theme_set(theme_bw())
+
 ######## Loading Metrics
 
 load("data/BC_metrics.RData")
@@ -239,11 +249,26 @@ BC_metrics <- BC_metrics %>%
 HC_metrics <- HC_metrics %>% 
   mutate(current = "HC")
 CC_metrics <- CC_metrics %>% 
-  mutate(current = "BC")
+  mutate(current = "CC")
 CalC_metrics <- CalC_metrics %>% 
-  mutate(current = "HC")
+  mutate(current = "CalC")
 
 combined_metrics <- rbind(BC_metrics,HC_metrics,CC_metrics,CalC_metrics)
+
+### Plotting
+ggplot(combined_metrics, aes(x = year, y = total_count, colour = current)) +
+  geom_point() +
+  geom_smooth(method = 'loess', se = FALSE) +
+  scale_colour_brewer(type = 'qual', palette = 'Dark2') +
+  theme(legend.position = 'top')+
+  facet_wrap(~season)
+
+ggplot(combined_metrics, aes(x = year, y = mean_intensity, colour = current)) +
+  geom_point() +
+  geom_smooth(method = 'loess', se = FALSE) +
+  scale_colour_brewer(type = 'qual', palette = 'Dark2') +
+  theme(legend.position = 'top')+
+  facet_wrap(~season)
 
 # Benguela Current
 
