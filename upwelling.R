@@ -243,6 +243,35 @@ load("~/Documents/EBUS/data_complete/upwell_season_CC.RData")
 load("~/Documents/EBUS/data_complete/upwell_season_CalC.RData")
 load("~/Documents/EBUS/data_complete/upwell_season_HC.RData")
 
+### Adding wind speed and direction to the metrics
+
+
+wind_speed_func <- function(df){
+BC_final_test <- df %>% 
+  rename(date_start = date) %>% 
+  select(date_start, speed,wind)
+}
+
+BC_final_test = wind_speed_func(df = BC_final)
+HC_final_test = wind_speed_func(df = HC_final)
+CC_final_test = wind_speed_func(df = CC_final)
+CalC_final_test = wind_speed_func(df = CalC_final)
+
+
+try2 <- function(df) {
+  func2 <- df %>% 
+    left_join(upwell_season_CalC, by = c("date_start")) %>% 
+    drop_na()
+  return(func2)
+}
+
+
+upwell_season_BC <- try2(df =BC_final_test)
+upwell_season_HC <- try2(df =HC_final_test)
+upwell_season_CC <- try2(df =CC_final_test)
+upwell_season_CalC <- try2(df =CalC_final_test)
+
+
 total_count_func <- function(df){
   total_count <- df %>% 
   group_by(year,season) %>% 
@@ -365,32 +394,45 @@ HC_cumInt<- cumInt(upwell_season_HC)
 CC_cumInt<- cumInt(upwell_season_CC)
 CalC_cumInt <- cumInt(upwell_season_CalC)
 
+mean_speed <- function(df) {
+  wind_speed <- df %>%
+    dplyr::group_by(year, season) %>%
+    dplyr::summarise(y = mean(speed, na.rm = TRUE)) %>% 
+    rename(mean_speed = y) 
+}
 
-BC_metrics <- cbind(BC_cumInt,BC_MeanDur,BC_MeanInt, BC_MeanOns,BC_totalCntFun) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+BC_speed<- mean_speed(upwell_season_BC)
+HC_speed<- mean_speed(upwell_season_HC)
+CC_speed<- mean_speed(upwell_season_CC)
+CalC_speed <- mean_speed(upwell_season_CalC)
 
-HC_metrics <- cbind(HC_cumInt,HC_MeanDur,HC_MeanInt, HC_MeanOns,HC_totalCntFun) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+mean_wind <- function(df) {
+  wind_direct <- df %>%
+    dplyr::group_by(year, season) %>%
+    dplyr::summarise(y = mean(wind, na.rm = TRUE)) %>% 
+    rename(mean_wind = y) 
+}
 
-CC_metrics <- cbind(CC_cumInt,CC_MeanDur,CC_MeanInt, CC_MeanOns,CC_totalCntFun) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+BC_wind<- mean_wind(upwell_season_BC)
+HC_wind<- mean_wind(upwell_season_HC)
+CC_wind<- mean_wind(upwell_season_CC)
+CalC_wind <- mean_wind(upwell_season_CalC)
 
-CalC_metrics <- cbind(CalC_cumInt,CalC_MeanDur,CalC_MeanInt, CalC_MeanOns,CalC_totalCntFun) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count)
+BC_metrics <- cbind(BC_cumInt,BC_MeanDur,BC_MeanInt, BC_MeanOns,BC_totalCntFun, BC_speed,BC_wind) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
+
+HC_metrics <- cbind(HC_cumInt,HC_MeanDur,HC_MeanInt, HC_MeanOns,HC_totalCntFun,HC_speed,HC_wind) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
+
+CC_metrics <- cbind(CC_cumInt,CC_MeanDur,CC_MeanInt, CC_MeanOns,CC_totalCntFun, CC_speed,CC_wind) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
+
+CalC_metrics <- cbind(CalC_cumInt,CalC_MeanDur,CalC_MeanInt, CalC_MeanOns,CalC_totalCntFun, CalC_speed, CalC_wind) %>% 
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
 
 
 save(BC_metrics, file = "data/BC_metrics.RData")
 save(HC_metrics, file = "data/HC_metrics.RData")
 save(CC_metrics, file = "data/CC_metrics.RData")
 save(CalC_metrics, file = "data/CalC_metrics.RData")
-
-######## Loading Metrics
-
-load("data/BC_metrics.RData")
-load("data/HC_metrics.RData")
-load("data/CC_metrics.RData")
-load("data/CalC_metrics.RData")
-
-
-
 
