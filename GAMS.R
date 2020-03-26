@@ -5,11 +5,11 @@ library('mgcv')
 library('brms')
 library('ggplot2')
 library('schoenberg')
+library(lubridate)
 library(ggpubr)
 theme_set(theme_bw())
 
 # Loading data
-
 load("data/BC_metrics.RData")
 load("data/HC_metrics.RData")
 load("data/CC_metrics.RData")
@@ -20,8 +20,6 @@ load("data/upwell_season_BC.RData")
 load("data/upwell_season_CC.RData")
 load("data/upwell_season_CalC.RData")
 load("data/upwell_season_HC.RData")
-
-
 
 BC <- gam(cum_intensity ~ s(year), data = df, method = "REML")
 summary(BC)
@@ -146,14 +144,12 @@ CalC_totalC_plot <- plot(CalC_totalC)
 library(gamair)
 options(scipen=999)
 # Fit the model
-
 # Loading data
 
 load("data/BC_metrics.RData")
 load("data/HC_metrics.RData")
 load("data/CC_metrics.RData")
 load("data/CalC_metrics.RData")
-
 
 cumInt_func <- function(df){
   cumInt <- gam(cum_intensity~ s(year),data = df, method = "REML")
@@ -198,7 +194,7 @@ summary(CC_intensity)
 summary(CalC_intensity)
 
 
-totalC_func <- -function(df){
+totalC_func <- function(df){
   totalC <- gam(total_count~ s(year),data = df, method = "REML")
 }
 
@@ -212,14 +208,118 @@ summary(HC_totalC)
 summary(CC_totalC)
 summary(CalC_totalC)
 
+
+plot(BC_totalC)
+
 AIC(BC_totalC)
 logLik.gam(BC_totalC)
 plot(BC_totalC)
 plot(BC_totalC, pages=1, scale=F, shade=T)
 
 plot(BC_totalC, residuals = TRUE)
-################################################################################################
-###GAMS Dave Thesis
+
+########################
+######## Loading Metrics
+
+load("data/BC_metrics.RData")
+load("data/HC_metrics.RData")
+load("data/CC_metrics.RData")
+load("data/CalC_metrics.RData")
+
+
+# ggplot(data = BC_metrics, aes(x = year, y =total_count)) +
+#   geom_point()+
+#   geom_smooth(method = "lm") +
+#   geom_jitter(data = BC_metrics, aes(x = year, y = mean_speed),
+#               shape = 5, width = 0.05) +
+#   geom_smooth(method = "lm")
+
+BC_metrics <- BC_metrics %>% 
+  mutate(current = "BC")
+HC_metrics <- HC_metrics %>% 
+  mutate(current = "HC")
+CC_metrics <- CC_metrics %>% 
+  mutate(current = "BC")
+CalC_metrics <- CalC_metrics %>% 
+  mutate(current = "HC")
+
+combined_metrics <- rbind(BC_metrics,HC_metrics,CC_metrics,CalC_metrics)
+#################################################################################
+
+# Benguela Current
+####Total count and wind direction
+BC_totalC_wind_dir<- gam(total_count ~ s(mean_wind) + season, data = BC_metrics, method = "REML")
+summary(BC_totalC_wind_dir)
+# This model includes the effect of the wind direction as a smooth term, and it generalises
+# to asking the question of whether there is a gradient in mean_intesnity. The model accounts
+# for season 
+plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
+plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
+plot(BC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
+
+####Total count and wind speed
+BC_totalC_wind_spd<- gam(total_count ~ s(mean_speed) + season, data = BC_metrics, method = "REML")
+summary(BC_totalC_wind_spd)
+# This model includes the effect of the wind direction as a smooth term, and it generalises
+# to asking the question of whether there is a gradient in mean_intesnity. The model accounts
+# for season 
+plot(BC_totalC_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
+plot(BC_totalC_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
+plot(BC_totalC_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
+
+
+### Mean_intensity and wind direction
+BC_meanInt_wind_dir<- gam(mean_intensity ~ s(mean_wind) + season, data = BC_metrics, method = "REML")
+summary(BC_meanInt_wind_dir)
+# This model includes the effect of the wind direction as a smooth term, and it generalises
+# to asking the question of whether there is a gradient in mean_intesnity. The model accounts
+# for season 
+plot(BC_meanInt_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
+plot(BC_meanInt_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
+plot(BC_meanInt_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
+
+### Mean_intensity and wind speed
+BC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + season, data = BC_metrics, method = "REML")
+summary(BC_meanInt_wind_spd)
+# This model includes the effect of the wind direction as a smooth term, and it generalises
+# to asking the question of whether there is a gradient in mean_intesnity. The model accounts
+# for season 
+plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
+plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
+plot(BC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+# fit the model
+# predict.gam() is used to generate predictions and standard errors
+pred <- combined_metrics %>%
+  select(season, direction, station)
+
+
+tss_pred <- cbind(combined_metrics, as.data.frame(predict(tss_gam3, pred, se.fit = TRUE, unconditional = TRUE)))
+tss_pred <- transform(tss_pred,
+                      upper = fit + (2 * se.fit),
+                      lower = fit - (2 * se.fit))
+
+
+
+ggplot(tss_pred, aes(x = station, y = measurement, col = condition, group = condition)) +
+  geom_jitter(shape = 5, width = 0.05) +
+  geom_point(aes(y = fit)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper, fill = condition), colour = NA, alpha = 0.4) +
+  geom_line(aes(y = fit)) +
+  labs(x = "Station number", y = "TSS (mg/L)") +
+  theme_bw()
+
 
 
 
