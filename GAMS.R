@@ -226,6 +226,7 @@ library('brms')
 library('ggplot2')
 library('schoenberg')
 library(lubridate)
+library(tidyverse)
 library(ggpubr)
 theme_set(theme_bw())
 
@@ -275,20 +276,36 @@ ggplot(combined_metrics, aes(x = year, y = mean_intensity, colour = current)) +
 ### Mean_intensity and wind speed
 BC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(mean_wind), data = BC_metrics, method = "REML")
 summary(BC_meanInt_wind_spd)
-
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(BC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE
-     
+plot(BC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
+
 ####Total count and wind direction
 BC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = BC_metrics, method = "REML")
 summary(BC_totalC_wind_dir)
-# This model includes the effect of the wind direction as a smooth term, and it generalises
-# to asking the question of whether there is a gradient in the total count of events. The model also accounts
-# for season 
 plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
 plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
 plot(BC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
+
+
+# fit the model
+# predict.gam() is used to generate predictions and standard errors
+pred <- BC_metrics %>%
+  select(season)
+BC_pred <- cbind(BC_metrics, as.data.frame(predict(BC_meanInt_wind_spd, pred, se.fit = TRUE, unconditional = TRUE)))
+BC_pred <- transform(BC_pred,
+                     upper = fit + (2 * se.fit),
+                     lower = fit - (2 * se.fit))
+
+ggplot()) +
+  geom_jitter(shape = 5, width = 0.05) +
+  geom_point(aes(y = fit)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper, fill = condition), colour = NA, alpha = 0.4) +
+  geom_line(aes(y = fit)) +
+  
+  theme_bw()
+
+
 
 # ####Total count and wind speed
 # BC_totalC_wind_spd<- gam(total_count ~ s(mean_speed) + season, data = BC_metrics, method = "REML")
