@@ -278,8 +278,8 @@ summary(BC_meanInt_wind_spd)
 
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(BC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
-
+plot(BC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE
+     
 ####Total count and wind direction
 BC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = BC_metrics, method = "REML")
 summary(BC_totalC_wind_dir)
