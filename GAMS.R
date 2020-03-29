@@ -306,7 +306,6 @@ ggplot()) +
   theme_bw()
 
 
-
 # ####Total count and wind speed
 # BC_totalC_wind_spd<- gam(total_count ~ s(mean_speed) + season, data = BC_metrics, method = "REML")
 # summary(BC_totalC_wind_spd)
