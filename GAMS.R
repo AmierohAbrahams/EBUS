@@ -287,83 +287,23 @@ plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, res
 plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
 plot(BC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
 
-
 # fit the model
 # predict.gam() is used to generate predictions and standard errors
-pred <- BC_metrics %>%
-  select(season)
-BC_pred <- cbind(BC_metrics, as.data.frame(predict(BC_meanInt_wind_spd, pred, se.fit = TRUE, unconditional = TRUE)))
+BC_metrics<- BC_metrics %>%
+  ungroup
+BC_pred <- as.data.frame(predict(BC_meanInt_wind_spd, se.fit = TRUE, unconditional = TRUE))
 BC_pred <- transform(BC_pred,
                      upper = fit + (2 * se.fit),
-                     lower = fit - (2 * se.fit))
+                     lower = fit - (2 * se.fit)) %>% 
+  ungroup()
+tester <- cbind(BC_pred,BC_metrics) 
 
-ggplot()) +
+
+ggplot(tester,  aes(x = year, y = mean_speed)) +
   geom_jitter(shape = 5, width = 0.05) +
   geom_point(aes(y = fit)) +
-  geom_ribbon(aes(ymin = lower, ymax = upper, fill = condition), colour = NA, alpha = 0.4) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), colour = NA, alpha = 0.4) +
   geom_line(aes(y = fit)) +
-  
+  facet_wrap(~season)
   theme_bw()
-
-
-# ####Total count and wind speed
-# BC_totalC_wind_spd<- gam(total_count ~ s(mean_speed) + season, data = BC_metrics, method = "REML")
-# summary(BC_totalC_wind_spd)
-# plot(BC_totalC_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-# plot(BC_totalC_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-# plot(BC_totalC_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
-# 
-# 
-# ### Mean_intensity and wind direction
-# BC_meanInt_wind_dir<- gam(mean_intensity ~ s(mean_wind) + season, data = BC_metrics, method = "REML")
-# summary(BC_meanInt_wind_dir)
-# plot(BC_meanInt_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-# plot(BC_meanInt_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-# plot(BC_meanInt_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
-
-## Humboldt current
-##### Mean intensity
-HC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(mean_wind), data = HC_metrics, method = "REML")
-summary(HC_meanInt_wind_spd)
-plot(HC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-plot(HC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(HC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
-
-####Total count
-HC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = HC_metrics, method = "REML")
-summary(HC_totalC_wind_dir)
-plot(HC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-plot(HC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(HC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
-
-## Canary current
-##### Mean intensity
-CC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(mean_wind), data = CC_metrics, method = "REML")
-summary(CC_meanInt_wind_spd)
-plot(CC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-plot(CC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(CC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
-
-
-CC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = CC_metrics, method = "REML")
-summary(HC_totalC_wind_dir)
-plot(CC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-plot(CC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(CC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
-
-## California current
-##### Mean intensity
-CalC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(mean_wind), data = CalC_metrics, method = "REML")
-summary(CalC_meanInt_wind_spd)
-plot(CalC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-plot(CalC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(CalC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
-
-####Total count
-CalC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = CalC_metrics, method = "REML")
-summary(CalC_totalC_wind_dir)
-plot(CalC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-plot(CalC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(CalC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
-
 
