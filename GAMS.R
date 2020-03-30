@@ -280,13 +280,6 @@ plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, re
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 2, unconditional = TRUE)
 
-####Total count and wind direction
-BC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = BC_metrics, method = "REML")
-summary(BC_totalC_wind_dir)
-plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
-plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
-plot(BC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
-
 # fit the model
 # predict.gam() is used to generate predictions and standard errors
 BC_metrics<- BC_metrics %>%
@@ -299,11 +292,38 @@ BC_pred <- transform(BC_pred,
 tester <- cbind(BC_pred,BC_metrics) 
 
 
-ggplot(tester,  aes(x = year, y = mean_speed)) +
+ggplot(tester,  aes(x = year, y = mean_intensity)) +
   geom_jitter(shape = 5, width = 0.05) +
   geom_point(aes(y = fit)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), colour = NA, alpha = 0.4) +
   geom_line(aes(y = fit)) +
   facet_wrap(~season)
-  theme_bw()
+theme_bw()
 
+####Total count and wind direction
+BC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = BC_metrics, method = "REML")
+summary(BC_totalC_wind_dir)
+plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
+plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
+plot(BC_totalC_wind_dir, pages = 1, scheme = 2, unconditional = TRUE)
+
+
+# fit the model
+# predict.gam() is used to generate predictions and standard errors
+BC_metrics<- BC_metrics %>%
+  ungroup
+BC_pred <- as.data.frame(predict(BC_totalC_wind_dir, se.fit = TRUE, unconditional = TRUE))
+BC_pred <- transform(BC_pred,
+                     upper = fit + (2 * se.fit),
+                     lower = fit - (2 * se.fit)) %>% 
+  ungroup()
+tester <- cbind(BC_pred,BC_metrics) 
+
+
+ggplot(tester,  aes(x = year, y = total_count)) +
+  geom_jitter(shape = 5, width = 0.05) +
+  geom_point(aes(y = fit)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), colour = NA, alpha = 0.4) +
+  geom_line(aes(y = fit)) +
+  facet_wrap(~season)
+theme_bw()
