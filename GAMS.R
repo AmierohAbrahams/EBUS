@@ -273,8 +273,18 @@ ggplot(combined_metrics, aes(x = year, y = mean_intensity, colour = current)) +
 
 # Benguela Current
 
+wind_renamed_func <- function(df){
+  wind_renamed <- df %>% 
+    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
+    dplyr::rename(mean_speed = mean_speed) %>%
+    dplyr::rename(dir_wind = dir_wind) %>% 
+    filter(mean_speed > 0)
+}
+
+BC_metrics <- wind_renamed_func(df = BC_metrics)
+
 ### Mean_intensity and wind speed
-BC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(mean_wind), data = BC_metrics, method = "REML")
+BC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(dir_wind), data = BC_metrics, method = "REML")
 summary(BC_meanInt_wind_spd)
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
 plot(BC_meanInt_wind_spd, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
@@ -301,7 +311,7 @@ ggplot(tester,  aes(x = year, y = mean_intensity)) +
 theme_bw()
 
 ####Total count and wind direction
-BC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(mean_wind), data = BC_metrics, method = "REML")
+BC_totalC_wind_dir<- gam(total_count ~ s(mean_speed) + s(dir_wind), data = BC_metrics, method = "REML")
 summary(BC_totalC_wind_dir)
 plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, residuals = TRUE) # show partial residuals
 plot(BC_totalC_wind_dir, pages = 1, scheme = 1, shade = TRUE, shade.col = 2, seWithMean = TRUE) # `with intercept' CIs
