@@ -285,9 +285,11 @@ wind_renamed_func <- function(df){
 BC_metrics <- wind_renamed_func(df = BC_metrics)
 
 # https://davidcarslaw.github.io/openair/reference/polarPlot.html
-
-polarPlot(BC_metrics, pollutant = "total_count", statistic =  "nwr",  kernel = "gaussian")
-polarPlot(BC_metrics, pollutant = "mean_intensity", statistic =  "nwr",  kernel = "gaussian", force.positive = FALSE)
+BC_metrics_renamed <- BC_metrics %>% 
+  rename(ws = mean_speed,
+         wd = dir_wind)
+polarPlot(BC_metrics_renamed, pollutant = "total_count", statistic =  "nwr",  kernel = "gaussian")
+polarPlot(BC_metrics_renamed, pollutant = "mean_intensity", statistic =  "nwr",  kernel = "gaussian", force.positive = FALSE)
 
 ### Mean_intensity and wind speed
 BC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(dir_wind), data = BC_metrics, method = "REML")
