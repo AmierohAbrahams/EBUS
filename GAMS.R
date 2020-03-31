@@ -228,6 +228,7 @@ library('schoenberg')
 library(lubridate)
 library(tidyverse)
 library(ggpubr)
+library(openair)
 theme_set(theme_bw())
 
 ######## Loading Metrics
@@ -283,6 +284,11 @@ wind_renamed_func <- function(df){
 
 BC_metrics <- wind_renamed_func(df = BC_metrics)
 
+# https://davidcarslaw.github.io/openair/reference/polarPlot.html
+
+polarPlot(BC_metrics, pollutant = "total_count", statistic =  "nwr",  kernel = "gaussian")
+polarPlot(BC_metrics, pollutant = "mean_intensity", statistic =  "nwr",  kernel = "gaussian", force.positive = FALSE)
+
 ### Mean_intensity and wind speed
 BC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(dir_wind), data = BC_metrics, method = "REML")
 summary(BC_meanInt_wind_spd)
@@ -337,3 +343,5 @@ ggplot(tester,  aes(x = year, y = total_count)) +
   geom_line(aes(y = fit)) +
   facet_wrap(~season)
 theme_bw()
+
+view <- openair::mydata
