@@ -14,6 +14,24 @@ load("data/HC_metrics.RData")
 load("data/CC_metrics.RData")
 load("data/CalC_metrics.RData")
 
+# https://davidcarslaw.github.io/openair/reference/polarPlot.html
+
+wind_renamed_func <- function(df){
+  wind_renamed <- df %>% 
+    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
+    dplyr::rename(mean_speed = mean_speed) %>%
+    dplyr::rename(dir_wind = dir_wind) %>% 
+    filter(mean_speed > 0)
+}
+
+HC_metrics <- wind_renamed_func(df = HC_metrics)
+
+
+HC_metrics_renamed <- HC_metrics %>% 
+  rename(ws = mean_speed,
+         wd = dir_wind)
+polarPlot(HC_metrics_renamed, pollutant = "total_count", statistic =  "nwr",  kernel = "gaussian")
+polarPlot(HC_metrics_renamed, pollutant = "mean_intensity", statistic =  "nwr",  kernel = "gaussian", force.positive = FALSE)
 # Humboldt Current
 
 ### Mean_intensity and wind speed
@@ -71,6 +89,24 @@ ggplot(tester,  aes(x = year, y = total_count)) +
   facet_wrap(~season)
 theme_bw()
 #########################################################################################################################################
+
+
+wind_renamed_func <- function(df){
+  wind_renamed <- df %>% 
+    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
+    dplyr::rename(mean_speed = mean_speed) %>%
+    dplyr::rename(dir_wind = dir_wind) %>% 
+    filter(mean_speed > 0)
+}
+
+CC_metrics <- wind_renamed_func(df = CC_metrics)
+
+
+CC_metrics_renamed <- CC_metrics %>% 
+  rename(ws = mean_speed,
+         wd = dir_wind)
+polarPlot(CC_metrics_renamed, pollutant = "total_count", statistic =  "nwr",  kernel = "gaussian")
+polarPlot(CC_metrics_renamed, pollutant = "mean_intensity", statistic =  "nwr",  kernel = "gaussian", force.positive = FALSE)
 
 # Canary Current
 
@@ -131,7 +167,24 @@ theme_bw()
 #########################################################################################################################################
 
 
-# California Current
+wind_renamed_func <- function(df){
+  wind_renamed <- df %>% 
+    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
+    dplyr::rename(mean_speed = mean_speed) %>%
+    dplyr::rename(dir_wind = dir_wind) %>% 
+    filter(mean_speed > 0)
+}
+
+CalC_metrics <- wind_renamed_func(df = CalC_metrics)
+
+
+CalC_metrics_renamed <- CalC_metrics %>% 
+  rename(ws = mean_speed,
+         wd = dir_wind)
+polarPlot(CalC_metrics_renamed, pollutant = "total_count", statistic =  "nwr",  kernel = "gaussian")
+polarPlot(CC_metrics_renamed, pollutant = "mean_intensity", statistic =  "nwr",  kernel = "gaussian", force.positive = FALSE)
+
+ # California Current
 
 ### Mean_intensity and wind speed
 CalC_meanInt_wind_spd<- gam(mean_intensity ~ s(mean_speed) + s(mean_wind), data = CalC_metrics, method = "REML")
@@ -187,6 +240,25 @@ ggplot(tester,  aes(x = year, y = total_count)) +
   geom_line(aes(y = fit)) +
   facet_wrap(~season)
 theme_bw()
+
+
+library(ggpubr)
+
+combined_total <- ggarrange(a,b,c,d)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
