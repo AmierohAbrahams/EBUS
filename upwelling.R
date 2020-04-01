@@ -70,6 +70,20 @@ load("data_complete/HC_final.RData")
 load("data_complete/CC_final.RData")
 load("data_complete/CalC_final.RData")
 
+
+
+wind_renamed_func <- function(df){
+  wind_renamed <- df %>% 
+    mutate(dir_wind = ifelse(wind < 0, wind+360, wind)) %>%
+   # dplyr::rename(mean_speed = mean_speed) %>%
+    dplyr::rename(dir_wind = dir_wind) #%>% 
+    #filter(mean_speed > 0)
+}
+
+BC_final <- wind_renamed_func(df = BC_final)
+HC_final <- wind_renamed_func(df = HC_final)
+CC_final <- wind_renamed_func(df = CC_final)
+CalC_final <- wind_renamed_func(df = CalC_final)
 # BC_angle <- coastR::transects(test1, spread = 30)
 # CC_angle <- coastR::transects(CC_final, spread = 30)
 # CalC_angle <- coastR::transects(CalC_final, spread = 30)
@@ -93,7 +107,7 @@ load("data_complete/CalC_final.RData")
 
 upwelling_func <- function(df){
   UI<- df %>%  
-    mutate(ui = speed * (cos(wind - coast_angle))) %>%
+    mutate(ui = speed * (cos(dir_wind - coast_angle))) %>%
     drop_na 
 }
 
@@ -116,7 +130,7 @@ load("data_complete/UI_CalC.RData")
 
 UI_trim <- function(df){
 UI_trim <- df %>% 
-  select(date,speed,wind,coast_angle,ui) %>% # Removed lat and lon
+  select(date,speed,dir_wind,coast_angle,ui) %>% # Removed lat and lon
   rename(t = date) %>% 
   rename(temp= ui)
 }
@@ -167,13 +181,13 @@ load("data_complete/CalC_final.RData")
 
 
 # Calculate the upwelling event metrics
-upwell_base_CC <- CC_final %>% 
+upwell_base_CalC <- CalC_final %>% 
   dplyr::rename(t = date) %>% 
   nest() %>% 
   mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2011-12-31"))) %>%
   select(-data) %>% 
   unnest(cols = clim) %>%
-  left_join(CC_exceed, by = c("t")) %>%
+  left_join(CalC_exceed, by = c("t")) %>%
   filter(!is.na(exceedance)) %>%
   nest() %>% 
   mutate(exceed = purrr::map(data, detect_event_custom)) %>% 
@@ -249,7 +263,7 @@ load("~/Documents/EBUS/data_complete/upwell_season_HC.RData")
 wind_speed_func <- function(df){
 BC_final_test <- df %>% 
   rename(date_start = date) %>% 
-  select(date_start, speed,wind)
+  select(date_start, speed,dir_wind)
 }
 
 BC_final_test = wind_speed_func(df = BC_final)
@@ -409,8 +423,8 @@ CalC_speed <- mean_speed(upwell_season_CalC)
 mean_wind <- function(df) {
   wind_direct <- df %>%
     dplyr::group_by(year, season) %>%
-    dplyr::summarise(y = mean(wind, na.rm = TRUE)) %>% 
-    rename(mean_wind = y) 
+    dplyr::summarise(y = mean(dir_wind, na.rm = TRUE)) %>% 
+    rename(dir_wind = y) 
 }
 
 BC_wind<- mean_wind(upwell_season_BC)
@@ -419,16 +433,16 @@ CC_wind<- mean_wind(upwell_season_CC)
 CalC_wind <- mean_wind(upwell_season_CalC)
 
 BC_metrics <- cbind(BC_cumInt,BC_MeanDur,BC_MeanInt, BC_MeanOns,BC_totalCntFun, BC_speed,BC_wind) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, dir_wind)
 
 HC_metrics <- cbind(HC_cumInt,HC_MeanDur,HC_MeanInt, HC_MeanOns,HC_totalCntFun,HC_speed,HC_wind) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, dir_wind)
 
 CC_metrics <- cbind(CC_cumInt,CC_MeanDur,CC_MeanInt, CC_MeanOns,CC_totalCntFun, CC_speed,CC_wind) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, dir_wind)
 
 CalC_metrics <- cbind(CalC_cumInt,CalC_MeanDur,CalC_MeanInt, CalC_MeanOns,CalC_totalCntFun, CalC_speed, CalC_wind) %>% 
-  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, mean_wind)
+  select(year,season,cum_intensity,mean_dur,mean_intensity,mean_ons,total_count, mean_speed, dir_wind)
 
 
 save(BC_metrics, file = "data/BC_metrics.RData")

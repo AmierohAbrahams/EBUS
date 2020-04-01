@@ -315,7 +315,7 @@ ggplot(tester,  aes(x = year, y = mean_intensity)) +
   geom_point(aes(y = fit)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), colour = NA, alpha = 0.4) +
   geom_line(aes(y = fit)) +
-  facet_wrap(~season)
+  facet_wrap(~season) +
 theme_bw()
 
 ####Total count and wind direction
@@ -343,7 +343,5 @@ ggplot(tester,  aes(x = year, y = total_count)) +
   geom_point(aes(y = fit)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), colour = NA, alpha = 0.4) +
   geom_line(aes(y = fit)) +
-  facet_wrap(~season)
+  facet_wrap(~season)+
 theme_bw()
-
-view <- openair::mydata
