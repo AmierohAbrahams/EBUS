@@ -16,17 +16,6 @@ load("data/CalC_metrics.RData")
 
 # https://davidcarslaw.github.io/openair/reference/polarPlot.html
 
-wind_renamed_func <- function(df){
-  wind_renamed <- df %>% 
-    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
-    dplyr::rename(mean_speed = mean_speed) %>%
-    dplyr::rename(dir_wind = dir_wind) %>% 
-    filter(mean_speed > 0)
-}
-
-HC_metrics <- wind_renamed_func(df = HC_metrics)
-
-
 HC_metrics_renamed <- HC_metrics %>% 
   rename(ws = mean_speed,
          wd = dir_wind)
@@ -89,18 +78,6 @@ ggplot(tester,  aes(x = year, y = total_count)) +
   facet_wrap(~season)
 theme_bw()
 #########################################################################################################################################
-
-
-wind_renamed_func <- function(df){
-  wind_renamed <- df %>% 
-    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
-    dplyr::rename(mean_speed = mean_speed) %>%
-    dplyr::rename(dir_wind = dir_wind) %>% 
-    filter(mean_speed > 0)
-}
-
-CC_metrics <- wind_renamed_func(df = CC_metrics)
-
 
 CC_metrics_renamed <- CC_metrics %>% 
   rename(ws = mean_speed,
@@ -165,18 +142,6 @@ ggplot(tester,  aes(x = year, y = total_count)) +
   facet_wrap(~season)
 theme_bw()
 #########################################################################################################################################
-
-
-wind_renamed_func <- function(df){
-  wind_renamed <- df %>% 
-    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
-    dplyr::rename(mean_speed = mean_speed) %>%
-    dplyr::rename(dir_wind = dir_wind) %>% 
-    filter(mean_speed > 0)
-}
-
-CalC_metrics <- wind_renamed_func(df = CalC_metrics)
-
 
 CalC_metrics_renamed <- CalC_metrics %>% 
   rename(ws = mean_speed,

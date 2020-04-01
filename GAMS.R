@@ -15,11 +15,11 @@ load("data/HC_metrics.RData")
 load("data/CC_metrics.RData")
 load("data/CalC_metrics.RData")
 
-
-load("data/upwell_season_BC.RData")
-load("data/upwell_season_CC.RData")
-load("data/upwell_season_CalC.RData")
-load("data/upwell_season_HC.RData")
+# 
+# load("data/upwell_season_BC.RData")
+# load("data/upwell_season_CC.RData")
+# load("data/upwell_season_CalC.RData")
+# load("data/upwell_season_HC.RData")
 
 BC <- gam(cum_intensity ~ s(year), data = df, method = "REML")
 summary(BC)
@@ -273,17 +273,6 @@ ggplot(combined_metrics, aes(x = year, y = mean_intensity, colour = current)) +
   facet_wrap(~season)
 
 # Benguela Current
-
-wind_renamed_func <- function(df){
-  wind_renamed <- df %>% 
-    mutate(dir_wind = ifelse(mean_wind < 0, mean_wind+360, mean_wind)) %>%
-    dplyr::rename(mean_speed = mean_speed) %>%
-    dplyr::rename(dir_wind = dir_wind) %>% 
-    filter(mean_speed > 0)
-}
-
-BC_metrics <- wind_renamed_func(df = BC_metrics)
-
 # https://davidcarslaw.github.io/openair/reference/polarPlot.html
 BC_metrics_renamed <- BC_metrics %>% 
   rename(ws = mean_speed,
