@@ -116,17 +116,29 @@ UI_BC <- upwelling_func(df= BC_final)
 UI_HC <- upwelling_func(df= HC_final)
 UI_CC <- upwelling_func(df= CC_final)
 UI_CalC <- upwelling_func(df= CalC_final)
+ 
+# save(UI_BC, file = "data_complete/UI_BC.RData")
+# save(UI_HC, file = "data_complete/UI_HC.RData")
+# save(UI_CC, file = "data_complete/UI_CC.RData")
+# save(UI_CalC, file = "data_complete/UI_CalC.RData")
 
-save(UI_BC, file = "data_complete/UI_BC.RData")
-save(UI_HC, file = "data_complete/UI_HC.RData")
-save(UI_CC, file = "data_complete/UI_CC.RData")
-save(UI_CalC, file = "data_complete/UI_CalC.RData")
+# save(UI_BC, file = "data_wind/UI_BC.RData")
+# save(UI_HC, file = "data_wind/UI_HC.RData")
+# save(UI_CC, file = "data_wind/UI_CC.RData")
+# save(UI_CalC, file = "data_wind/UI_CalC.RData")
 ############################################################
+#
+# load("data_complete/UI_BC.RData") 
+# load("data_complete/UI_HC.RData") 
+# load("data_complete/UI_CC.RData") 
+# load("data_complete/UI_CalC.RData") 
 
-load("data_complete/UI_BC.RData") 
-load("data_complete/UI_HC.RData") 
-load("data_complete/UI_CC.RData") 
-load("data_complete/UI_CalC.RData") 
+load("data_wind/UI_BC.RData") 
+load("data_wind/UI_HC.RData") 
+load("data_wind/UI_CC.RData") 
+load("data_wind/UI_CalC.RData")
+
+
 
 UI_trim <- function(df){
 UI_trim <- df %>% 
@@ -163,21 +175,20 @@ CC_exceed <- exceed_func(df = CC_UI_trim)
 CalC_exceed <- exceed_func(df = CalC_UI_trim)
 
 
-save(BC_exceed, file = "data_complete/BC_exceed.RData")
-save(HC_exceed, file = "data_complete/HC_exceed.RData")
-save(CC_exceed, file = "data_complete/CC_exceed.RData")
-save(CalC_exceed, file = "data_complete/CalC_exceed.RData")
+# save(BC_exceed, file = "data_complete/BC_exceed.RData")
+# save(HC_exceed, file = "data_complete/HC_exceed.RData")
+# save(CC_exceed, file = "data_complete/CC_exceed.RData")
+# save(CalC_exceed, file = "data_complete/CalC_exceed.RData")
+
+# save(BC_exceed, file = "data_wind/BC_exceed.RData")
+# save(HC_exceed, file = "data_wind/HC_exceed.RData")
+# save(CC_exceed, file = "data_wind/CC_exceed.RData")
+# save(CalC_exceed, file = "data_wind/CalC_exceed.RData")
 
 detect_event_custom <- function(df){
   res <- detect_event(df, threshClim2 = df$exceedance, minDuration = 3, coldSpells = T)
   return(res)
 }
-
-
-load("data_complete/BC_final.RData")
-load("data_complete/HC_final.RData")
-load("data_complete/CC_final.RData")
-load("data_complete/CalC_final.RData")
 
 
 # Calculate the upwelling event metrics
@@ -201,6 +212,12 @@ save(upwell_base_BC, file = "data_complete/upwell_base_BC.RData")
 save(upwell_base_HC, file = "data_complete/upwell_base_HC.RData")
 save(upwell_base_CC, file = "data_complete/upwell_base_CC.RData")
 save(upwell_base_CalC, file = "data_complete/upwell_base_CalC.RData")
+
+
+save(upwell_base_BC, file = "data_wind/upwell_base_BC.RData")
+save(upwell_base_HC, file = "data_wind/upwell_base_HC.RData")
+save(upwell_base_CC, file = "data_wind/upwell_base_CC.RData")
+save(upwell_base_CalC, file = "data_wind/upwell_base_CalC.RData")
 
 #############################################################
 library(tidyverse)
@@ -233,8 +250,8 @@ seasons_func <- function(df){
 
 upwell_season_BC <- seasons_func(df = upwell_prep_BC)
 upwell_season_HC <- seasons_func(df = upwell_prep_HC)
-save(upwell_season_BC, file = "data_complete/upwell_season_BC.RData")
-save(upwell_season_HC, file = "data_complete/upwell_season_HC.RData")
+save(upwell_season_BC, file = "data_wind/upwell_season_BC.RData")
+save(upwell_season_HC, file = "data_wind/upwell_season_HC.RData")
 ####################### Northern Hemisphere
 seasons_func <- function(df){
   seasons <- df %>% 
@@ -248,14 +265,14 @@ seasons_func <- function(df){
 
 upwell_season_CC <- seasons_func(df = upwell_prep_CC)
 upwell_season_CalC <- seasons_func(df = upwell_prep_CalC)
-save(upwell_season_CC, file = "data_complete/upwell_season_CC.RData")
-save(upwell_season_CalC, file = "data_complete/upwell_season_CalC.RData")
+save(upwell_season_CC, file = "data_wind/upwell_season_CC.RData")
+save(upwell_season_CalC, file = "data_wind/upwell_season_CalC.RData")
 
 
-load("~/Documents/EBUS/data_complete/upwell_season_BC.RData")
-load("~/Documents/EBUS/data_complete/upwell_season_CC.RData")
-load("~/Documents/EBUS/data_complete/upwell_season_CalC.RData")
-load("~/Documents/EBUS/data_complete/upwell_season_HC.RData")
+load("~/Documents/EBUS/data_wind/upwell_season_BC.RData")
+load("~/Documents/EBUS/data_wind/upwell_season_CC.RData")
+load("~/Documents/EBUS/data_wind/upwell_season_CalC.RData")
+load("~/Documents/EBUS/data_wind/upwell_season_HC.RData")
 
 ### Adding wind speed and direction to the metrics
 
