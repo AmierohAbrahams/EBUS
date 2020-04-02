@@ -334,3 +334,4 @@ ggplot(tester,  aes(x = year, y = total_count)) +
   geom_line(aes(y = fit)) +
   facet_wrap(~season)+
 theme_bw()
+

@@ -207,12 +207,6 @@ ggplot(tester,  aes(x = year, y = total_count)) +
 theme_bw()
 
 
-library(ggpubr)
-
-combined_total <- ggarrange(a,b,c,d)
-
-
-
 
 
 
