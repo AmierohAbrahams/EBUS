@@ -143,11 +143,6 @@ ggplot(tester,  aes(x = year, y = total_count)) +
 theme_bw()
 #########################################################################################################################################
 
-CalC_metrics_renamed <- CalC_metrics %>% 
-  rename(ws = mean_speed,
-         wd = dir_wind)
-polarPlot(CalC_metrics_renamed, pollutant = "total_count", statistic =  "nwr",  kernel = "gaussian")
-polarPlot(CC_metrics_renamed, pollutant = "mean_intensity", statistic =  "nwr",  kernel = "gaussian", force.positive = FALSE)
 
  # California Current
 
