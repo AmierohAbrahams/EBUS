@@ -38,17 +38,5 @@ ggplot(data = BC_metrics, aes(x = year, y = total_count))+
   geom_smooth(method = "lm") +
   facet_wrap(~season)
 
-
-
 test <- lm(total_count ~ season *year, data = BC_metrics)
 summary(test)
-
-
-
-BC_metrics_chi1 <- BC_metrics %>% 
-  select(year,season,total_count)
-
-write_csv(BC_metrics_chi1, path = "BC_metrics_chi1.csv")
-
-chisq.test(BC_metrics$year,BC_metrics$season,BC_metrics$total_count )
-chisq.test(BC_metrics$year,BC_metrics$season,BC_metrics$mean_intensity)
