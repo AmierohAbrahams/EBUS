@@ -49,3 +49,52 @@ polarPlot(CalC_metrics_renamed, pollutant = "mean_intensity", statistic =  "nwr"
 
 # test <- openair::mydata
 # polarPlot(mydata, pollutant = "so2", type = "season", main = "polarPlot of so2")
+
+
+# ANOVA anlayses
+
+options(scipen=999) # Forces R to not use exponential notation
+
+anova_func <- function(df){
+  currents_aov <- aov(dir_wind ~ mean_intensity * year * season, data = df)
+  return(currents_aov)
+}
+anova_BC <- anova_func(df = BC_metrics)
+summary(anova_BC)
+anova_HC <- anova_func(df = HC_metrics)
+summary(anova_HC)
+anova_CC <- anova_func(df = CC_metrics)
+summary(anova_CC)
+anova_CalC <- anova_func(df = CalC_metrics)
+summary(anova_CalC)
+
+
+anova_func_2 <- function(df){
+  currents_aov <- aov(mean_speed ~ mean_intensity * year * season, data = df)
+  return(currents_aov)
+}
+anova_BC_sp <- anova_func_2(df = BC_metrics)
+summary(anova_BC_sp)
+anova_HC_sp <- anova_func_2(df = HC_metrics)
+summary(anova_HC_sp)
+anova_CC_sp <- anova_func_2(df = CC_metrics)
+summary(anova_CC_sp)
+anova_CalC_sp <- anova_func_2(df = CalC_metrics)
+summary(anova_CalC_sp)
+
+anova_func <- function(df){
+  currents_aov <- aov(mean_dur ~ total_count * year * season, data = df)
+  return(currents_aov)
+}
+anova_BC_dur <- anova_func(df = BC_metrics)
+summary(anova_BC_dur)
+anova_HC_dur<- anova_func(df = HC_metrics)
+summary(anova_HC_dur)
+anova_CC_dur <- anova_func(df = CC_metrics)
+summary(anova_CC_dur)
+anova_CalC_dur <- anova_func(df = CalC_metrics)
+summary(anova_CalC_dur)
+
+
+
+
