@@ -56,7 +56,7 @@ polarPlot(CalC_metrics_renamed, pollutant = "mean_intensity", statistic =  "nwr"
 options(scipen=999) # Forces R to not use exponential notation
 
 anova_func <- function(df){
-  currents_aov <- aov(dir_wind ~ mean_intensity * year * season, data = df)
+  currents_aov <- aov(dir_wind ~ mean_intensity * year, data = df)
   return(currents_aov)
 }
 anova_BC <- anova_func(df = BC_metrics)
@@ -70,7 +70,7 @@ summary(anova_CalC)
 
 
 anova_func_2 <- function(df){
-  currents_aov <- aov(mean_speed ~ mean_intensity * year * season, data = df)
+  currents_aov <- aov(mean_intensity ~ mean_dur * year, data = df)
   return(currents_aov)
 }
 anova_BC_sp <- anova_func_2(df = BC_metrics)
@@ -83,7 +83,7 @@ anova_CalC_sp <- anova_func_2(df = CalC_metrics)
 summary(anova_CalC_sp)
 
 anova_func <- function(df){
-  currents_aov <- aov(mean_dur ~ total_count * year * season, data = df)
+  currents_aov <- aov(mean_dur ~ total_count * year, data = df)
   return(currents_aov)
 }
 anova_BC_dur <- anova_func(df = BC_metrics)
