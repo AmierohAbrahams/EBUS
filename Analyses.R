@@ -120,10 +120,10 @@ lm_coeff <- function(df){
 # Calculate all of the linear models
 lm_metrics <- mertrics_combined %>% 
   ungroup() %>% 
-  dplyr::select(-c(speed:index_end), -c(date:season)) %>% 
+  dplyr::select(-c(speed:index_end), -c(date:year)) %>% 
   pivot_longer(cols = c(duration, intensity_mean:rate_decline), 
                names_to = "var", values_to = "val") %>% 
-  group_by(current, var) %>% 
+  group_by(current, season, var) %>% 
   nest() %>% 
   mutate(slope = purrr::map(data, lm_coeff)) %>% 
   dplyr::select(-data) %>% 
@@ -134,7 +134,7 @@ lm_metrics <- mertrics_combined %>%
 
 # Cast the results wide for easier use with ANOVA
 lm_metrics_wide <- pivot_wider(lm_metrics, 
-                               id_cols = current, 
+                               id_cols = current:season, 
                                names_from = var, values_from = slope)
 
 
@@ -144,7 +144,7 @@ lm_metrics_wide <- pivot_wider(lm_metrics,
 # I suppose the arguments could be made that one is not measuring lon term change, 
 # but rather than the data products should show reasonable agreement for events detected
 # within any gicen year.
-summary(aov(duration ~ site + product + distance, data = lm_metrics_wide))
-summary(aov(intensity_mean ~ site + product + distance, data = lm_metrics_wide))
-summary(aov(intensity_max ~ site + product + distance, data = lm_metrics_wide))
-summary(aov(intensity_cumulative ~ site + product + distance, data = lm_metrics_wide))
+summary(aov(duration ~ current + season, data = lm_metrics_wide))
+summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
+summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
+summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
