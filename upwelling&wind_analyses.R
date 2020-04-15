@@ -15,7 +15,8 @@ library(coastR)
 load("data_complete/BC_complete.RData")
 
 BC_complete <- BC_complete %>% 
-  rename(speed = spd)
+  rename(speed = spd) %>% 
+  mutate(site = "BC")
 # 
 # HC_complete <- HC_complete %>% 
 #   mutate(lon = lon - 360)
@@ -68,7 +69,7 @@ BC_final <- wind_renamed_func(df = BC_final)
 
 # Code to obtain the angle from the coastline
 
-BC <- coastR::transects(BC_final, spread = 30)
+BC_transect <- coastR::transects(BC_final, spread = 30)
 
 # Determining the upwelling index
 upwelling_func <- function(df){
@@ -125,8 +126,42 @@ upwell_base_BC <- BC_final %>%
   # filter(row_number() %% 2 == 1) %>% # Select daily values
   unnest(cols = exceed)
 
-save(upwell_base_BC, file = "data_complete/upwell_base_BC.RData")
 
+#############################################################################################################################################################
 
+#### Given all this should i just maybe take it at a distance maybe 10km from the coastline?
+# Why 10km and why not 5km? Because of the resolution of the data?
 
+#Creating the transects
+BC_trans <- transects(BC_complete)
+
+transect.pixel <- function(site, distances){
+  # Extract coordinates
+  coords <- data.frame(lon = site$lon, lat = site$lat)
+  # Find lon/ lats every X metres 
+  pixels <- data.frame()
+  for(i in 1:length(distances)){
+    coords2 <- as.data.frame(destPoint(p = coords, b = site$heading, d = distances[i]))
+    sitesIdx <- knnx.index(BC_complete[,1:2],as.matrix(coords2), k = 1)
+    bathy1 <- data.frame(site = site$site,
+                         heading = site$heading, 
+                         distance = distances[i])
+    pixels <- rbind(pixels, bathy1)
+    coords <- coords2
+  }
+  if(nrow(pixels) < 1){
+    pixels <- data.frame(site, depth = NA)
+  }else{
+    pixels <- pixels
+  }
+  return(pixels)
+}
+
+# Pixel points
+site_pixels <- data.frame()
+for(i in 1:length(BC_complete$site)){
+  site <- BC_trans[i,]
+  site_pixel <- transect.pixel(site, c(10000))
+  site_pixels <- rbind(site_pixels, site_pixel)
+}
 
