@@ -61,7 +61,7 @@ CalC_final <- wind_renamed_func(df = CalC_final)
 
 
 # This works well running the heatwaveR package however, the upwelling index formula is dependant on the angel from the coastline,
-# given that the lats and lon and now averagedd I will just have one angle from the coastline?
+# given that the lats and lon and now averaged I will just have one angle from the coastline?
 
 # Code to obtain the angle from the coastline
 
@@ -88,7 +88,7 @@ BC_UI_trim <- UI_trim(df = UI_BC)
 exceed_func <- function(df){ 
   df_upwell <- df %>%
     nest() %>% 
-    mutate(clim = purrr::map(data, ts2clm, climatologyPeriod = c("1981-09-01", "2012-12-29")),
+    mutate(clim = purrr::map(data, ts2clm, climatologyPeriod = c("1981-09-01", "2012-12-31")),
            exceed = purrr::map(clim, exceedance, minDuration = 1, threshold = 1)) %>%  
     select(-data, -clim) %>% 
     unnest() %>%
