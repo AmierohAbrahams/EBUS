@@ -30,7 +30,7 @@ bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
 
 # Setting path
 nc.dir <- "/home/amieroh/Documents/Data/Datasets/AVHRR/OISST"
-csv.dir <- "/home/amieroh/Documents/spatial"
+csv.dir <- "/home/amieroh/Documents/Data/Datasets/AVHRR/spatial" # Also stored on my harddrive
 
 read_nc <- function(ncFile, location = location, csv.dir = csv.dir) {
   coords <- bbox[,location]
