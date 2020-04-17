@@ -18,8 +18,9 @@ CC_complete <- CC_complete %>%
 CalC_complete <- CalC_complete %>%
   mutate(lon = lon - 360)
 
-BC_final <- BC_final %>% 
-  mutate(current = "BC")
+BC_complete <- BC_complete %>% 
+  rename(speed = spd) %>% 
+  mutate(site = "BC")
 HC_final <- HC_final %>% 
   mutate(current = "HC")
 CC_final <- BC_final %>% 
@@ -30,12 +31,12 @@ CalC_final <- CalC_final %>%
 combine_currents <- rbind(BC_final,HC_final,CC_final,CalC_final)
 
 wind_renamed_func <- function(df){    # This bit of code is done to get rid of the negative values
-  wind_renamed <- df %>% 
-    mutate(wind = ifelse(wind < 0, wind+360, wind)) %>%
-    dplyr::rename(spd = speed) %>%
-    dplyr::rename(dir = wind) %>% 
-    filter(spd > 0)
-}
+    wind_renamed <- df %>% 
+      mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
+      dplyr::rename(spd = speed) %>%
+      dplyr::rename(dir = wind_dir) %>% 
+      filter(spd > 0)
+  }
 
 complete_wind <- wind_renamed_func(complete_wind)
 

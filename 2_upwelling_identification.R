@@ -17,7 +17,6 @@ load("data_complete/BC_complete.RData")
 BC_complete <- BC_complete %>% 
   rename(speed = spd) %>% 
   mutate(site = "BC")
-
 HC_complete <- HC_complete %>%
   mutate(lon = lon - 360)
 CC_complete <- CC_complete %>%
@@ -48,10 +47,10 @@ final_dataset <- function(df){
 BC_final <- final_dataset(df = BC_complete)
 
 wind_renamed_func <- function(df){
-  wind_renamed <- df %>%
-    mutate(wind = ifelse(wind < 0, wind+360, wind)) %>%
-    #dplyr::rename(spd = speed) %>%
-    dplyr::rename(dir_wind = wind) %>%
+  wind_renamed <- df %>% 
+    mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
+    dplyr::rename(spd = speed) %>%
+    dplyr::rename(dir = wind_dir) %>% 
     filter(spd > 0)
 }
 
