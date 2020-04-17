@@ -61,8 +61,8 @@ CC_final <- wind_renamed_func(df = CC_final)
 CalC_final <- wind_renamed_func(df = CalC_final)
 
 
-# Thiw works well running the heatwaveR package however, the upwelling index formula is dependant on the angel from the coastline,
-# given that the lats and lon and now aeveraged I will just have one angle from the coastline?
+# This works well running the heatwaveR package however, the upwelling index formula is dependant on the angel from the coastline,
+# given that the lats and lon and now averagedd I will just have one angle from the coastline?
 
 # Code to obtain the angle from the coastline
 
@@ -125,7 +125,7 @@ upwell_base_BC <- BC_final %>%
 
 
 #############################################################################################################################################
-#### Given all this should i just maybe take it at a distance maybe 10km from the coastline?
+#### Given all this should I just maybe take it at a distance maybe 10km from the coastline?
 # Why 10km and why not 5km? Because of the resolution of the data?
 
 #Creating the transects
