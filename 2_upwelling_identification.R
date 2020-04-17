@@ -49,8 +49,8 @@ BC_final <- final_dataset(df = BC_complete)
 wind_renamed_func <- function(df){
   wind_renamed <- df %>% 
     mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
-    dplyr::rename(spd = speed) %>%
-    dplyr::rename(dir = wind_dir) %>% 
+    dplyr::rename(wind_spd = speed) %>%
+    dplyr::rename(wind_dir = wind_dir) %>% 
     filter(spd > 0)
 }
 
@@ -70,7 +70,7 @@ BC_transect <- coastR::transects(BC_final, spread = 30)
 # Determining the upwelling index
 upwelling_func <- function(df){
   UI<- df %>%  
-    mutate(ui = speed * (cos(dir_wind - coast_angle))) %>%
+    mutate(ui = wind_spd * (cos(wind_dir - coast_angle))) %>%
     drop_na 
 }
 UI_BC <- upwelling_func(df= BC_final)
@@ -78,7 +78,7 @@ UI_BC <- upwelling_func(df= BC_final)
 # This upwelling index is later used in this formula in order to obtain the upwelling metrics
 UI_trim <- function(df){
   UI_trim <- df %>% 
-    select(date,speed,dir_wind,coast_angle,ui) %>% # Removed lat and lon
+    select(date,wind_spd,wind_dir,coast_angle,ui) %>% # Removed lat and lon
     rename(t = date) %>% 
     rename(temp= ui)
 }

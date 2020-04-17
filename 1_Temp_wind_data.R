@@ -98,6 +98,8 @@ load("data_complete/CC_complete.RData")
 load("data_complete/BC_complete.RData")
 load("data_complete/HC_complete.RData")
 
+BC_complete <- BC_complete %>% 
+  rename(speed = spd) 
 HC_complete <- HC_complete %>%
   mutate(lon = lon - 360)
 CC_complete <- CC_complete %>%
@@ -110,12 +112,11 @@ CalC_complete <- CalC_complete %>%
 wind_renamed_func <- function(df){
   wind_renamed <- df %>% 
     mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
-    dplyr::rename(spd = speed) %>%
-    dplyr::rename(dir = wind_dir) %>% 
+    dplyr::rename(wind_spd = speed) %>%
+    dplyr::rename(wind_dir = wind_dir) %>% 
     filter(spd > 0)
 }
-BC_complete <- BC_complete %>% 
-  rename(speed = spd)
+
 BC_final<- wind_renamed_func(BC_complete)
 HC_final<- wind_renamed_func(HC_complete)
 CC_final<- wind_renamed_func(CC_complete)
