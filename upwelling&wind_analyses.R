@@ -54,8 +54,8 @@ BC_final <- final_dataset(df = BC_complete)
 wind_renamed_func <- function(df){
   wind_renamed <- df %>%
     mutate(wind = ifelse(wind < 0, wind+360, wind)) %>%
-    dplyr::rename(spd = speed) %>%
-    dplyr::rename(dir = wind) %>%
+    #dplyr::rename(spd = speed) %>%
+    dplyr::rename(dir_wind = wind) %>%
     filter(spd > 0)
 }
 
