@@ -5,6 +5,7 @@ library(heatwaveR)
 library(FNN) 
 library(lubridate)
 library(coastR)
+library(geosphere)
 
 # The problem is that this is for each pixel
 # Then I decided to get the mean of all of the temperatures in a polygon region
@@ -56,7 +57,7 @@ wind_renamed_func <- function(df){
     mutate(wind = ifelse(wind < 0, wind+360, wind)) %>%
     #dplyr::rename(spd = speed) %>%
     dplyr::rename(dir_wind = wind) %>%
-    filter(spd > 0)
+    filter(speed > 0)
 }
 
 BC_final <- wind_renamed_func(df = BC_final)
@@ -64,8 +65,8 @@ BC_final <- wind_renamed_func(df = BC_final)
 # CC_final <- wind_renamed_func(df = CC_final)
 # CalC_final <- wind_renamed_func(df = CalC_final)
 
-# Thiw works well running the heatwaveR package however, the upwelling index formula is dependant on the angel from the coastline,
-# given that the lats and lon and now aeveraged I will just have one angle from the coastline?
+# This works well running the heatwaveR package however, the upwelling index formula is dependant on the angel from the coastline,
+# given that the lats and lon and now averaged I will just have one angle from the coastline?
 
 # Code to obtain the angle from the coastline
 
@@ -73,7 +74,7 @@ BC_transect <- coastR::transects(BC_final, spread = 30)
 
 # Determining the upwelling index
 upwelling_func <- function(df){
-  UI<- df %>%  
+  UI <- df %>%  
     mutate(ui = speed * (cos(dir_wind - coast_angle))) %>%
     drop_na 
 }
@@ -129,7 +130,7 @@ upwell_base_BC <- BC_final %>%
 
 #############################################################################################################################################################
 
-#### Given all this should i just maybe take it at a distance maybe 10km from the coastline?
+#### Given all this should I just maybe take it at a distance maybe 10km from the coastline?
 # Why 10km and why not 5km? Because of the resolution of the data?
 
 #Creating the transects
