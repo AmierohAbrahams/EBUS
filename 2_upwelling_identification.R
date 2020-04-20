@@ -67,7 +67,7 @@ rm(BC_complete, BC_temp); gc()
 # Determining the upwelling index per coastal pixel
 upwelling_func <- function(df){
   UI <- df %>%  
-    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)), # RWS: Please double check this
+    mutate(ui = wind_spd * (cos(wind_dir_to - coastal_angle)), # RWS: Please double check this
            ui_TF = ifelse(ui > 0, TRUE, FALSE)) #%>%
     # drop_na()
 }
@@ -103,3 +103,4 @@ BC_UI_metrics <- BC_UI %>%
 # Save
 save(BC_UI_metrics, file = "data_complete/BC_UI_metrics.RData")
 
+# RWS: NB: These results need to be thoroughly inspected as I'm not certain the UI is correct
