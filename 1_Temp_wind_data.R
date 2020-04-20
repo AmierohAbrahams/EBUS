@@ -58,6 +58,8 @@ BC_wind_fin <- BC_wind_fin %>%
 # Additionally a year and season column was created 
 # This was repeated for all EBUS
 
+BC_temp <- read_csv("data_complete/BC_temp.csv") # BC_temp created in the Data_extraction folder. Where I extract netCDFs to CSV
+colnames(BC_temp ) <- c("lon", "lat", "temp","date")
 
 match_func <- function(df){
   match <- BC_wind_fin  %>% 

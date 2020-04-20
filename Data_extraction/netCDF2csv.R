@@ -70,6 +70,10 @@ endDate <- str_sub(ncList[length(ncList)], start = 15, end = 22)
 # system.time(llply(ncList, read_nc, location = "CalC", csv.dir = csv.dir, .parallel = TRUE))
 # system.time(llply(ncList, read_nc, location = "HC", csv.dir = csv.dir, .parallel = TRUE))
 
+BC_temp <- BC-avhrr-only-v2.Document-Document.csv
+CC_temp <- CC-avhrr-only-v2.Document-Document.csv
+CalC_temp <- CalC-avhrr-only-v2.Document-Document.csv
+HC_temp <- HC-avhrr-only-v2.Document-Document.csv
 
 ################  ERA 5    ##################3
 # https://cds.climate.copernicus.eu/api-how-to#use-the-cds-api-client-for-data-access
