@@ -64,8 +64,9 @@ CalC_final <- wind_renamed_func(df = CalC_final)
 # given that the lats and lon and now averaged I will just have one angle from the coastline?
 
 # Code to obtain the angle from the coastline
-
 BC_transect <- coastR::transects(BC_final, spread = 30)
+BC_transect <- BC_transect %>% 
+  rename(coastal_angle = heading)
 
 # Determining the upwelling index
 upwelling_func <- function(df){
@@ -73,7 +74,7 @@ upwelling_func <- function(df){
     mutate(ui = wind_spd * (cos(wind_dir - coast_angle))) %>%
     drop_na 
 }
-UI_BC <- upwelling_func(df= BC_final)
+UI_BC <- upwelling_func(df= BC_transect)
 
 # This upwelling index is later used in this formula in order to obtain the upwelling metrics
 UI_trim <- function(df){

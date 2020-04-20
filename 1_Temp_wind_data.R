@@ -28,20 +28,24 @@
 library(tidyverse)
 library(lubridate)
 library(ggpubr)
+library(zoo)
 source("functions/theme.R")
 
 # Converting U and V wind variables to wind speed and direction
 # The wind data (u and v) for all EBUS are found in the folder "data_wind_uv"
 # This is repeated for the BC, HC, CC and CalC
 
-BC_vwind <- BC_vwind %>%
-  select(v_10)
-BC_wind <- cbind(BC_vwind,BC_wind)
-BC_wind_fin <- BC_wind %>% # This is a complete dataset of wind u and v variables for the Benguela current
-  select(lon,lat,date,u_10,v_10)
+# BC_vwind <- BC_vwind %>%
+#   select(v_10)
+# BC_wind <- cbind(BC_vwind,BC_wind)
+# BC_wind_fin <- BC_wind %>% # This is a complete dataset of wind u and v variables for the Benguela current
+#   select(lon,lat,date,u_10,v_10)
 
+load("~/Documents/EBUS/data_wind_uv/BC_wind_fin.RData") # The U and V wind variables downoaded from the ERA5
 
 # Wind speed
+BC_wind_fin <- BC_wind_fin %>% 
+  mutate(date = as.Date(date))
 BC_wind_fin$u_squared ='^'(BC_wind_fin$u,2)
 BC_wind_fin$v_squared ='^'(BC_wind_fin$v,2)
 BC_wind_fin <- BC_wind_fin %>%
@@ -49,9 +53,12 @@ BC_wind_fin <- BC_wind_fin %>%
 
 # Wind direction
 BC_wind_fin <- BC_wind_fin %>%
-  mutate(wind_dir_trig_to = atan2(u/speed, v/speed),
+  mutate(wind_dir_trig_to = atan2(u_10/speed, v_10/speed),
          wind_dir = wind_dir_trig_to * 180/pi)
 
+BC_wind_fin <- BC_wind_fin %>% 
+  mutate(lat =lat + 0.125,
+         lon = lon + 0.125)
 #####################################################################################################################################################################
 # The data being loaded here is the wind data and the temperature data. 
 # This data was matched by lat,lon and date
@@ -70,6 +77,11 @@ match_func <- function(df){
 
 BC_match <- match_func(df = BC_temp) # Matching the wind data with the 30yr time series OISST temperature data for the benguela current
 
+BC_match <- BC_match %>% 
+  dplyr::select(lat,lon,temp,date, speed, wind_dir) %>% 
+  rename(spd = speed)
+
+
 # Seasons for the souhern hemisphere
 seasons_func <- function(df){
   BC_seaons <- df %>% 
@@ -81,6 +93,8 @@ seasons_func <- function(df){
                                          ifelse(month %in% c("Sep", "Oct", "Nov"), "Spring","Error")))))
 }
 
+
+BC_complete <- seasons_func(df = BC_match)
 
 #Seasons for the Northern Hemisphere
 seasons_func <- function(df){
@@ -94,6 +108,9 @@ seasons_func <- function(df){
 }
 
 
+BC_complete <- seasons_func(BC_match)
+  
+
 # Below is the complete datasets for each of the EBUS with wind speed and wind direction variables
 load("data_complete/CalC_complete.RData")
 load("data_complete/CC_complete.RData")
@@ -102,12 +119,12 @@ load("data_complete/HC_complete.RData")
 
 BC_complete <- BC_complete %>% 
   rename(speed = spd) 
-HC_complete <- HC_complete %>%
-  mutate(lon = lon - 360)
-CC_complete <- CC_complete %>%
-  mutate(lon = lon - 360)
-CalC_complete <- CalC_complete %>%
-  mutate(lon = lon - 360)
+# HC_complete <- HC_complete %>%
+#   mutate(lon = lon - 360)
+# CC_complete <- CC_complete %>%
+#   mutate(lon = lon - 360)
+# CalC_complete <- CalC_complete %>%
+#   mutate(lon = lon - 360)
 
 # Wind should not have negative values hence this forumla was used
 
