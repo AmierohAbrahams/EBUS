@@ -71,10 +71,13 @@ BC_final <- final_dataset(df = BC_complete)
 
 # First it is necessary to find the coastal lon/lat coordinates for the EBUS
 
-
 BC_final_coords <- unique(BC_final[ ,c("lon", "lat")])
 
 BC_transect <- coastR::transects(BC_final, spread = 30) # RWS: This doesn't run as it needs the coordinates to be coastal.
+
+BC_transect <- BC_transect %>% 
+  rename(coastal_angle = heading)
+
 
 # Determining the upwelling index
 upwelling_func <- function(df){
@@ -82,7 +85,9 @@ upwelling_func <- function(df){
     mutate(ui = wind_spd * (cos(wind_dir - coast_angle))) %>%
     drop_na 
 }
-UI_BC <- upwelling_func(df = BC_final) # RWS: This doesn't run either, due to column names not matching.
+
+UI_BC <- upwelling_func(df = BC_transect)  # RWS: This doesn't run either, due to column names not matching.
+
 
 # This upwelling index is later used in this formula in order to obtain the upwelling metrics
 UI_trim <- function(df){
