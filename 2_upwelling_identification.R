@@ -8,7 +8,7 @@
 # 1: Setup environment ----------------------------------------------------
 
 # Loading Libraries
-library(circular)
+# library(circular)
 library(gridExtra)
 library(geosphere)
 library(tidyverse)
@@ -102,3 +102,4 @@ BC_UI_metrics <- BC_UI %>%
 
 # Save
 save(BC_UI_metrics, file = "data_complete/BC_UI_metrics.RData")
+
