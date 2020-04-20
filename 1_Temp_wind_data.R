@@ -28,7 +28,6 @@
 # Loading Libraries
 library(tidyverse)
 library(lubridate)
-library(ggpubr)
 library(fasttime)
 library(zoo)
 source("functions/theme.R")
@@ -48,7 +47,7 @@ source("functions/theme.R")
 load("data_wind_uv/BC_wind_fin.RData")
 BC_wind_fin <- BC_wind_fin %>% 
   mutate(date = as.Date(fastPOSIXct(date, tz = "GMT")),
-         lat = lat + 0.125,
+         lat = lat - 0.125,
          lon = lon + 0.125)
 
 # Calculate wind speed and direction
@@ -61,12 +60,13 @@ BC_wind_dir <- BC_wind_fin %>%
          wind_dir_from = round((270-(atan2(v_10, u_10)*(180/pi)))%%360),
          wind_dir_to = ifelse(wind_dir_from >= 180, wind_dir_from-180, wind_dir_from+180))
 save(BC_wind_dir, file = "data_wind_uv/BC_wind_dir.RData")
+rm(BC_wind_fin); gc()
 
 #####################################################################################################################################################################
 # The data being loaded here are the wind data and the temperature data. 
-# These data were matched by lat,lon and date
-# Additionally a year and season column was created 
-# This was repeated for all EBUS
+# These data are matched by lat, lon, and date
+# Additionally a year and season column is created 
+# This is repeated for all EBUS
 
 # Load temperature data
 BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
@@ -79,74 +79,38 @@ match_func <- function(temp_df, wind_df){
   return(match)
 }
 
-BC_match <- match_func(temp_df = BC_temp, wind_df = BC_wind_dir) # Matching the wind data with the 30yr time series OISST temperature data for the Benguela current
+# Matching the wind data with the 30yr time series OISST temperature data for the Benguela current
+BC_match <- match_func(temp_df = BC_temp, wind_df = BC_wind_dir) 
+rm(BC_wind_dir, BC_temp); gc()
 
 # Seasons for the southern hemisphere
 seasons_S_func <- function(df){
   df_seasons <- df %>% 
     mutate(month = month(date, abbr = T, label = T),
            year = year(date)) %>% 
-    mutate(season = ifelse(month %in% c("Dec", "Jan", "Feb"), "Summer",        
-                           ifelse(month %in% c("Mar", "Apr", "May"), "Autumn",
-                                  ifelse(month %in% c("Jun", "Jul", "Aug"), "Winter",
-                                         ifelse(month %in% c("Sep", "Oct", "Nov"), "Spring","Error")))))
+    mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Summer", 
+                              month %in% c("Mar", "Apr", "May") ~ "Autumn",
+                              month %in% c("Jun", "Jul", "Aug") ~ "Winter",
+                              month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
 }
 
-# RWS: These functions were named the same
+# RWS: These functions were named the same. Make sure not to do that.
 
 # Seasons for the Northern Hemisphere
 seasons_N_func <- function(df){
   df_seasons <- df %>% 
-    mutate(month = month(as.Date(as.character(date)), abbr = T, label = T),
+    mutate(month = month(date, abbr = T, label = T),
            year = year(date)) %>% 
-    mutate(season = ifelse(month %in% c("Dec", "Jan", "Feb"), "Winter",        
-                           ifelse(month %in% c("Mar", "Apr", "May"), "Spring",
-                                  ifelse(month %in% c("Jun", "Jul", "Aug"), "Summer",
-                                         ifelse(month %in% c("Sep", "Oct", "Nov"), "Autumn","Error")))))
+    mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Winter", 
+                              month %in% c("Mar", "Apr", "May") ~ "Spring",
+                              month %in% c("Jun", "Jul", "Aug") ~ "Summer",
+                              month %in% c("Sep", "Oct", "Nov") ~ "Autumn"))
 }
 
+# Add the seasons to the wind + temp dataframes
 BC_complete <- seasons_S_func(BC_match)
+rm(BC_match); gc()
 
-# Below is the complete datasets for each of the EBUS with wind speed and wind direction variables
-load("data_complete/CalC_complete.RData")
-load("data_complete/CC_complete.RData")
-load("data_complete/BC_complete.RData")
-load("data_complete/HC_complete.RData")
-
-BC_complete <- BC_complete %>% 
-  rename(speed = spd) 
-HC_complete <- HC_complete %>%
-  mutate(lon = lon - 360) # RWS: Why is it not necessary to change the name of the speed column for the other files?
-CC_complete <- CC_complete %>% # RWS: Please check that all of your code functions correctly.
-  mutate(lon = lon - 360)
-CalC_complete <- CalC_complete %>%
-  mutate(lon = lon - 360)
-
-# Wind should not have negative values hence this formula was used
-# RWS: This whole step in incorrect
-# wind_renamed_func <- function(df){
-#   wind_renamed <- df %>% 
-#     mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>% # RWS:  I'm not certain this is correct to do
-#     dplyr::rename(wind_spd = speed) %>%
-#     dplyr::rename(wind_dir = wind_dir) %>% 
-#     filter(wind_spd > 0)
-# }
-# 
-# BC_final <- wind_renamed_func(BC_complete)
-# HC_final <- wind_renamed_func(HC_complete)
-# CC_final <- wind_renamed_func(CC_complete)
-# CalC_final <- wind_renamed_func(CalC_complete)
-
-
-# save(BC_final, file = "data_complete/BC_final.RData")
-# save(HC_final, file = "data_complete/HC_final.RData")
-# save(CC_final, file = "data_complete/CC_final.RData")
-# save(CalC_final, file = "data_complete/CalC_final.RData")
-
-
-
-
-
-
-
+# Save
+save(BC_complete, file = "data_complete/BC_complete.RData")
 

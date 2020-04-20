@@ -1,136 +1,89 @@
+# 2_upwelling_identification.R
+# The purpose of this script is to...
+# The steps taken are:
+# 1: Setup environment
+# 2: Find the coastal pixels
+
+
+# 1: Setup environment ----------------------------------------------------
+
 # Loading Libraries
 library(circular)
-## devtools::install_github("robwschlegel/coastR")
 library(gridExtra)
 library(geosphere)
 library(tidyverse)
 library(heatwaveR)
+## devtools::install_github("robwschlegel/coastR")
 library(coastR)
+library(FNN)
 source("functions/theme.R")
 
+# Load data
+
 # Data loaded and created in "1_Temp_wind_data"
-load("data_complete/CC_complete.RData")
-load("data_complete/CalC_complete.RData")
-load("data_complete/HC_complete.RData")
+# load("data_complete/CC_complete.RData")
+# load("data_complete/CalC_complete.RData")
+# load("data_complete/HC_complete.RData")
 load("data_complete/BC_complete.RData")
 
-BC_complete <- BC_complete %>% 
-  rename(speed = spd) %>% 
-  mutate(site = "BC")
-HC_complete <- HC_complete %>% # RWS: Why is it not necessary to change the name of the speed column for the other files?
-  mutate(lon = lon - 360)
-CC_complete <- CC_complete %>%
-  mutate(lon = lon - 360)
-CalC_complete <- CalC_complete %>%
-  mutate(lon = lon - 360)
 
-# Now it was decided to get the mean values over the polygon region as the data above has values for each pixel 
+# 2: Find the coastal pixels ----------------------------------------------
 
-final_dataset <- function(df){
-  final <- df %>%
-    group_by(date) %>% 
-    summarise(temp = mean(temp),
-              speed = mean(speed), # change spd to speed
-              wind = mean(wind_dir), # RWS: This is not correct. The circular package must be used to find mean wind direction.
-              lat = mean(lat),
-              lon = mean(lon)) %>% 
-    # rename(temp = mean_temp, # RWS: There's no reason to rename the columns here.
-    #        speed = mean_speed, # RWS: You can choose the names when running summarise()
-    #        wind = mean_wind,
-    #        lat = mean_lat,
-    #        lon = mean_lon) %>% 
-    # RWS: I don't think this is correct. 
-    # This should have been fixed in script 1.
-    mutate(wind = ifelse(wind < 0, wind+360, wind)) 
-}
-# 
-# CC_final <- final_dataset(df = CC_complete)
-# HC_final <- final_dataset(df = HC_complete)
-# CalC_final <- final_dataset(df = CalC_complete)
-BC_final <- final_dataset(df = BC_complete)
+# RWS: NB: Figures need to be made for each step below to ensure that it is behaving as expected
 
-# Why not just incorporate this code into the previous function?
-# wind_renamed_func <- function(df){
-#   wind_renamed <- df %>% 
-#     mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>% # RWS: Please check if this is correct to do. 
-#     dplyr::rename(wind_spd = speed) %>%
-#     # dplyr::rename(wind_dir = wind_dir) %>%  # RWS: Why rename a column to the same name?
-#     filter(spd > 0)
-# }
+# Load the temperature data as the wind data has pixels over land
+BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 
-# BC_final <- wind_renamed_func(df = BC_final) # RWS: This is no longer necessary.
-# HC_final <- wind_renamed_func(df = HC_final)
-# CC_final <- wind_renamed_func(df = CC_final)
-# CalC_final <- wind_renamed_func(df = CalC_final)
+# Isolate the unique pixel coordinates
+BC_coords <- BC_temp %>% 
+  dplyr::select(lon, lat) %>% 
+  unique()
 
+# Take coastal coordinates from a global map
+BC_coastline <- fortify(maps::map(xlim = c(min(BC_coords$lon, na.rm = T), 
+                                           max(BC_coords$lon, na.rm = T)), 
+                                  ylim = c(min(BC_coords$lat, na.rm = T), 
+                                           max(BC_coords$lat, na.rm = T)), 
+                                  plot = F, interior = F, fill = T, lforce = "e", map = "world"))
 
-# This works well running the heatwaveR package however, the upwelling index formula is dependant on the angle from the coastline,
-# given that the lats and lon are now averaged I will just have one angle from the coastline?
+# Find which of the EBUS pixels match closest to the coastal pixels
+BC_coastal_index <- as.vector(knnx.index(as.matrix(BC_coords[, c("lon", "lat")]),
+                                         as.matrix(BC_coastline[ ,c("long", "lat")]), k = 1))
+BC_coastal_coords <- unique(BC_coords[BC_coastal_index,])
 
-# Code to obtain the angle from the coastline
+# Find the coastal angle for each point
+BC_transects <- transects(BC_coastal_coords, spread = 2) %>% 
+  dplyr::rename(coastal_angle = heading) %>% 
+  mutate(coastal_angle = round(coastal_angle))
 
-# First it is necessary to find the coastal lon/lat coordinates for the EBUS
+# Bind it all together
+BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>% 
+  left_join(BC_transects, by = c("lon", "lat"))
 
-BC_final_coords <- unique(BC_final[ ,c("lon", "lat")])
-
-BC_transect <- coastR::transects(BC_final, spread = 30) # RWS: This doesn't run as it needs the coordinates to be coastal.
-
-BC_transect <- BC_transect %>% 
-  rename(coastal_angle = heading)
-
-
-# Determining the upwelling index
+# Determining the upwelling index per coastal pixel
 upwelling_func <- function(df){
   UI <- df %>%  
-    mutate(ui = wind_spd * (cos(wind_dir - coast_angle))) %>%
-    drop_na 
+    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)),
+           ui_TF = ifelse(ui > 0, TRUE, FALSE)) #%>%
+    # drop_na()
 }
 
-UI_BC <- upwelling_func(df = BC_transect)  # RWS: This doesn't run either, due to column names not matching.
+BC_UI <- upwelling_func(df = BC_coastal)
 
-
-# This upwelling index is later used in this formula in order to obtain the upwelling metrics
-UI_trim <- function(df){
-  UI_trim <- df %>% 
-    select(date, wind_spd, wind_dir, coast_angle, ui) %>% # Removed lat and lon
-    rename(t = date) %>% 
-    rename(temp = ui)
-}
-
-BC_UI_trim <- UI_trim(df = UI_BC)
-
-exceed_func <- function(df){ 
-  df_upwell <- df %>%
-    nest() %>% 
-    mutate(clim = purrr::map(data, ts2clm, climatologyPeriod = c("1981-09-01", "2012-12-31")),
-           exceed = purrr::map(clim, exceedance, minDuration = 1, threshold = 1)) %>%  
-    select(-data, -clim) %>% 
-    unnest() %>%
-    filter(row_number() %% 2 == 1) %>%
-    unnest() %>% # creates a column for each variables
-    dplyr::rename(ui = temp) %>% # rename upwelling index vale to temp so that it could work with the function
-    select(t, ui, exceedance) # selecting only these variables
-}
-
-BC_exceed <- exceed_func(df = BC_UI_trim)
-
+# The custom function for detecting upwelling and extracting only the metrics
 detect_event_custom <- function(df){
-  res <- detect_event(df, threshClim2 = df$exceedance, minDuration = 3, coldSpells = T)
+  res <- detect_event(df, threshClim2 = df$ui_TF, minDuration = 1, coldSpells = T) # I thought the min duration was 1 day, not 3?
   return(res)
 }
 
 # Calculate the upwelling event metrics
-upwell_base_BC <- BC_final %>% 
+BC_upwell_base <- BC_coastal %>% 
   dplyr::rename(t = date) %>% 
+  group_by(lon, lat) %>% 
   nest() %>% 
-  mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2011-12-31"))) %>%
-  select(-data) %>% 
-  unnest(cols = clim) %>%
-  left_join(CalC_exceed, by = c("t")) %>%
-  filter(!is.na(exceedance)) %>%
-  nest() %>% 
-  mutate(exceed = purrr::map(data, detect_event_custom)) %>% 
-  select(-data) %>% 
+  mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2011-12-31")), 
+         exceed = purrr::map(clim, detect_event_custom))# %>%
+  select(-data) %>%
   unnest(cols = exceed) %>%
   filter(row_number() %% 2 == 0) %>% # Select event summary metrics
   # filter(row_number() %% 2 == 1) %>% # Select daily values
