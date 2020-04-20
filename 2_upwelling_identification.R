@@ -17,7 +17,7 @@ load("data_complete/BC_complete.RData")
 BC_complete <- BC_complete %>% 
   rename(speed = spd) %>% 
   mutate(site = "BC")
-HC_complete <- HC_complete %>%
+HC_complete <- HC_complete %>% # RWS: Why is it not necessary to change the name of the speed column for the other files?
   mutate(lon = lon - 360)
 CC_complete <- CC_complete %>%
   mutate(lon = lon - 360)
@@ -29,16 +29,19 @@ CalC_complete <- CalC_complete %>%
 final_dataset <- function(df){
   final <- df %>%
     group_by(date) %>% 
-    summarise(mean_temp = mean(temp),
-              mean_speed = mean(speed), # change spd to speed
-              mean_wind = mean(wind_dir),
-              mean_lat = mean(lat),
-              mean_lon = mean(lon)) %>% 
-    rename(temp = mean_temp,
-           speed = mean_speed,
-           wind = mean_wind,
-           lat = mean_lat,
-           lon = mean_lon)
+    summarise(temp = mean(temp),
+              speed = mean(speed), # change spd to speed
+              wind = mean(wind_dir), # RWS: This is not correct. The circular package must be used to find mean wind direction.
+              lat = mean(lat),
+              lon = mean(lon)) %>% 
+    # rename(temp = mean_temp, # RWS: There's no reason to rename the columns here.
+    #        speed = mean_speed, # RWS: You can choose the names when running summarise()
+    #        wind = mean_wind,
+    #        lat = mean_lat,
+    #        lon = mean_lon) %>% 
+    # RWS: I don't think this is correct. 
+    # This should have been fixed in script 1.
+    mutate(wind = ifelse(wind < 0, wind+360, wind)) 
 }
 # 
 # CC_final <- final_dataset(df = CC_complete)
@@ -46,41 +49,47 @@ final_dataset <- function(df){
 # CalC_final <- final_dataset(df = CalC_complete)
 BC_final <- final_dataset(df = BC_complete)
 
-wind_renamed_func <- function(df){
-  wind_renamed <- df %>% 
-    mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>%
-    dplyr::rename(wind_spd = speed) %>%
-    dplyr::rename(wind_dir = wind_dir) %>% 
-    filter(spd > 0)
-}
+# Why not just incorporate this code into the previous function?
+# wind_renamed_func <- function(df){
+#   wind_renamed <- df %>% 
+#     mutate(wind_dir = ifelse(wind_dir < 0, wind_dir+360, wind_dir)) %>% # RWS: Please check if this is correct to do. 
+#     dplyr::rename(wind_spd = speed) %>%
+#     # dplyr::rename(wind_dir = wind_dir) %>%  # RWS: Why rename a column to the same name?
+#     filter(spd > 0)
+# }
 
-BC_final <- wind_renamed_func(df = BC_final)
-HC_final <- wind_renamed_func(df = HC_final)
-CC_final <- wind_renamed_func(df = CC_final)
-CalC_final <- wind_renamed_func(df = CalC_final)
+# BC_final <- wind_renamed_func(df = BC_final) # RWS: This is no longer necessary.
+# HC_final <- wind_renamed_func(df = HC_final)
+# CC_final <- wind_renamed_func(df = CC_final)
+# CalC_final <- wind_renamed_func(df = CalC_final)
 
 
-# This works well running the heatwaveR package however, the upwelling index formula is dependant on the angel from the coastline,
-# given that the lats and lon and now averaged I will just have one angle from the coastline?
+# This works well running the heatwaveR package however, the upwelling index formula is dependant on the angle from the coastline,
+# given that the lats and lon are now averaged I will just have one angle from the coastline?
 
 # Code to obtain the angle from the coastline
 
-BC_transect <- coastR::transects(BC_final, spread = 30)
+# First it is necessary to find the coastal lon/lat coordinates for the EBUS
+
+
+BC_final_coords <- unique(BC_final[ ,c("lon", "lat")])
+
+BC_transect <- coastR::transects(BC_final, spread = 30) # RWS: This doesn't run as it needs the coordinates to be coastal.
 
 # Determining the upwelling index
 upwelling_func <- function(df){
-  UI<- df %>%  
+  UI <- df %>%  
     mutate(ui = wind_spd * (cos(wind_dir - coast_angle))) %>%
     drop_na 
 }
-UI_BC <- upwelling_func(df= BC_final)
+UI_BC <- upwelling_func(df = BC_final) # RWS: This doesn't run either, due to column names not matching.
 
 # This upwelling index is later used in this formula in order to obtain the upwelling metrics
 UI_trim <- function(df){
   UI_trim <- df %>% 
-    select(date,wind_spd,wind_dir,coast_angle,ui) %>% # Removed lat and lon
+    select(date, wind_spd, wind_dir, coast_angle, ui) %>% # Removed lat and lon
     rename(t = date) %>% 
-    rename(temp= ui)
+    rename(temp = ui)
 }
 
 BC_UI_trim <- UI_trim(df = UI_BC)
