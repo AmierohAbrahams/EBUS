@@ -59,7 +59,7 @@ BC_wind_dir <- BC_wind_fin %>%
   mutate(wind_spd = round(sqrt(u_10^2 + v_10^2), 2),
          wind_dir_from = round((270-(atan2(v_10, u_10)*(180/pi)))%%360),
          wind_dir_to = ifelse(wind_dir_from >= 180, wind_dir_from-180, wind_dir_from+180))
-save(BC_wind_dir, file = "data_wind_uv/BC_wind_dir.RData")
+#save(BC_wind_dir, file = "data_wind_uv/BC_wind_dir.RData")
 rm(BC_wind_fin); gc()
 
 #####################################################################################################################################################################

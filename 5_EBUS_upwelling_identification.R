@@ -59,6 +59,14 @@ CC_coastline <- coastline_func(df = CC_coords)
 CalC_coastline <- coastline_func(df = CalC_coords)
 HC_coastline <- coastline_func(df = HC_coords)
 
+plot_func <- function(df){
+  ggplot(data = df, aes(x = long, y = lat)) +
+    geom_polygon(colour = "black", fill = "grey70", aes(group = group))
+}
+
+plot_func(df = CC_coastline)
+plot_func(df = CalC_coastline)
+plot_func(df = HC_coastline)
 # Find which of the EBUS pixels match closest to the coastal pixels
 
 coastal_index_func <- function(coord_df,coastline_df){

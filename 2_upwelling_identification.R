@@ -46,6 +46,11 @@ BC_coastline <- fortify(maps::map(xlim = c(min(BC_coords$lon, na.rm = T),
                                            max(BC_coords$lat, na.rm = T)), 
                                   plot = F, interior = F, fill = T, lforce = "e", map = "world"))
 
+
+ggplot(data = BC_coastline, aes(x = long, y = lat)) +
+  geom_polygon(colour = "black", fill = "grey70", aes(group = group))
+
+
 # Find which of the EBUS pixels match closest to the coastal pixels
 BC_coastal_index <- as.vector(knnx.index(as.matrix(BC_coords[, c("lon", "lat")]),
                                          as.matrix(BC_coastline[ ,c("long", "lat")]), k = 1))
@@ -61,6 +66,9 @@ BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>
   left_join(BC_transects, by = c("lon", "lat"))
 rm(BC_complete, BC_temp); gc()
 
+# Pixel closes to the coastline
+ggplot(data = BC_coastal, aes(x = lon, y = lat)) +
+  geom_raster(aes(fill = temp)) 
 
 # 3: Calculate upwelling and the metrics ----------------------------------
 
