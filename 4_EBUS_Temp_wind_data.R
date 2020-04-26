@@ -103,7 +103,7 @@ seasons_N_func <- function(df){
 # Add the seasons to the wind + temp dataframes
 CC_complete <- seasons_N_func(CC_wind)
 CalC_complete <- seasons_N_func(CalC_wind)
-HC_complete <- seasons_N_func(HC_complete)
+HC_complete <- seasons_S_func(HC_wind)
 
 # Save
 save(HC_complete, file = "data_complete/HC_complete.RData")
