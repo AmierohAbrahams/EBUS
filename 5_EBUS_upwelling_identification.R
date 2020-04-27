@@ -118,7 +118,7 @@ rm(HC_complete, HC_temp); gc()
 # Determining the upwelling index per coastal pixel
 upwelling_func <- function(df){
   UI <- df %>%  
-    mutate(ui = wind_spd * (cos(wind_dir_to - coastal_angle)), # RWS: Please double check this
+    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)), # RWS: Please double check this
            ui_TF = ifelse(ui > 0, TRUE, FALSE)) #%>%
   # drop_na()
 }
@@ -174,6 +174,5 @@ HC_UI_metrics <- UI_metrics_func(df = HC_UI, clim_df = HC_clim)
 save(CC_UI_metrics, file = "data_complete/CC_UI_metrics.RData")
 save(CalC_UI_metrics, file = "data_complete/CalC_UI_metrics.RData")
 save(HC_UI_metrics, file = "data_complete/HC_UI_metrics.RData")
-save(HC_UI_metrics, file = "data_complete/HC.RData")
 
 
