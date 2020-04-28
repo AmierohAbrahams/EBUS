@@ -141,6 +141,8 @@ CalC_UI_metrics <- CalC_UI_metrics %>%
 combined_products <- rbind(BC_UI_metrics,HC_UI_metrics,CC_UI_metrics,CalC_UI_metrics)
 # save(combined_products, file = "data_complete/combined_products.RData")
 
+load("data_complete/combined_products.RData")
+
 total_signals <- combined_products %>%
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year) %>% 
