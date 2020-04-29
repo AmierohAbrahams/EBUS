@@ -41,9 +41,9 @@ wind_renamed_func <- function(df){    # This bit of code is done to get rid of t
 complete_wind <- wind_renamed_func(complete_wind)
 
 
-SE_renamed <-complete_wind %>% # Chnaged the names with the data 
+SE_renamed <-complete_wind %>% # Changed the names with the data 
   filter(dir >= 180, dir <= 270)
-# Then create diifferent temporal results
+# Then create different temporal results
 SE_annual <- SE_renamed %>% 
   group_by(current, year) %>% 
   summarise(count = n(),

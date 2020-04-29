@@ -52,14 +52,56 @@ BC_coastal_index <- as.vector(knnx.index(as.matrix(BC_coords[, c("lon", "lat")])
 BC_coastal_coords <- unique(BC_coords[BC_coastal_index,])
 
 # Find the coastal angle for each point
-BC_transects <- transects(BC_coastal_coords, spread = 2) %>% 
+BC_transects <- transects(BC_coastal_coords, spread = 2, alongshore = T) %>% 
   dplyr::rename(coastal_angle = heading) %>% 
-  mutate(coastal_angle = round(coastal_angle))
+  mutate(coastal_angle = round(coastal_angle),
+         coastal_angle = coastal_angle+180,
+         coastal_angle = ifelse(coastal_angle > 360, coastal_angle-360, coastal_angle))
 
+# The mean coastal angle for BC
+mean(BC_transects$coastal_angle) # 155
 # Bind it all together
 BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>% 
   left_join(BC_transects, by = c("lon", "lat"))
 rm(BC_complete, BC_temp); gc()
+
+# Test visual of coastal headings
+
+# Plotting the map
+world_map <- ggplot() + 
+  borders(fill = "grey40", colour = "black")
+
+# Plotting function
+plot_sites <- function(site_list, buffer, dist){
+  
+  # Find the point 200 km from the site manually to pass to ggplot
+  heading2 <- data.frame(geosphere::destPoint(p = select(site_list, lon, lat),
+                                              b = site_list$coastal_angle, d = dist))
+  #
+  # Add the new coordinates tot he site list
+  site_list <- site_list %>%
+    mutate(lon_dest = heading2$lon,
+           lat_dest = heading2$lat)
+  #
+  # Visualise
+  world_map +
+    geom_segment(data = site_list, colour = "red4",
+                 aes(x = lon, y = lat, xend = lon_dest, yend = lat_dest)) +
+    geom_point(data = site_list, size = 3, colour = "black", aes(x = lon, y = lat)) +
+    geom_point(data = site_list, size = 3, colour = "red", aes(x = lon_dest, y = lat_dest)) +
+    coord_quickmap(xlim = c(min(site_list$lon - buffer),
+                            max(site_list$lon + buffer)),
+                   ylim = c(min(site_list$lat - buffer),
+                            max(site_list$lat + buffer))) +
+    labs(x = "", y = "", colour = "Site\norder")
+}
+
+# Shore normal transects
+BC_coastal_unique <- BC_coastal %>% 
+  dplyr::select(lon, lat, coastal_angle) %>% 
+  unique()
+BC_along <- plot_sites(BC_coastal_unique, 1, 100000)
+BC_along
 
 
 # 3: Calculate upwelling and the metrics ----------------------------------
@@ -67,7 +109,7 @@ rm(BC_complete, BC_temp); gc()
 # Determining the upwelling index per coastal pixel
 upwelling_func <- function(df){
   UI <- df %>%  
-    mutate(ui = wind_spd * (cos(wind_dir_to - coastal_angle)), # RWS: Please double check this
+    mutate(ui = wind_spd * (cos(deg_rad(wind_dir_from - coastal_angle))),
            ui_TF = ifelse(ui > 0, TRUE, FALSE)) #%>%
     # drop_na()
 }
@@ -104,3 +146,4 @@ BC_UI_metrics <- BC_UI %>%
 save(BC_UI_metrics, file = "data_complete/BC_UI_metrics.RData")
 
 # RWS: NB: These results need to be thoroughly inspected as I'm not certain the UI is correct
+
