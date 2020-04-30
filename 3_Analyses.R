@@ -54,7 +54,7 @@ rm(HC_final); gc()
 rm(CC_final); gc()
 rm(CalC_final); gc()
 
-SE_renamed <-complete_wind %>% # Changed the names with the data 
+SE_renamed <-complete_wind %>%  
   filter(dir >= 180, dir <= 270)
 # Then create different temporal results
 SE_annual <- SE_renamed %>% 
