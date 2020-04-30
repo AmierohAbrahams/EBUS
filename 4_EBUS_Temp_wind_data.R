@@ -87,8 +87,6 @@ seasons_S_func <- function(df){
                               month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
 }
 
-# RWS: These functions were named the same. Make sure not to do that.
-
 # Seasons for the Northern Hemisphere
 seasons_N_func <- function(df){
   df_seasons <- df %>% 

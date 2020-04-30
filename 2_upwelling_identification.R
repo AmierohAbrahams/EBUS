@@ -32,8 +32,6 @@ BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "te
 
 # 2: Find the coastal pixels ----------------------------------------------
 
-# RWS: NB: Figures need to be made for each step below to ensure that it is behaving as expected
-
 # Isolate the unique pixel coordinates
 BC_coords <- BC_temp %>% 
   dplyr::select(lon, lat) %>% 
@@ -153,6 +151,4 @@ BC_UI_metrics <- BC_UI %>%
 
 # Save
 save(BC_UI_metrics, file = "data_complete/BC_UI_metrics.RData")
-
-# RWS: NB: These results need to be thoroughly inspected as I'm not certain the UI is correct
 
