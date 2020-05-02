@@ -30,7 +30,7 @@ load("data_complete/CalC_complete.RData") # This datasets used here were created
 load("data_complete/CC_complete.RData")
 load("data_complete/BC_complete.RData")
 load("data_complete/HC_complete.RData")
-
+  
 BC_final <- BC_complete %>% 
   mutate(current = "BC") %>% 
   rename(u = u_10,
@@ -54,14 +54,14 @@ rm(HC_final); gc()
 rm(CC_final); gc()
 rm(CalC_final); gc()
 
-SE_renamed <-complete_wind %>%  
-  filter(dir >= 180, dir <= 270)
+SE_renamed <-combine_currents %>%  
+  filter(dir >= 180, dir <= 270) # do not filter by wind
+
+
 # Then create different temporal results
 SE_annual <- SE_renamed %>% 
-  group_by(current, year) %>% 
-  summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T),
-            mean_temp = mean(temp, na.rm = T))
+  group_by(current, year, lon,lat) %>% 
+  summarise(count = n())
 SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season) %>% 
@@ -74,6 +74,7 @@ SE_monthly <- SE_renamed %>%
   summarise(count = n(),
             mean_dir = mean(dir, na.rm = T),
             mean_temp = mean(temp, na.rm = T))
+
 # Plots
 ## Annual count of SE wind
 ggplot(data = SE_annual, aes(x = year, y = count)) +
@@ -91,6 +92,8 @@ ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current)
+
+
 
 # 3: ANOVA analyses ----------------------------------------------------
 # ANOVA anlyses coparing is the number of signals detected each year and each season varied over time
@@ -206,7 +209,7 @@ pred <- dur %>%
   select(current, year)
 dur_pred <- cbind(dur, as.data.frame(predict(dur_gam, pred, se.fit = TRUE, unconditional = TRUE)))
 
-dur_pred <- transform(dyr_pred,
+dur_pred <- transform(dur_pred,
                       upper = fit + (2 * se.fit),
                       lower = fit - (2 * se.fit))
 

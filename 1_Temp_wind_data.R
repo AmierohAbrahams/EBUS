@@ -33,28 +33,18 @@ library(zoo)
 source("functions/theme.R")
 
 # Converting U and V wind variables to wind speed and direction
-# The wind data (u and v) for all EBUS are found in the folder "data_wind_uv" # RWS: This folder is not on GitHub
+# The wind data (u and v) for all EBUS are found in the folder "data_wind_uv". This folder is too large for GITHUB
 # This is repeated for the BC, HC, CC and CalC
 
-# RWS: Where do BC_vwind and BC_wind come from? Code must be included here that shows how these files are loaded
-# BC_vwind <- BC_vwind %>%
-#   select(v_10)
-# BC_wind <- cbind(BC_vwind, BC_wind)
-# BC_wind_fin <- BC_wind %>% # This is a complete dataset of wind u and v variables for the Benguela current
-#   select(lon, lat, date, u_10, v_10)
 
 # Load wind U V data frames
-load("data_wind_uv/BC_wind_fin.RData")
+load("data_wind_uv/BC_wind_fin.RData") # This is the extracted u and v wind variables. See extraction folder
 BC_wind_fin <- BC_wind_fin %>% 
   mutate(date = as.Date(fastPOSIXct(date, tz = "GMT")),
          lat = lat - 0.125,
          lon = lon + 0.125)
 
 # Calculate wind speed and direction
-# RWS: I'd prefer if wind speed and direction were calculated like in this post:
-# https://stackoverflow.com/questions/21484558/how-to-calculate-wind-direction-from-u-and-v-wind-components-in-r
-# Note difference in the wind direction coming FROM vs where it is going TO
-# I've produced both of them here for ease of use later on
 BC_wind_dir <- BC_wind_fin %>% 
   mutate(wind_spd = round(sqrt(u_10^2 + v_10^2), 2),
          wind_dir_from = round((270-(atan2(v_10, u_10)*(180/pi)))%%360),
@@ -71,7 +61,7 @@ rm(BC_wind_fin); gc()
 # Load temperature data
 BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 
-# Function for matching temps and wind
+# Function for matching temps and wind  
 match_func <- function(temp_df, wind_df){
   match <- wind_df  %>%
     left_join(temp_df, by = c("lon",  "lat", "date")) %>%
@@ -94,7 +84,6 @@ seasons_S_func <- function(df){
                               month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
 }
 
-# RWS: These functions were named the same. Make sure not to do that.
 
 # Seasons for the Northern Hemisphere
 seasons_N_func <- function(df){
