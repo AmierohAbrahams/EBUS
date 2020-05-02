@@ -30,7 +30,23 @@ load("data_complete/CalC_complete.RData") # This datasets used here were created
 load("data_complete/CC_complete.RData")
 load("data_complete/BC_complete.RData")
 load("data_complete/HC_complete.RData")
-  
+
+# Changing upwelling region boundries for each current
+# The latitudes were changes to match the following paper
+# Reduced Nearshore Warming Associated With Eastern Boundary Upwelling Systems
+# Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 , Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
+
+BC_official <- BC_complete # Match the paper
+#save(BC_official, file = "data_complete/BC_official.RData")
+CalC_official <- CalC_complete # Match the paper
+#save(CalC_official, file = "data_complete/CalC_official.RData")
+CC_official <- CC_complete %>% 
+  filter(lat >= 15, lat <= 45)
+#save(CC_official, file = "data_complete/CC_official.RData")
+
+HC_official <- HC_complete # Match the paper
+save(combined_products, file = "data_complete/combined_products.RData")
+
 BC_final <- BC_complete %>% 
   mutate(current = "BC") %>% 
   rename(u = u_10,
