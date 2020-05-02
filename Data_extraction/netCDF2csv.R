@@ -25,7 +25,7 @@ library(heatwaveR)
 bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
                    CC = c(25, 35, 340, 355), # Canary Current
                    CalC = c(35, 45, 225, 240), # California Current
-                   HC = c(-17.5, -7.5, 275, 290), # Humboldt Current
+                   HC = c(-45.5, -7.5, 275, 290), # Humboldt Current
                    row.names = c("latmin", "latmax", "lonmin", "lonmax"))
 
 # Setting path
