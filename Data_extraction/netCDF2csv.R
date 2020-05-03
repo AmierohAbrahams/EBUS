@@ -75,6 +75,9 @@ CC_temp <- CC-avhrr-only-v2.Document-Document.csv
 CalC_temp <- CalC-avhrr-only-v2.Document-Document.csv
 HC_temp <- HC-avhrr-only-v2.Document-Document.csv
 
+HC_temp <- read_csv("~/Documents/Data/Datasets/AVHRR/spatial/HC-avhrr-only-v2.Document-Document.csv", col_names = c("lon", "lat", "temp", "date"))
+save(HC_temp , file = "HC_temp.RData")
+
 ################  ERA 5    ##################3
 # https://cds.climate.copernicus.eu/api-how-to#use-the-cds-api-client-for-data-access
 

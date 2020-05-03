@@ -5,3 +5,9 @@
 data_complete/BC_complete.RData
 data_wind_uv
 data_complete/BC_temp.csv
+
+# Meeting
+-Changed the regions to fit the Reduced Nearshore Warming Associated With Eastern Boundary
+Upwelling Systems; Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 ,
+Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
+- The CalC and HC were only two currents that needed change - Tip to self: See data_new folder
