@@ -23,8 +23,8 @@ library(heatwaveR)
 # Ryan R. Rykaczewski 3 , Bryan A. Black 4 , Albertus J. Smit 5 and Steven J. Bograd 6
 
 bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
-                   CC = c(25, 35, 340, 355), # Canary Current
-                   CalC = c(35, 45, 225, 240), # California Current
+                   CC = c(15, 45, 340, 355), # Canary Current
+                   CalC = c(25, 45, 225, 240), # California Current
                    HC = c(-45.5, -7.5, 275, 290), # Humboldt Current
                    row.names = c("latmin", "latmax", "lonmin", "lonmax"))
 
