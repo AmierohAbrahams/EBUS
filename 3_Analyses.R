@@ -35,17 +35,15 @@ load("data_complete/HC_complete.RData")
 # The latitudes were changes to match the following paper
 # Reduced Nearshore Warming Associated With Eastern Boundary Upwelling Systems
 # Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 , Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
-
-BC_official <- BC_complete # Match the paper
-#save(BC_official, file = "data_complete/BC_official.RData")
-CalC_official <- CalC_complete # Match the paper
-#save(CalC_official, file = "data_complete/CalC_official.RData")
-CC_official <- CC_complete %>% 
-  filter(lat >= 15, lat <= 45)
-#save(CC_official, file = "data_complete/CC_official.RData")
-
-HC_official <- HC_complete # Match the paper
-save(combined_products, file = "data_complete/combined_products.RData")
+# BC_official <- BC_complete # Match the paper
+# #save(BC_official, file = "data_complete/BC_official.RData")
+# CalC_official <- CalC_complete # Match the paper
+# #save(CalC_official, file = "data_complete/CalC_official.RData")
+# CC_official <- CC_complete %>% 
+#   filter(lat >= 15, lat <= 45)
+# #save(CC_official, file = "data_complete/CC_official.RData")
+#HC_official <- HC_complete # Match the paper
+#save(combined_products, file = "data_complete/combined_products.RData")
 
 BC_final <- BC_complete %>% 
   mutate(current = "BC") %>% 
@@ -72,8 +70,6 @@ rm(CalC_final); gc()
 
 SE_renamed <-combine_currents %>%  
   filter(dir >= 180, dir <= 270) # do not filter by wind
-
-
 # Then create different temporal results
 SE_annual <- SE_renamed %>% 
   group_by(current, year, lon,lat) %>% 
@@ -108,8 +104,6 @@ ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current)
-
-
 
 # 3: ANOVA analyses ----------------------------------------------------
 # ANOVA anlyses coparing is the number of signals detected each year and each season varied over time
