@@ -9,6 +9,20 @@
 
 # climate change as a result of global warining resulted in changes in wind patterns and
 # ultimately lead to changes in the duration and intensity of upwelling events overtime.
+# Changing upwelling region boundries for each current
+# The latitudes were changes to match the following paper
+# Reduced Nearshore Warming Associated With Eastern Boundary Upwelling Systems
+# Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 , Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
+# BC_official <- BC_complete # Match the paper
+# #save(BC_official, file = "data_complete/BC_official.RData")
+# CalC_official <- CalC_complete # Match the paper
+# #save(CalC_official, file = "data_complete/CalC_official.RData")
+# CC_official <- CC_complete %>% 
+#   filter(lat >= 15, lat <= 45)
+# #save(CC_official, file = "data_complete/CC_official.RData")
+#HC_official <- HC_complete # Match the paper
+#save(combined_products, file = "data_complete/combined_products.RData")
+
 
 # 1: Setup environment ----------------------------------------------------
 library(gridExtra)
@@ -26,24 +40,10 @@ options(scipen=999)
 # 2: Wind pattern observation ----------------------------------------------------
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
-load("data_complete/CalC_complete.RData") # This datasets used here were created in script "1_Temp_wind_data.R and 4_EBUS_Temp_wind_data.R"
+load("data_complete/CalC_complete.RData") # These datasets used here were created in script "1_Temp_wind_data.R and 4_EBUS_Temp_wind_data.R"
 load("data_complete/CC_complete.RData")
 load("data_complete/BC_complete.RData")
 load("data_complete/HC_complete.RData")
-
-# Changing upwelling region boundries for each current
-# The latitudes were changes to match the following paper
-# Reduced Nearshore Warming Associated With Eastern Boundary Upwelling Systems
-# Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 , Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
-# BC_official <- BC_complete # Match the paper
-# #save(BC_official, file = "data_complete/BC_official.RData")
-# CalC_official <- CalC_complete # Match the paper
-# #save(CalC_official, file = "data_complete/CalC_official.RData")
-# CC_official <- CC_complete %>% 
-#   filter(lat >= 15, lat <= 45)
-# #save(CC_official, file = "data_complete/CC_official.RData")
-#HC_official <- HC_complete # Match the paper
-#save(combined_products, file = "data_complete/combined_products.RData")
 
 BC_final <- BC_complete %>% 
   mutate(current = "BC") %>% 
@@ -77,15 +77,11 @@ SE_annual <- SE_renamed %>%
 SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season) %>% 
-  summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T),
-            mean_temp = mean(temp, na.rm = T))
+  summarise(count = n())
 SE_monthly <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
-  summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T),
-            mean_temp = mean(temp, na.rm = T))
+  summarise(count = n())
 
 # Plots
 ## Annual count of SE wind
@@ -93,12 +89,15 @@ ggplot(data = SE_annual, aes(x = year, y = count)) +
   geom_line() +
   geom_smooth(method = "lm") +
   facet_wrap(~current)
+
 ## Annual count of SE wind in Summer
 ### The trends between annual and summer SE wind counts are remarkably similar
+
 ggplot(data = SE_summer, aes(x = year, y = count)) +
   geom_line() +
   geom_smooth(method = "lm") +
   facet_wrap(~current)
+
 ## Summer month count of SE winds
 ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_line(aes(colour = month)) +
