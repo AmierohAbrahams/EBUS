@@ -161,6 +161,9 @@ total_signals <- combined_products %>%
   summarise(y = n()) %>% 
   rename(count = y)
 
+# Anova analyses to test whether or not a significant difference exist in the amount of 
+# signals detected by each of the currentsfor each year and season
+
 anova_func <- function(df){
   sites_aov <- aov(count ~ current *year * season, data = df)
   return(sites_aov)
@@ -169,9 +172,13 @@ anova_func <- function(df){
 summary(count_aov<- anova_func(df = total_signals))
 
 # 3: Linear models ----------------------------------------------------
-# ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc, between currents and seasons over a 30 year period
+# ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
+# between currents and seasons over a 30 year period
 
 load("data_complete/combined_products.RData")
+# remove intensity
+# RemoveVAR
+# ROONROF
 
 # Calculate all of the linear models
 lm_coeff <- function(df){
@@ -212,10 +219,11 @@ tidy_combined <- gather(combined_products, key = variable, value = measurements,
 dur <- tidy_combined  %>%
   filter(variable == "duration")
 
-dur_gam <- gam(measurements ~ s(current, k = 6), data = dur, method = "REML")
+dur_gam <- gam(measurements ~ s(current), data = dur, method = "REML")
 
 pred <- dur %>%
   select(current, year)
+
 dur_pred <- cbind(dur, as.data.frame(predict(dur_gam, pred, se.fit = TRUE, unconditional = TRUE)))
 
 dur_pred <- transform(dur_pred,
@@ -229,4 +237,13 @@ ggplot(tss_pred, aes(x = year, y = measurements, col = current, group = current)
   geom_line(aes(y = fit)) +
   labs(x = "Year", y = "Duration (Days") +
   theme_bw()
+
+
+
+# PLot upwelling on time series.Plot geomsmooth - usig non linear models upwelling over
+# show dirty time series 
+
+
+
+
 
