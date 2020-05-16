@@ -238,10 +238,11 @@ ggplot(tss_pred, aes(x = year, y = measurements, col = current, group = current)
   labs(x = "Year", y = "Duration (Days") +
   theme_bw()
 
+# Plot upwelling using geom_smooth
 
-
-# PLot upwelling on time series.Plot geomsmooth - usig non linear models upwelling over
-# show dirty time series 
+ggplot(data = combined_products, aes(x = date_start, y = duration, colour = current)) +
+  #geom_point() +
+  geom_smooth()
 
 
 
