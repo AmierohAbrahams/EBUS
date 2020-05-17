@@ -151,7 +151,7 @@ clim_func <- function(df){
 
 CC_clim <- clim_func(df = CC_UI)
 CalC_clim <- clim_func(df = CalC_UI)
-HC_clim <- clim_func(df = HC_UI)
+HC_clim <- clim_func(df = HC_UI) 
 
 
 # Calculate the upwelling metrics

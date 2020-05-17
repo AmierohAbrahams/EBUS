@@ -151,4 +151,3 @@ BC_UI_metrics <- BC_UI %>%
 
 # Save
 # save(BC_UI_metrics, file = "data_complete/BC_UI_metrics.RData")
-

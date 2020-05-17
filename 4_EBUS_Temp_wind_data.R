@@ -57,9 +57,12 @@ HC_match <- match_func(temp_df = HC_temp, wind_df = HC_wind_fin)
 # 3: Calculating wind speed and direction ----------------------------------------------------
 
 # Calculate wind speed and direction
-load("data_complete/CalC_match.RData")
-load("data_complete/CC_match.RData")
+#load("data_complete/CalC_match.RData")
+# load("data_complete/CC_match.RData")
 load("data_complete/HC_match.RData")
+load("data_complete/CalC_matched2.RData")
+CalC_matched2 <- wind_temp_match_test
+rm(wind_temp_match_test)
 
 wind_dir_func <- function(df){
   wind_dir <- df %>% 
@@ -70,11 +73,11 @@ wind_dir_func <- function(df){
 
 CC_wind <- wind_dir_func(df = CC_match)
 #save(CC_wind, file = "data_complete/CC_wind.RData")
-CalC_wind <- wind_dir_func(df = CalC_match)
+#CalC_wind <- wind_dir_func(df = CalC_match)
+CalC_wind <- wind_dir_func(df = CalC_matched2)
 #save(CalC_wind, file = "data_complete/CalC_wind.RData")
 HC_wind <- wind_dir_func(df = HC_match)
 #save(HC_wind, file = "data_complete/HC_wind.RData")
-
 
 # Seasons for the southern hemisphere
 seasons_S_func <- function(df){
@@ -106,4 +109,4 @@ HC_complete <- seasons_S_func(HC_wind)
 # Save
 # save(HC_complete, file = "data_complete/HC_complete.RData")
 # save(CC_complete, file = "data_complete/CC_complete.RData")
-# save(CalC_complete, file = "data_complete/CalC_complete.RData")
+save(CalC_complete, file = "data_complete/CalC_complete.RData")
