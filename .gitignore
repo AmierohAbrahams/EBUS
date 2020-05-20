@@ -11,3 +11,22 @@ data_complete/BC_temp.csv
 Upwelling Systems; Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 ,
 Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
 - The CalC and HC were only two currents that needed change - Tip to self: See data_new folder
+
+
+# Discussion
+Andrew Bakun suggested that upwelling patterns will change as a
+result of climate change affecting the pressure gradients and thus affecting wind patterns. 
+Here we test if this predicted changes are occuring over a 30 year period.
+
+#Intructions
+Compare how coastal upwelling chnaged overtime 
+	-Got our coastal region
+
+Linear trend: No linear trend exist
+GAM -maybe there is no linear pattern(?) but exponential pattern
+
+Graph and stats showing the output of the GAM
+
+How will I display the mean, intensity and duration showing changes or not after time
+- How did wind patterns change over time? Is the changes in upwelling because of changes in wind patterns
+-NMDS?PCA?

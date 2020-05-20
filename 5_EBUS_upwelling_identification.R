@@ -103,14 +103,17 @@ HC_transects <- transect_func(df = HC_coastal_coords)
 # Bind it all together
 CC_coastal <- left_join(CC_coastal_coords, CC_complete, by = c("lon", "lat")) %>% 
   left_join(CC_transects, by = c("lon", "lat"))
+# save(CC_coastal, file = "data_complete/CC_coastal.RData")
 rm(CC_complete, CC_temp); gc()
 
 CalC_coastal <- left_join(CalC_coastal_coords, CalC_complete, by = c("lon", "lat")) %>% 
   left_join(CalC_transects, by = c("lon", "lat"))
+# save(CalC_coastal, file = "data_complete/CalC_coastal.RData")
 rm(CalC_complete, CalC_temp); gc()
 
 HC_coastal <- left_join(HC_coastal_coords, HC_complete, by = c("lon", "lat")) %>% 
   left_join(HC_transects, by = c("lon", "lat"))
+# save(HC_coastal, file = "data_complete/HC_coastal.RData")
 rm(HC_complete, HC_temp); gc()
 
 # 3: Calculate upwelling and the metrics ----------------------------------

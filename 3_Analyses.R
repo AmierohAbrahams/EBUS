@@ -40,45 +40,35 @@ options(scipen=999)
 # 2: Wind pattern observation ----------------------------------------------------
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
-load("data_complete/CalC_complete.RData") # These datasets used here were created in script "1_Temp_wind_data.R and 4_EBUS_Temp_wind_data.R"
-load("data_complete/CC_complete.RData")
-load("data_complete/BC_complete.RData")
-load("data_complete/HC_complete.RData")
+load("data_complete/CC_coastal.RData") # These datasets used here were created in script "1_Temp_wind_data.R and 4_EBUS_Temp_wind_data.R"
+load("data_complete/CalC_coastal.RData")
+load("data_complete/BC_coastal.RData")
+load("data_complete/HC_coastal.RData")
 
-BC_final <- BC_complete %>% 
+BC <- BC_coastal%>% 
   mutate(current = "BC") %>% 
   rename(u = u_10,
          v = v_10)
-HC_final <- HC_complete %>% 
+HC <- HC_coastal %>% 
   mutate(current = "HC")
-CC_final <- CC_complete %>% 
+CC <- CC_coastal %>% 
   mutate(current = "CC")
-CalC_final <- CalC_complete %>% 
+CalC <- CalC_coastal %>% 
   mutate(current = "CalC")
 
-rm(BC_complete); gc()
-rm(HC_complete); gc()
-rm(CC_complete); gc()
-rm(CalC_complete); gc()
+combine_currents <- rbind(BC,HC,CC,CalC)
 
-combine_currents <- rbind(BC_final,HC_final,CC_final,CalC_final)
-
-rm(BC_final); gc()
-rm(HC_final); gc()
-rm(CC_final); gc()
-rm(CalC_final); gc()
-
-SE_renamed <-combine_currents %>%  
-  filter(dir >= 180, dir <= 270) # do not filter by wind
 # Then create different temporal results
-SE_annual <- SE_renamed %>% 
+SE_annual <- combine_currents %>% 
   group_by(current, year, lon,lat) %>% 
   summarise(count = n())
-SE_summer <- SE_renamed %>% 
+
+SE_summer <- combine_currents %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season) %>% 
   summarise(count = n())
-SE_monthly <- SE_renamed %>% 
+
+SE_monthly <- combine_currents %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
   summarise(count = n())
@@ -176,9 +166,6 @@ summary(count_aov<- anova_func(df = total_signals))
 # between currents and seasons over a 30 year period
 
 load("data_complete/combined_products.RData")
-# remove intensity
-# RemoveVAR
-# ROONROF
 
 # Calculate all of the linear models
 lm_coeff <- function(df){

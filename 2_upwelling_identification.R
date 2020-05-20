@@ -66,6 +66,8 @@ mean(BC_transects$coastal_angle) # 155
 # Bind it all together
 BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>% 
   left_join(BC_transects, by = c("lon", "lat"))
+
+# save(BC_coastal, file = "data_complete/BC_coastal.RData")
 rm(BC_complete, BC_temp); gc()
 
 # Test visual of coastal headings
