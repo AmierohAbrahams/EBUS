@@ -69,15 +69,18 @@ SE_summer <- SE_renamed %>%
   filter(season == "Summer") %>% 
   group_by(current, year, season) %>% 
   summarise(count = n(),
-            mean_dir_from = mean(wind_dir_from, na.rm = T),
+            circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
+            circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
             mean_temp = mean(temp, na.rm = T))
 
 SE_monthly <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
   summarise(count = n(),
-            mean_dir = mean(wind_dir_from, na.rm = T),
+            circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
+            circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
             mean_temp = mean(temp, na.rm = T))
+
 
 BC_pixels <- SE_renamed %>% 
   filter(current == "BC") %>% 
