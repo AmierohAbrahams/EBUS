@@ -1,4 +1,4 @@
-# 4_EBUS_upwelling_Identification.R.R
+# 2_upwelling_Identification.R.R
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
@@ -20,7 +20,7 @@ library(FNN)
 source("functions/theme.R")
 
 # Load data
-# Data loaded and created in "5_EBUS-upwelling_identification.R"
+# Data loaded and created in "1_EBUS-upwelling_identification.R"
 load("data_complete/CC_complete.RData")
 load("data_complete/CalC_complete.RData")
 load("data_complete/HC_complete.RData")
@@ -35,7 +35,7 @@ CalC_complete <- CalC_complete %>%
 HC_complete <- HC_complete %>% 
   mutate(lon = lon - 360)
 
-# Load the temperature data as the wind data has pixels over land
+# Loading the temperature data this is the OISST data extracted to the regions (See extraction folder)
 CC_temp <- read_csv("data_complete/CC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 CalC_temp <- read_csv("data_complete/CalC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 HC_temp <- read_csv("data_complete/HC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
@@ -206,5 +206,3 @@ BC_UI_metrics <- UI_metrics_func(df = BC_UI, clim_df = BC_clim)
 # save(CC_UI_metrics, file = "data_complete/CC_UI_metrics.RData")
 # save(CalC_UI_metrics, file = "data_complete/CalC_UI_metrics.RData")
 # save(HC_UI_metrics, file = "data_complete/HC_UI_metrics.RData")
-
-

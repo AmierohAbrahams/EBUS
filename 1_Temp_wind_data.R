@@ -1,4 +1,4 @@
-# 1_EBUS_Temp_wind_data.R
+# 1_Temp_wind_data.R
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
