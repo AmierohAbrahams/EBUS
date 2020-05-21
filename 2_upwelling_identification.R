@@ -1,9 +1,10 @@
-# 2_upwelling_identification.R
+# 4_EBUS_upwelling_Identification.R.R
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
 # 2: Find the coastal pixels
 # 3: Calculate upwelling and the metrics
+
 
 # 1: Setup environment ----------------------------------------------------
 
@@ -19,109 +20,144 @@ library(FNN)
 source("functions/theme.R")
 
 # Load data
-
-# Data loaded and created in "1_Temp_wind_data"
-# load("data_complete/CC_complete.RData")
-# load("data_complete/CalC_complete.RData")
-# load("data_complete/HC_complete.RData")
+# Data loaded and created in "5_EBUS-upwelling_identification.R"
+load("data_complete/CC_complete.RData")
+load("data_complete/CalC_complete.RData")
+load("data_complete/HC_complete.RData")
 load("data_complete/BC_complete.RData")
 
+CC_complete <- CC_complete %>% 
+  mutate(lon = lon - 360)
+
+CalC_complete <- CalC_complete %>% 
+  mutate(lon = lon - 360)
+
+HC_complete <- HC_complete %>% 
+  mutate(lon = lon - 360)
+
 # Load the temperature data as the wind data has pixels over land
+CC_temp <- read_csv("data_complete/CC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
+CalC_temp <- read_csv("data_complete/CalC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
+HC_temp <- read_csv("data_complete/HC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 
 
 # 2: Find the coastal pixels ----------------------------------------------
-
 # Isolate the unique pixel coordinates
+
+coord_func <- function(df){
+  coords <- df %>% 
+    dplyr::select(lon, lat) %>%
+    mutate(lon = lon - 360) %>% 
+    unique()
+}
+
+CC_coords <- coord_func(df = CC_temp)
+CalC_coords <- coord_func(df = CalC_temp)
+HC_coords <- coord_func(df = HC_temp)
+
 BC_coords <- BC_temp %>% 
   dplyr::select(lon, lat) %>% 
   unique()
 
 # Take coastal coordinates from a global map
-BC_coastline <- fortify(maps::map(xlim = c(min(BC_coords$lon, na.rm = T), 
-                                           max(BC_coords$lon, na.rm = T)), 
-                                  ylim = c(min(BC_coords$lat, na.rm = T), 
-                                           max(BC_coords$lat, na.rm = T)), 
-                                  plot = F, interior = F, fill = T, lforce = "e", map = "world"))
+coastline_func <- function(df){
+  coastline <- fortify(maps::map(xlim = c(min(df$lon, na.rm = T), 
+                                          max(df$lon, na.rm = T)), 
+                                 ylim = c(min(df$lat, na.rm = T), 
+                                          max(df$lat, na.rm = T)), 
+                                 plot = F, interior = F, fill = T, lforce = "e", map = "world"))
+}
 
+CC_coastline <- coastline_func(df = CC_coords)
+CalC_coastline <- coastline_func(df = CalC_coords)
+HC_coastline <- coastline_func(df = HC_coords)
+BC_coastline <- coastline_func(df = BC_coords)
 
-ggplot(data = BC_coastline, aes(x = long, y = lat)) +
-  geom_polygon(colour = "black", fill = "grey70", aes(group = group))
+plot_func <- function(df){
+  ggplot(data = df, aes(x = long, y = lat)) +
+    geom_polygon(colour = "black", fill = "grey70", aes(group = group))
+}
 
+plot_func(df = CC_coastline)
+plot_func(df = CalC_coastline)
+plot_func(df = HC_coastline)
+plot_func(df = BC_coastline)
 
 # Find which of the EBUS pixels match closest to the coastal pixels
-BC_coastal_index <- as.vector(knnx.index(as.matrix(BC_coords[, c("lon", "lat")]),
-                                         as.matrix(BC_coastline[ ,c("long", "lat")]), k = 1))
+
+coastal_index_func <- function(coord_df,coastline_df){
+  BC_coastal_index <- as.vector(knnx.index(as.matrix(coord_df[, c("lon", "lat")]),
+                                           as.matrix(coastline_df[ ,c("long", "lat")]), k = 1))
+}
+
+CC_coastal_index <- coastal_index_func(coord_df = CC_coords, coastline_df = CC_coastline)
+CalC_coastal_index <- coastal_index_func(coord_df = CalC_coords, coastline_df = CalC_coastline)
+HC_coastal_index <- coastal_index_func(coord_df = HC_coords, coastline_df = HC_coastline)
+BC_coastal_index <- coastal_index_func(coord_df = BC_coords, coastline_df = BC_coastline)
+
 BC_coastal_coords <- unique(BC_coords[BC_coastal_index,])
+CC_coastal_coords <- unique(CC_coords[CC_coastal_index,])
+CalC_coastal_coords <- unique(CalC_coords[CalC_coastal_index,])
+HC_coastal_coords <- unique(HC_coords[HC_coastal_index,])
 
 # Find the coastal angle for each point
+
 BC_transects <- transects(BC_coastal_coords, spread = 2, alongshore = T) %>% 
   dplyr::rename(coastal_angle = heading) %>% 
   mutate(coastal_angle = round(coastal_angle),
          coastal_angle = coastal_angle+180,
          coastal_angle = ifelse(coastal_angle > 360, coastal_angle-360, coastal_angle))
 
-# The mean coastal angle for BC
-mean(BC_transects$coastal_angle) # 155
-# Bind it all together
-BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>% 
-  left_join(BC_transects, by = c("lon", "lat"))
-
-# save(BC_coastal, file = "data_complete/BC_coastal.RData")
-rm(BC_complete, BC_temp); gc()
-
-# Test visual of coastal headings
-
-# Plotting the map
-world_map <- ggplot() + 
-  borders(fill = "grey40", colour = "black")
-
-# Plotting function
-plot_sites <- function(site_list, buffer, dist){
-  
-  # Find the point 200 km from the site manually to pass to ggplot
-  heading2 <- data.frame(geosphere::destPoint(p = select(site_list, lon, lat),
-                                              b = site_list$coastal_angle, d = dist))
-  #
-  # Add the new coordinates tot he site list
-  site_list <- site_list %>%
-    mutate(lon_dest = heading2$lon,
-           lat_dest = heading2$lat)
-  #
-  # Visualise
-  world_map +
-    geom_segment(data = site_list, colour = "red4",
-                 aes(x = lon, y = lat, xend = lon_dest, yend = lat_dest)) +
-    geom_point(data = site_list, size = 3, colour = "black", aes(x = lon, y = lat)) +
-    geom_point(data = site_list, size = 3, colour = "red", aes(x = lon_dest, y = lat_dest)) +
-    coord_quickmap(xlim = c(min(site_list$lon - buffer),
-                            max(site_list$lon + buffer)),
-                   ylim = c(min(site_list$lat - buffer),
-                            max(site_list$lat + buffer))) +
-    labs(x = "", y = "", colour = "Site\norder")
+transect_func <- function(df){
+  transects <- transects(df, spread = 2) %>% 
+    dplyr::rename(coastal_angle = heading) %>% 
+    mutate(coastal_angle = round(coastal_angle))
 }
 
-# Shore normal transects
-BC_coastal_unique <- BC_coastal %>% 
-  dplyr::select(lon, lat, coastal_angle) %>% 
-  unique()
-BC_along <- plot_sites(BC_coastal_unique, 1, 100000)
-BC_along
+CC_transects <- transect_func(df = CC_coastal_coords)
+CalC_transects <- transect_func(df = CalC_coastal_coords)
+HC_transects <- transect_func(df = HC_coastal_coords)
 
-# Pixel closes to the coastline
-ggplot(data = BC_coastal, aes(x = lon, y = lat)) +
-  geom_raster(aes(fill = temp)) 
+# Bind it all together
 
+CC_coastal <- left_join(CC_coastal_coords, CC_complete, by = c("lon", "lat")) %>% 
+  left_join(CC_transects, by = c("lon", "lat"))
+# save(CC_coastal, file = "data_complete/CC_coastal.RData")
+rm(CC_complete, CC_temp); gc()
+
+CalC_coastal <- left_join(CalC_coastal_coords, CalC_complete, by = c("lon", "lat")) %>% 
+  left_join(CalC_transects, by = c("lon", "lat"))
+# save(CalC_coastal, file = "data_complete/CalC_coastal.RData")
+rm(CalC_complete, CalC_temp); gc()
+
+HC_coastal <- left_join(HC_coastal_coords, HC_complete, by = c("lon", "lat")) %>% 
+  left_join(HC_transects, by = c("lon", "lat"))
+# save(HC_coastal, file = "data_complete/HC_coastal.RData")
+rm(HC_complete, HC_temp); gc()
+
+BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>% 
+  left_join(BC_transects, by = c("lon", "lat"))
+# save(BC_coastal, file = "data_complete/BC_coastal.RData")
 
 # 3: Calculate upwelling and the metrics ----------------------------------
 
 # Determining the upwelling index per coastal pixel
 upwelling_func <- function(df){
-  UI <- df %>%
-    mutate(ui = wind_spd * (cos(deg_rad(wind_dir_from - coastal_angle))),
+  UI <- df %>%  
+    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)), # RWS: Please double check this
            ui_TF = ifelse(ui > 0, TRUE, FALSE)) #%>%
-    # drop_na()
+  # drop_na()
 }
+
+CC_UI <- upwelling_func(df = CC_coastal) %>% 
+  dplyr::rename(t = date)
+
+CalC_UI <- upwelling_func(df = CalC_coastal) %>% 
+  dplyr::rename(t = date)
+
+HC_UI <- upwelling_func(df = HC_coastal) %>% 
+  dplyr::rename(t = date)
 
 BC_UI <- upwelling_func(df = BC_coastal) %>% 
   dplyr::rename(t = date)
@@ -133,23 +169,42 @@ detect_event_custom <- function(df){
 }
 
 # Calculate the upwelling event metrics
-BC_clim <- BC_UI %>% 
-  group_by(lon, lat) %>% 
-  nest() %>% 
-  mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2011-12-31"))) %>% 
-  select(-data) %>%
-  unnest(cols = clim) %>% 
-  ungroup()
+clim_func <- function(df){
+  clim <- df %>% 
+    group_by(lon, lat) %>% 
+    nest() %>% 
+    mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2011-12-31"))) %>% 
+    select(-data) %>%
+    unnest(cols = clim) %>% 
+    ungroup()
+}
+
+CC_clim <- clim_func(df = CC_UI)
+CalC_clim <- clim_func(df = CalC_UI)
+HC_clim <- clim_func(df = HC_UI) 
+BC_clim <- clim_func(df = BC_UI) 
+
 
 # Calculate the upwelling metrics
-BC_UI_metrics <- BC_UI %>% 
-  left_join(BC_clim, by = c("lon", "lat", "t", "temp")) %>% 
-  group_by(lon, lat) %>% 
-  nest() %>% 
-  mutate(event = purrr::map(data, detect_event_custom)) %>% 
-  select(-data) %>%
-  unnest(cols = event) %>% 
-  ungroup()
+UI_metrics_func <- function(df,clim_df){
+  UI_metrics <- df %>% 
+    left_join(clim_df, by = c("lon", "lat", "t", "temp")) %>% 
+    group_by(lon, lat) %>% 
+    nest() %>% 
+    mutate(event = purrr::map(data, detect_event_custom)) %>% 
+    select(-data) %>%
+    unnest(cols = event) %>% 
+    ungroup()
+}
+
+CC_UI_metrics <- UI_metrics_func(df = CC_UI, clim_df = CC_clim)
+CalC_UI_metrics <- UI_metrics_func(df = CalC_UI, clim_df = CalC_clim)
+HC_UI_metrics <- UI_metrics_func(df = HC_UI, clim_df = HC_clim)
+BC_UI_metrics <- UI_metrics_func(df = BC_UI, clim_df = BC_clim)
 
 # Save
-# save(BC_UI_metrics, file = "data_complete/BC_UI_metrics.RData")
+# save(CC_UI_metrics, file = "data_complete/CC_UI_metrics.RData")
+# save(CalC_UI_metrics, file = "data_complete/CalC_UI_metrics.RData")
+# save(HC_UI_metrics, file = "data_complete/HC_UI_metrics.RData")
+
+
