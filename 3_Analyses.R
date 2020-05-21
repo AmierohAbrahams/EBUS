@@ -34,6 +34,7 @@ library(heatwaveR)
 library(coastR)
 library(mgcv) # for gam
 library(FNN)
+library(broom)
 source("functions/theme.R")
 options(scipen=999) 
 
@@ -56,43 +57,65 @@ CC <- CC_coastal %>%
 CalC <- CalC_coastal %>% 
   mutate(current = "CalC")
 
-combine_currents <- rbind(BC,HC,CC,CalC)
+current_winds <- rbind(BC,HC,CC,CalC)
 
 # Then create different temporal results
-SE_annual <- combine_currents %>% 
-  group_by(current, year, lon,lat) %>% 
-  summarise(count = n())
-
-SE_summer <- combine_currents %>% 
+# First filter out only the SE data
+SE_renamed <-current_winds %>% 
+  filter(wind_dir_from >= 180, wind_dir_from <= 270)
+# Then create diifferent temporal results
+SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season) %>% 
-  summarise(count = n())
+  summarise(count = n(),
+            mean_dir_from = mean(wind_dir_from, na.rm = T),
+            mean_temp = mean(temp, na.rm = T))
 
-SE_monthly <- combine_currents %>% 
+SE_monthly <- SE_renamed %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
-  summarise(count = n())
-
+  summarise(count = n(),
+            mean_dir = mean(dir, na.rm = T),
+            mean_temp = mean(temp, na.rm = T))
 # Plots
-## Annual count of SE wind
-ggplot(data = SE_annual, aes(x = year, y = count)) +
-  geom_line() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~current)
-
 ## Annual count of SE wind in Summer
-### The trends between annual and summer SE wind counts are remarkably similar
-
-ggplot(data = SE_summer, aes(x = year, y = count)) +
-  geom_line() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~current)
-
 ## Summer month count of SE winds
 ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current)
+
+# Monthly mean temperature
+ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current)
+
+
+slope_calc <- function(df){
+  df %>% 
+    mutate(row_num = 1:n()) %>% 
+    do(mod1 = lm(count ~ row_num, data = .),
+       mod2 = lm(mean_temp ~ row_num, data = .),
+       mod3 = lm(mean_temp ~ count, data = .),
+       mod4 = cor(.$mean_temp, .$count, method = "pearson", use = "complete.obs")[1]) %>% 
+    mutate(wind_slope = summary(mod1)$coeff[2],
+           temp_slope = summary(mod2)$coeff[2],
+           temp_wind_slope = summary(mod3)$coeff[2],
+           temp_wind_r = mod4[1],
+           temp_wind_r2 = glance(mod3)$adj.r.squared) %>%
+    select(-mod1, -mod2, -mod3, -mod4) %>% 
+    mutate_if(is.numeric, round, 2)
+}
+# glance(lm(mean_temp ~ count, data = SE_annual))
+# Summer stats
+SE_summer %>% 
+  group_by(current, season) %>% 
+  slope_calc()
+# Monthly summer stats
+SE_monthly %>% 
+  group_by(current, season, month) %>% 
+  slope_calc()
 
 # 3: ANOVA analyses ----------------------------------------------------
 # ANOVA anlyses coparing is the number of signals detected each year and each season varied over time
