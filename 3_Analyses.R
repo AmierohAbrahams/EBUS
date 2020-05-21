@@ -61,8 +61,9 @@ current_winds <- rbind(BC,HC,CC,CalC)
 
 # Then create different temporal results
 # First filter out only the SE data
-SE_renamed <-current_winds %>% 
-  filter(wind_dir_from >= 180, wind_dir_from <= 270)
+SE_renamed <- current_winds %>% 
+  filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
+  unique()
 # Then create diifferent temporal results
 SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
@@ -75,8 +76,26 @@ SE_monthly <- SE_renamed %>%
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
   summarise(count = n(),
-            mean_dir = mean(dir, na.rm = T),
+            mean_dir = mean(wind_dir_from, na.rm = T),
             mean_temp = mean(temp, na.rm = T))
+
+BC_pixels <- SE_renamed %>% 
+  filter(current == "BC") %>% 
+  dplyr::select(lon, lat) %>% 
+  unique()
+CC_pixels <- SE_renamed %>% 
+  filter(current == "CC") %>% 
+  dplyr::select(lon, lat) %>% 
+  unique()
+HC_pixels <- SE_renamed %>% 
+  filter(current == "HC") %>% 
+  dplyr::select(lon, lat) %>% 
+  unique()
+CalC_pixels <- SE_renamed %>% 
+  filter(current == "CalC") %>% 
+  dplyr::select(lon, lat) %>% 
+  unique()
+
 # Plots
 ## Annual count of SE wind in Summer
 ## Summer month count of SE winds
@@ -118,7 +137,7 @@ SE_monthly %>%
   slope_calc()
 
 # 3: ANOVA analyses ----------------------------------------------------
-# ANOVA anlyses coparing is the number of signals detected each year and each season varied over time
+# ANOVA analyses comparing is the number of signals detected each year and each season varied over time
 
 load("data_complete/BC_UI_metrics.RData")
 load("data_complete/HC_UI_metrics.RData")
@@ -172,17 +191,20 @@ total_signals <- combined_products %>%
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year) %>% 
   summarise(y = n()) %>% 
-  rename(count = y)
+  rename(count = y) %>% 
+  data.frame() #%>% 
+  # mutate(year = as.character(year))
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
-# signals detected by each of the currentsfor each year and season
+# signals detected by each of the currents for each year and season
 
 anova_func <- function(df){
-  sites_aov <- aov(count ~ current *year * season, data = df)
+  sites_aov <- aov(count ~ current * year * season, data = df)
   return(sites_aov)
 }
 
-summary(count_aov<- anova_func(df = total_signals))
+summary(count_aov <- anova_func(df = total_signals))
+TukeyHSD(aov(count ~ current * year * season, data = total_signals))
 
 # 3: Linear models ----------------------------------------------------
 # ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
