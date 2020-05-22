@@ -95,48 +95,35 @@ HC_temp <- HC-avhrr-only-v2.Document-Document.csv
 ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/BC/wind_165.nc'
 nc <- nc_open(ncFile)
 fNameStem <- substr(basename(ncFile), 1, 13)
-u_10 <- ncvar_get(nc, varid = "u10") %>%
+u <- ncvar_get(nc, varid = "u10") %>%
   round(4)
-dimnames(u_10) <- list(lon = nc$dim$lon$vals,
+dimnames(u) <- list(lon = nc$dim$lon$vals,
                        lat = nc$dim$lat$vals,
                        time = nc$dim$time$vals)
 nc_close(nc)
-u_10_df <- as_tibble(melt(u_10, value.name = "u_10"))
-u_10_df$time <- as.POSIXct(u_10_df$time * 60 * 60, origin = "1900-01-01")
-tidy <- u_10_df %>%
-  separate(col = time, into = c("year", "month","day1"), sep = "-")
-t2 <- tidy %>%
-  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
-  select(day)
-new <- cbind(t2, tidy)
-new <- new %>% 
-  select(lon,lat,year,month ,day,u_10)
-BC_u <- new %>%
-  unite(year, month, day, col = "date", sep = "-")
+u <- as_tibble(melt(u, value.name = "u_10"))
+u$time <- as.POSIXct(u$time * 60 * 60, origin = "1900-01-01")
+BC_u <- u %>% 
+  select(lon,lat,u, time) %>% 
+  rename(date = time)
 # save(BC_u , file = "data/BC_u.RData")
 
 # EXtracting the v variable - 
 ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/BC/wind_166.nc'
 nc <- nc_open(ncFile)
 fNameStem <- substr(basename(ncFile), 1, 14)
-u_10.2 <- ncvar_get(nc, varid = "u10") %>%
+v <- ncvar_get(nc, varid = "v10") %>%
   round(4)
-dimnames(u_10.2) <- list(lon = nc$dim$lon$vals,
+dimnames(v) <- list(lon = nc$dim$lon$vals,
                          lat = nc$dim$lat$vals,
                          time = nc$dim$time$vals)
 nc_close(nc)
-u_10.2_df <- as_tibble(melt(u_10.2, value.name = "u_10"))
-u_10.2_df$time <- as.POSIXct(u_10.2_df$time * 60 * 60, origin = "1900-01-01")
-tidy <- u_10.2_df %>%
-  separate(col = time, into = c("year", "month","day1"), sep = "-")
-t2 <- tidy %>%
-  separate(col = day1, into = c("day", "hour"), sep = " ") %>% 
-  select(day)
-new <- cbind(t2, tidy)
-new <- new %>% 
-  select(lon,lat,year,month ,day,u_10)
-BC_v <- new %>%
-  unite(year, month, day, col = "date", sep = "-")
+v <- as_tibble(melt(v, value.name = "v_10"))
+v$time <- as.POSIXct(v$time * 60 * 60, origin = "1900-01-01")
+
+BC_v <- v %>% 
+  select(lon,lat,v, time) %>% 
+  rename(date = time)
 # save(BC_v , file = "data/BC_v.RData")
 
 # BC_fin <- rbind(BC_u,BC_v)

@@ -30,3 +30,6 @@ Graph and stats showing the output of the GAM
 How will I display the mean, intensity and duration showing changes or not after time
 - How did wind patterns change over time? Is the changes in upwelling because of changes in wind patterns
 -NMDS?PCA?
+
+# Things to do
+- add upwelling signals divided by the number of pixels for each reegion and then plot the lm

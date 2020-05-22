@@ -282,4 +282,3 @@ ggplot(data = combined_products, aes(x = date_start, y = duration, colour = curr
 
 
 
-
