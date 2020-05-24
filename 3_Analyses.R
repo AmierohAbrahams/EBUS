@@ -35,13 +35,15 @@ library(coastR)
 library(mgcv) # for gam
 library(FNN)
 library(broom)
+library(circular)
 source("functions/theme.R")
 options(scipen=999) 
 
 # 2: Wind pattern observation ----------------------------------------------------
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
-load("data_complete/CC_coastal.RData") # These datasets used here were created in script "1_Temp_wind_data.R and 4_EBUS_Temp_wind_data.R"
+# The datasets used here were created in script "1_upwelling_identification.R"
+load("data_complete/CC_coastal.RData") 
 load("data_complete/CalC_coastal.RData")
 load("data_complete/BC_coastal.RData")
 load("data_complete/HC_coastal.RData")
@@ -102,16 +104,26 @@ CalC_pixels <- SE_renamed %>%
 # Plots
 ## Annual count of SE wind in Summer
 ## Summer month count of SE winds
+
+
+# New facet label names
+supp.labs <- c("Benguela current", "California current", "Canary current", "Humboldt current")
+names(supp.labs) <- c("BC", "CalC","CC", "HC")
+
 ggplot(data = SE_monthly, aes(x = year, y = count)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current)
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Wind") +
+  theme(strip.text = element_text(face="bold", size=12))
 
 # Monthly mean temperature
 ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current)
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Temperature (°C)") +
+  theme(strip.text = element_text(face="bold", size=12))
 
 
 slope_calc <- function(df){
@@ -134,6 +146,7 @@ slope_calc <- function(df){
 SE_summer %>% 
   group_by(current, season) %>% 
   slope_calc()
+
 # Monthly summer stats
 SE_monthly %>% 
   group_by(current, season, month) %>% 
@@ -281,4 +294,6 @@ ggplot(data = combined_products, aes(x = date_start, y = duration, colour = curr
 
 
 
-
+# The upwelling count/pixels
+# slope interpretation
+# Preping word doc
