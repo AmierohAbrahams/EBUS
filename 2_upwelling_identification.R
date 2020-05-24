@@ -20,7 +20,7 @@ library(FNN)
 source("functions/theme.R")
 
 # Load data
-# Data loaded and created in "1_EBUS-upwelling_identification.R"
+# Data loaded here was created in "1_Temp_wind_data.R"
 load("data_complete/CC_complete.RData")
 load("data_complete/CalC_complete.RData")
 load("data_complete/HC_complete.RData")
@@ -35,7 +35,7 @@ CalC_complete <- CalC_complete %>%
 HC_complete <- HC_complete %>% 
   mutate(lon = lon - 360)
 
-# Loading the temperature data this is the OISST data extracted to the regions (See extraction folder)
+# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVscript in the data extraction folder)
 CC_temp <- read_csv("data_complete/CC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 CalC_temp <- read_csv("data_complete/CalC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 HC_temp <- read_csv("data_complete/HC_temp.csv", col_names = c("lon", "lat", "temp", "date"))

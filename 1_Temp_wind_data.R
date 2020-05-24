@@ -17,6 +17,7 @@ source("functions/theme.R")
 # : Match wind and temperature data ----------------------------------------------------
 # This is the wind u and v data for each current (See extraction folder)
 
+# The data loaded here were extracted in the netCDF2CSV script in the data extraction folder
 load("data_wind_uv/CC_wind_fin.RData")
 load("data_wind_uv/CalC_wind_fin.RData")
 load("data_wind_uv/HC_wind_fin.RData")
@@ -40,7 +41,7 @@ CalC_wind_fin <- wind_func(df = CalC_wind_fin)
 HC_wind_fin <- wind_func(df = HC_wind_fin)
 
 # Function for matching temps and wind
-# Loading the temperature data this is the OISST data extracted to the regions (See extraction folder)
+# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVscript in the data extraction folder)
 CC_temp <- read_csv("data_complete/CC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 CalC_temp <- read_csv("data_complete/CalC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 HC_temp <- read_csv("data_complete/HC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
