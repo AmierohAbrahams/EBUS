@@ -42,7 +42,7 @@ options(scipen=999)
 # 2: Wind pattern observation ----------------------------------------------------
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
-# The datasets used here were created in script "1_upwelling_identification.R"
+# The datasets used here were created in script "2_upwelling_identification.R"
 load("data_complete/CC_coastal.RData") 
 load("data_complete/CalC_coastal.RData")
 load("data_complete/BC_coastal.RData")
@@ -61,11 +61,13 @@ CalC <- CalC_coastal %>%
 
 current_winds <- rbind(BC,HC,CC,CalC)
 
+# current_winds <- rbind(BC,HC,CC,CalC)
 # Then create different temporal results
 # First filter out only the SE data
 SE_renamed <- current_winds %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique()
+
 # Then create diifferent temporal results
 SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
@@ -101,9 +103,6 @@ CalC_pixels <- SE_renamed %>%
   dplyr::select(lon, lat) %>% 
   unique()
 
-# Plots
-## Annual count of SE wind in Summer
-## Summer month count of SE winds
 
 
 # New facet label names
@@ -126,6 +125,38 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   theme(strip.text = element_text(face="bold", size=12))
 
 
+# For each current and not each pixel
+CC_wind <- SE_monthly %>% 
+  filter(current == "CC") %>% 
+  mutate(signal = count / 86)
+
+BC_wind <- SE_monthly %>% 
+  filter(current == "BC") %>% 
+  mutate(signal = count / 38)
+
+CalC_wind <- SE_monthly %>% 
+  filter(current == "CalC") %>%
+  mutate(signal = count / 45)
+
+HC_wind <- SE_monthly %>% 
+  filter(current == "HC") %>% 
+  mutate(signal = count / 42)
+
+complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
+
+# Plots
+## Annual count of SE wind in Summer
+## Summer month count of SE winds
+
+# complete wind
+ggplot(data = complete_wind, aes(x = year, y = signal)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Count") +
+  theme(strip.text = element_text(face="bold", size=12))
+
+
 slope_calc <- function(df){
   df %>% 
     mutate(row_num = 1:n()) %>% 
@@ -143,12 +174,12 @@ slope_calc <- function(df){
 }
 # glance(lm(mean_temp ~ count, data = SE_annual))
 # Summer stats
-SE_summer %>% 
+complete_wind%>% 
   group_by(current, season) %>% 
   slope_calc()
 
 # Monthly summer stats
-SE_monthly %>% 
+complete_wind%>% 
   group_by(current, season, month) %>% 
   slope_calc()
 
@@ -189,7 +220,7 @@ CC_UI_metrics <- seasons_N_func(df = CC_UI_metrics)
 CalC_UI_metrics <- seasons_N_func(df = CalC_UI_metrics)
 
 BC_UI_metrics <- BC_UI_metrics %>% 
-  mutate(current = "BC")
+  mutate(current = "BC") 
 HC_UI_metrics <- HC_UI_metrics %>% 
   mutate(current = "HC")
 CC_UI_metrics <- CC_UI_metrics %>% 
@@ -203,31 +234,74 @@ combined_products <- rbind(BC_UI_metrics,HC_UI_metrics,CC_UI_metrics,CalC_UI_met
 
 load("data_complete/combined_products.RData")
 
+# Total signals at each pixel
 total_signals <- combined_products %>%
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year) %>% 
+# group_by(lat, lon) %>% 
   summarise(y = n()) %>% 
   rename(count = y) %>% 
-  data.frame() #%>% 
-  # mutate(year = as.character(year))
+  data.frame() 
+
+CC_signals <- CC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 86)
+  
+
+BC_signals <- BC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 38)
+
+CalC_signals <- CalC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 45)
+
+
+HC_signals <- HC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 42)
+
+complete_signal <- rbind(CC_signals,BC_signals,CalC_signals,HC_signals)
+# save(complete_signal, file = "data_complete/complete_signal.RData")
+
+summer_signal <- complete_signal %>% 
+  filter(season == "Summer") %>% 
+  group_by(current, year, month) 
+
+ggplot(data = summer_signal, aes(x = year, y = signal)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Count") +
+  theme(strip.text = element_text(face="bold", size=12))
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
 # signals detected by each of the currents for each year and season
 
 anova_func <- function(df){
-  sites_aov <- aov(count ~ current * year * season, data = df)
+  sites_aov <- aov(signal ~ current * year, data = df)
   return(sites_aov)
 }
 
-summary(count_aov <- anova_func(df = total_signals))
-TukeyHSD(aov(count ~ current * year * season, data = total_signals))
+summary(count_aov <- anova_func(df = complete_signal))
 
 # 3: Linear models ----------------------------------------------------
 # ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
 # between currents and seasons over a 30 year period
 
 load("data_complete/combined_products.RData")
+# load("data_complete/complete_signal.RData")
 
+# combined_products <- combined_products %>% 
+#   drop_na()
 # Calculate all of the linear models
 lm_coeff <- function(df){
   res <- lm(formula = val ~ date_peak, data = df)
@@ -291,9 +365,3 @@ ggplot(tss_pred, aes(x = year, y = measurements, col = current, group = current)
 ggplot(data = combined_products, aes(x = date_start, y = duration, colour = current)) +
   #geom_point() +
   geom_smooth()
-
-
-
-# The upwelling count/pixels
-# slope interpretation
-# Preping word doc
