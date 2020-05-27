@@ -104,7 +104,6 @@ CalC_pixels <- SE_renamed %>%
   unique()
 
 
-
 # New facet label names
 supp.labs <- c("Benguela current", "California current", "Canary current", "Humboldt current")
 names(supp.labs) <- c("BC", "CalC","CC", "HC")
