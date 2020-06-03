@@ -6,30 +6,69 @@ data_complete/BC_complete.RData
 data_wind_uv
 data_complete/BC_temp.csv
 
+#---------------------------------------------------------------------------------------------------------------------------------------------
 # Meeting
 -Changed the regions to fit the Reduced Nearshore Warming Associated With Eastern Boundary
 Upwelling Systems; Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 ,
 Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
 - The CalC and HC were only two currents that needed change - Tip to self: See data_new folder
-
-
 # Discussion
 Andrew Bakun suggested that upwelling patterns will change as a
 result of climate change affecting the pressure gradients and thus affecting wind patterns. 
 Here we test if this predicted changes are occuring over a 30 year period.
-
 #Intructions
 Compare how coastal upwelling chnaged overtime 
 	-Got our coastal region
-
 Linear trend: No linear trend exist
 GAM -maybe there is no linear pattern(?) but exponential pattern
-
 Graph and stats showing the output of the GAM
-
 How will I display the mean, intensity and duration showing changes or not after time
 - How did wind patterns change over time? Is the changes in upwelling because of changes in wind patterns
 -NMDS?PCA?
-
 # Things to do
 - add upwelling signals divided by the number of pixels for each reegion and then plot the lm
+
+#--------------------------------------------------------------------------------------------------------------------------------
+# Meeting Rob 4th June 2020
+- Update on past meetings progress
+- Discuss AJ edits and send Introduction thesis by end day on thursday
+
+Questions:
+
+In thesis we make use of heatwaveR package and we use the Hobday et al approach to treat upwellin as an event, but what is the scientific 
+reasons for doing so.
+Problem statement: What are we trying to achieve with this using the unknown knowledge
+
+# Possible way forward to identify trends in upwelling by looking at SST and Wind patterns
+
+Trend analyses to show that there are changes in the intensity of upwelling over time.
+In the heatwaveR package we look more closely at the intensity and duration of events by looking at signals
+
+
+Main Aim:
+To test whether observational trends follow the mechanism proposed by Andrew Bakun
+
+Step 1:
+Calculate the moving avergae of each time series to test if a seasonal influence existed
+Find linear trends for each time series
+
+Plot:
+- X axis time,
+- Y axis SST
+On the plot will be a line graph showing SST for the benguela current
+A line showing the linear trend (Does this show a warming trend?)
+A line plotting the moving average
+
+This will be repeated for wind 
+
+Finallly does this agree to the Bakun hypothesis
+
+
+
+
+
+
+
+
+
+
