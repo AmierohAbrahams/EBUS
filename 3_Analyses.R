@@ -6,23 +6,11 @@
 # 3: ANOVA analyses
 # 4: Linear models
 # 5: GAMS
+# 6: Trends
 
 # climate change as a result of global warining resulted in changes in wind patterns and
 # ultimately lead to changes in the duration and intensity of upwelling events overtime.
 # Changing upwelling region boundries for each current
-# The latitudes were changes to match the following paper
-# Reduced Nearshore Warming Associated With Eastern Boundary Upwelling Systems
-# Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 , Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
-# BC_official <- BC_complete # Match the paper
-# #save(BC_official, file = "data_complete/BC_official.RData")
-# CalC_official <- CalC_complete # Match the paper
-# #save(CalC_official, file = "data_complete/CalC_official.RData")
-# CC_official <- CC_complete %>% 
-#   filter(lat >= 15, lat <= 45)
-# #save(CC_official, file = "data_complete/CC_official.RData")
-#HC_official <- HC_complete # Match the paper
-#save(combined_products, file = "data_complete/combined_products.RData")
-
 
 # 1: Setup environment ----------------------------------------------------
 library(gridExtra)
@@ -61,9 +49,9 @@ CalC <- CalC_coastal %>%
 
 current_winds <- rbind(BC,HC,CC,CalC)
 
-# current_winds <- rbind(BC,HC,CC,CalC)
 # Then create different temporal results
 # First filter out only the SE data
+
 SE_renamed <- current_winds %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique()
@@ -85,7 +73,7 @@ SE_monthly <- SE_renamed %>%
             circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
             mean_temp = mean(temp, na.rm = T))
 
-
+# Determining the number of pixels within each current
 BC_pixels <- SE_renamed %>% 
   filter(current == "BC") %>% 
   dplyr::select(lon, lat) %>% 
@@ -108,12 +96,12 @@ CalC_pixels <- SE_renamed %>%
 supp.labs <- c("Benguela current", "California current", "Canary current", "Humboldt current")
 names(supp.labs) <- c("BC", "CalC","CC", "HC")
 
-ggplot(data = SE_monthly, aes(x = year, y = count)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Wind") +
-  theme(strip.text = element_text(face="bold", size=12))
+# ggplot(data = SE_monthly, aes(x = year, y = count)) +
+#   geom_line(aes(colour = month)) +
+#   geom_smooth(aes(colour = month), method = "lm") +
+#   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+#   labs(x = "Year", y = "Wind") +
+#   theme(strip.text = element_text(face="bold", size=12))
 
 # Monthly mean temperature
 ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
@@ -123,6 +111,7 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   labs(x = "Year", y = "Temperature (°C)") +
   theme(strip.text = element_text(face="bold", size=12))
 
+# No warming changes in SST over a 30 year periodwhen comparing summer seasons.
 
 # For each current and not each pixel
 CC_wind <- SE_monthly %>% 
@@ -147,7 +136,7 @@ complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
 ## Annual count of SE wind in Summer
 ## Summer month count of SE winds
 
-# complete wind
+# Number of signals
 ggplot(data = complete_wind, aes(x = year, y = signal)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
@@ -270,6 +259,7 @@ HC_signals <- HC_UI_metrics %>%
 
 complete_signal <- rbind(CC_signals,BC_signals,CalC_signals,HC_signals)
 # save(complete_signal, file = "data_complete/complete_signal.RData")
+load("data_complete/complete_signal.RData")
 
 summer_signal <- complete_signal %>% 
   filter(season == "Summer") %>% 
@@ -364,3 +354,5 @@ ggplot(tss_pred, aes(x = year, y = measurements, col = current, group = current)
 ggplot(data = combined_products, aes(x = date_start, y = duration, colour = current)) +
   #geom_point() +
   geom_smooth()
+
+
