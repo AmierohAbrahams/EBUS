@@ -355,4 +355,6 @@ ggplot(data = combined_products, aes(x = date_start, y = duration, colour = curr
   #geom_point() +
   geom_smooth()
 
+# work on gaps in data
+
 
