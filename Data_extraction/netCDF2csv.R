@@ -92,9 +92,8 @@ HC_temp <- HC-avhrr-only-v2.Document-Document.csv
 # This extraction is for the Benguela Current the same is repeated for the Canary, California and Humboldt current
 
 # EXtracting the u variable - 
-ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/BC/wind_165.nc'
+ncFile <- '/home/amieroh/Downloads/data.nc'
 nc <- nc_open(ncFile)
-fNameStem <- substr(basename(ncFile), 1, 13)
 u <- ncvar_get(nc, varid = "u10") %>%
   round(4)
 dimnames(u) <- list(lon = nc$dim$lon$vals,
