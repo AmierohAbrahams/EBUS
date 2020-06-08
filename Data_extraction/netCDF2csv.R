@@ -15,8 +15,7 @@ library(lubridate)
 library(stringr)
 library(doMC); doMC::registerDoMC(cores = 4)
 library(heatwaveR)
-
-
+library(plyr)
 # bbox were determined using the parameters in the following paper
 # Reduced Nearshore Warming Associated With Eastern Boundary Upwelling Systems 
 # Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 ,
@@ -28,16 +27,16 @@ library(heatwaveR)
 
 
 # 2: Extract the OISST data ---------------------------------------------------------------------------------
-
-bbox <- data.frame(BC = c(-35, -25, 15, 20), # Benguela Current
-                   CC = c(15, 45, 340, 355), # Canary Current
-                   CalC = c(25, 45, 225, 240), # California Current
-                   HC = c(-45.5, -7.5, 275, 290), # Humboldt Current
+  bbox <- data.frame(BC = c(-35, -15, 10, 20), # Benguela Current
+                   CC = c(15, 45, 340, 350), # Canary Current
+                   CalC = c(25, 45, 230, 250), # California Current
+                   HC = c(-45.5, -7.5, 280, 290), # Humboldt Current
                    row.names = c("latmin", "latmax", "lonmin", "lonmax"))
 
 
 nc.dir <- "/home/amieroh/Documents/Data/Datasets/AVHRR/OISST"
-csv.dir <- "/home/amieroh/Documents/Data/Datasets/AVHRR/spatial" # Also stored on my harddrive
+csv.dir <- "/media/amieroh/Amieroh/spatial"
+
 
 read_nc <- function(ncFile, location = location, csv.dir = csv.dir) {
   coords <- bbox[,location]
@@ -70,12 +69,12 @@ read_nc <- function(ncFile, location = location, csv.dir = csv.dir) {
 ncList <- list.files(path = nc.dir, pattern = "*.nc", full.names = TRUE, include.dirs = TRUE)
 strtDate <- str_sub(ncList[1], start = 15, end = 22)
 endDate <- str_sub(ncList[length(ncList)], start = 15, end = 22)
-
+dplyr::
 ## apply the function
-# system.time(llply(ncList, read_nc, location = "BC", csv.dir = csv.dir, .parallel = TRUE))
-# system.time(llply(ncList, read_nc, location = "CC", csv.dir = csv.dir, .parallel = TRUE))
-# system.time(llply(ncList, read_nc, location = "CalC", csv.dir = csv.dir, .parallel = TRUE))
-# system.time(llply(ncList, read_nc, location = "HC", csv.dir = csv.dir, .parallel = TRUE))
+system.time(llply(ncList, read_nc, location = "BC", csv.dir = csv.dir, .parallel = TRUE))
+system.time(llply(ncList, read_nc, location = "CC", csv.dir = csv.dir, .parallel = TRUE))
+system.time(llply(ncList, read_nc, location = "CalC", csv.dir = csv.dir, .parallel = TRUE))
+system.time(llply(ncList, read_nc, location = "HC", csv.dir = csv.dir, .parallel = TRUE))
 
 BC_temp <- BC-avhrr-only-v2.Document-Document.csv
 CC_temp <- CC-avhrr-only-v2.Document-Document.csv
