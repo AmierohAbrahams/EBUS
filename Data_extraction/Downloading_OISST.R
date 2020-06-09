@@ -17,7 +17,7 @@ library(doParallel) # For parallel processing
 # First we tell R where the data are on the interwebs
 OISST_base_url <- "https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/v2.1/access/avhrr/"
 
-OISST_dates <- data.frame(t = seq(as.Date("2018-07-01"), as.Date("2020-05-31"), by = "day"))
+OISST_dates <- data.frame(t = seq(as.Date("2018-07-01"), as.Date("2020-05-20"), by = "day"))
 
 # To finish up this step we add some text to those dates so they match the OISST file names
 OISST_files <- OISST_dates %>%
@@ -27,8 +27,8 @@ OISST_files <- OISST_dates %>%
          file_name = paste0(OISST_base_url, t_month, "/", "oisst-avhrr-v02r01.", t_day ,".nc"))
 
 OISST_url_daily_dl <- function(target_URL){
-  dir.create("~/data/OISST", showWarnings = F)
-  file_name <- paste0("~/data/OISST/",sapply(strsplit(target_URL, split = "/"), "[[", 10))
+  dir.create("~/home/amieroh/Documents/EBUS/data/OISST", showWarnings = F)
+  file_name <- paste0("~/home/amieroh/Documents/EBUS/data/OISST/",sapply(strsplit(target_URL, split = "/"), "[[", 10))
   if(!file.exists(file_name)) download.file(url = target_URL, method = "libcurl", destfile = file_name)
 }
 
@@ -36,6 +36,7 @@ doParallel::registerDoParallel(cores = 3)
 
 # And with that we are clear for take off
 system.time(plyr::l_ply(OISST_files$file_name, .fun = OISST_url_daily_dl, .parallel = T)) # ~15 seconds
+
 
 OISST_load <- function(file_name, lon1, lon2, lat1, lat2){
   OISST_dat <- tidync(file_name) %>%
@@ -48,24 +49,28 @@ OISST_load <- function(file_name, lon1, lon2, lat1, lat2){
   return(OISST_dat)
 }
 
-
 # Locate the files that will be loaded
-OISST_files <- dir("~/data/OISST", full.names = T)
+OISST_files <- dir("/home/amieroh/Documents/EBUS/data/OISST", full.names = T)
 
+rm(OISST_dat);gc()
+
+
+OISST_BC <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
+                         lon1 = 10, lon2 = 20, lat1 = -35, lat2 = -15)
 # Load the data in parallel
 OISST_BC <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
                         lon1 = -35, lon2 = -15, lat1 = 10, lat2 = 20)
 
+save(OISST_BC , file = "data_complete/OISST_BC.RData")
 
 OISST_HC <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
-                        lon1 = -45.5, lon2 = -7.5, lat1 = 280, lat2 = 290)
-
+                        lon1 = 280 , lon2 = 290 , lat1 = -45.5, lat2 = -7.5)
+save(OISST_HC , file = "data_complete/OISST_HC.RData")
 
 OISST_CC <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
-                        lon1 = 15, lon2 = 45, lat1 = 340, lat2 = 350)
-
+                        lon1 = 340 , lon2 = 350 , lat1 = 15, lat2 = 45)
+save(OISST_CC , file = "data_complete/OISST_CC.RData")
 
 OISST_CalC <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
-                          lon1 = 25, lon2 = 45, lat1 = 280, lat2 = 290)
-
-
+                          lon1 = 280, lon2 = 290, lat1 = 25, lat2 = 45)
+save(OISST_CalC , file = "data_complete/OISST_CalC.RData")
