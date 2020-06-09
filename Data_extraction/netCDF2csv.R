@@ -25,7 +25,6 @@ library(plyr)
 # Marisol García-Reyes 1 *, William J. Sydeman 1 , David S. Schoeman 2 ,
 # Ryan R. Rykaczewski 3 , Bryan A. Black 4 , Albertus J. Smit 5 and Steven J. Bograd 6
 
-
 # 2: Extract the OISST data ---------------------------------------------------------------------------------
   bbox <- data.frame(BC = c(-35, -15, 10, 20), # Benguela Current
                    CC = c(15, 45, 340, 350), # Canary Current
@@ -90,43 +89,83 @@ HC_temp <- HC-avhrr-only-v2.Document-Document.csv
 
 # This extraction is for the Benguela Current the same is repeated for the Canary, California and Humboldt current
 
-# EXtracting the u variable - 
-ncFile <- '/home/amieroh/Downloads/data.nc'
+# New downloading ERA5 u and v variables
+# Extracting the data
+
+# To obtain ERA 5 wind data one needs to download u and v wind variables
+# These variables are collected every hour for every day
+# Here I extract u and v wind variables and then convert them to daily data in order to match the OISST daily temperature data
+# ERA 5 does not have daily wind variables only hourly
+
+library(ncdf4)
+library(ncdump)
+library(tidync) # tidync is unfortunately not loading on the computer with more RAM for some reason
+library(tidyverse)
+library(reshape2)
+library(lubridate)
+library(stringr)
+library(circular)
+library(doParallel); doParallel::registerDoParallel(cores = 8) 
+# RWS: I find doParallel to be more stable than doMC after recent updates to the tidyverse
+
+
+# Check netCDF info -------------------------------------------------------
+
+ncdump::NetCDF('~/R/forOthers/Amieroh/data.nc')
+
+
+# Load with ncdf4 ---------------------------------------------------------
+
+# Works but the time variables is not accurate
+# ncFile <- '/home/amieroh/Downloads/data.nc'
+ncFile <- '/home/amieroh/Downloads/data1.nc'
 nc <- nc_open(ncFile)
 u <- ncvar_get(nc, varid = "u10") %>%
   round(4)
 dimnames(u) <- list(lon = nc$dim$lon$vals,
-                       lat = nc$dim$lat$vals,
-                       time = nc$dim$time$vals)
-nc_close(nc)
+                    lat = nc$dim$lat$vals,
+                    time = nc$dim$time$vals)
+# nc_close(nc)
 u <- as_tibble(melt(u, value.name = "u_10"))
-u$time <- as.POSIXct(u$time * 60 * 60, origin = "1900-01-01")
-BC_u <- u %>% 
-  select(lon,lat,u, time) %>% 
-  rename(date = time)
-# save(BC_u , file = "data/BC_u.RData")
+u$time <- as.Date(as.POSIXct(u$time * 60 * 60, origin = "1900-01-01"))
+BC_u <- u %>%
+  dplyr::rename(t = time) %>% 
+  group_by(lon, lat, t) %>% 
+  summarise(u_10 = mean(u_10, na.rm = T))
 
-# EXtracting the v variable - 
-ncFile <- '/home/amieroh/Documents/Data/Datasets/ERA5/BC/wind_166.nc'
-nc <- nc_open(ncFile)
-fNameStem <- substr(basename(ncFile), 1, 14)
-v <- ncvar_get(nc, varid = "v10") %>%
-  round(4)
-dimnames(v) <- list(lon = nc$dim$lon$vals,
-                         lat = nc$dim$lat$vals,
-                         time = nc$dim$time$vals)
+# Test coords
+u_lon <- nc$dim$lon$vals
+u_lat <- nc$dim$lat$vals
 nc_close(nc)
-v <- as_tibble(melt(v, value.name = "v_10"))
-v$time <- as.POSIXct(v$time * 60 * 60, origin = "1900-01-01")
 
-BC_v <- v %>% 
-  select(lon,lat,v, time) %>% 
-  rename(date = time)
-# save(BC_v , file = "data/BC_v.RData")
+# Test time creation
+u_test <- u %>% 
+  filter(lon == u$lon[1], lat == u$lat[1]) %>% 
+  mutate(time = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01")))
 
-# BC_fin <- rbind(BC_u,BC_v)
-# save(BC_fin , file = "data/BC_fin.RData")
-# save(HC_fin , file = "data/HC_fin.RData")
-# save(CC_fin , file = "data/CC_fin.RData")
-# save(CalC_fin , file = "data/CalC_fin.RData")
 
+# Load with tidync --------------------------------------------------------
+
+wind_daily <- tidync("/home/amieroh/Downloads/data1.nc") %>%
+  hyper_tibble() %>% 
+  dplyr::select(longitude, latitude, time, v10, u10) %>% 
+  mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) #%>% 
+
+  # group_by(lon, lat, t) %>%
+  # summarise(u10 = mean(u10, na.rm = T), # To get daily values from hourly
+  #           v10 = mean(v10,na.rm = T)) 
+
+# This is the latest data up to 2020 saved as BC/CC/CalC/HC in the complete_data folder
+# Latest OISST data for rthe corrrect region is on Hardrive and in data/OISST file from 2018-2020
+
+CC_temp <- read_csv("~/Documents/CC-avhrr-only-v2.Document-Document.csv", col_names = c("lon", "lat", "temp", "date"))
+CalC_temp <- read_csv("~/Documents/CalC-avhrr-only-v2.Document-Document.csv", col_names = c("lon", "lat", "temp", "date"))
+HC_temp <- read_csv("~/Documents/HC-avhrr-only-v2.Document-Document.csv", col_names = c("lon", "lat", "temp", "date"))
+BC_temp <- read_csv("~/Documents/BC-avhrr-only-v2.Document-Document.csv", col_names = c("lon", "lat", "temp", "date"))
+OISST_HC <- OISST_HC %>% 
+  rename(date = t)
+HC <- rbind(HC_temp,OISST_HC)
+save(HC, file = "data_complete/HC.RData") 
+rm(HC); gc()
+rm(HC_temp); gc()
+rm(OISST_HC);gc()
