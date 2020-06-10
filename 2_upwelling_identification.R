@@ -41,6 +41,12 @@ CalC_temp <- read_csv("data_complete/CalC_temp.csv", col_names = c("lon", "lat",
 HC_temp <- read_csv("data_complete/HC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
 
+# # Loading long time series data
+# load("~/Documents/EBUS/data_complete/BC.RData")
+# load("~/Documents/EBUS/data_complete/HC.RData")
+# load("~/Documents/EBUS/data_complete/CC.RData")
+# load("~/Documents/EBUS/data_complete/CalC.RData")
+# BC_temp <- BC
 
 # 2: Find the coastal pixels ----------------------------------------------
 # Isolate the unique pixel coordinates
@@ -139,6 +145,11 @@ rm(HC_complete, HC_temp); gc()
 BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>% 
   left_join(BC_transects, by = c("lon", "lat"))
 # save(BC_coastal, file = "data_complete/BC_coastal.RData")
+
+# # Long time series
+# BC_long <- left_join(BC_coastal_coords, BC, by = c("lon", "lat")) %>% 
+#   left_join(BC_transects, by = c("lon", "lat"))
+# save(BC_long, file = "data_complete/BC_long.RData")
 
 # 3: Calculate upwelling and the metrics ----------------------------------
 
