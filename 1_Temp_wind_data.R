@@ -24,9 +24,9 @@ load("data_wind_uv/HC_wind_fin.RData")
 load("data_wind_uv/BC_wind_fin.RData") 
 
 BC_wind_fin <- BC_wind_fin %>% 
-  mutate(date = as.Date(fastPOSIXct(date, tz = "GMT")),
-         lat = lat - 0.125,
-         lon = lon + 0.125)
+  mutate( lat = lat - 0.125,
+         lon = lon + 0.125) %>% 
+  rename(date = t)
 
 wind_func <- function(df){
   wind <- df %>% 
@@ -50,7 +50,7 @@ BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "te
 match_func <- function(temp_df, wind_df){
   match <- wind_df  %>%
     left_join(temp_df, by = c("lon",  "lat", "date")) %>%
-    na.trim()
+    drop_na()
   return(match)
 }
 
@@ -58,7 +58,7 @@ match_func <- function(temp_df, wind_df){
 CC_match <- match_func(temp_df = CC_temp, wind_df = CC_wind_fin)
 CalC_match <- match_func(temp_df = CalC_temp, wind_df = CalC_wind_fin)
 HC_match <- match_func(temp_df = HC_temp, wind_df = HC_wind_fin)
-BC_match <- match_func(temp_df = BC_temp, wind_df = BC_wind_fin) 
+BC_match <- match_func(temp_df = BC_long, wind_df = BC_wind_fin) 
 
 # save(CalC_match, file = "data_complete/CalC_match.RData") 
 # save(CC_match, file = "data_complete/CC_match.RData") 
@@ -82,8 +82,8 @@ rm(wind_temp_match_test)
 
 wind_dir_func <- function(df){
   wind_dir <- df %>% 
-    mutate(wind_spd = round(sqrt(u^2 + v^2), 2),
-           wind_dir_from = round((270-(atan2(v, u)*(180/pi)))%%360),
+    mutate(wind_spd = round(sqrt(u10^2 + v10^2), 2),
+           wind_dir_from = round((270-(atan2(v10, u10)*(180/pi)))%%360),
            wind_dir_to = ifelse(wind_dir_from >= 180, wind_dir_from-180, wind_dir_from+180))
 }
 
@@ -94,7 +94,7 @@ CalC_wind <- wind_dir_func(df = CalC_matched2)
 #save(CalC_wind, file = "data_complete/CalC_wind.RData")
 HC_wind <- wind_dir_func(df = HC_match)
 #save(HC_wind, file = "data_complete/HC_wind.RData")
-BC_wind <- wind_dir_func(df = BC_match)
+BC_wind <- wind_dir_func(df = combined)
 # save(BC_wind, file = "data_complete/BC_wind.RData")
 
 # Seasons for the southern hemisphere
