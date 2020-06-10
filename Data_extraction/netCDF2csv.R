@@ -144,12 +144,6 @@ u_test <- u %>%
   mutate(time = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01")))
 
 
-# Load with tidync --------------------------------------------------------
-
-wind_daily <- tidync("/home/amieroh/Downloads/data1.nc") %>%
-  hyper_tibble() %>% 
-  dplyr::select(longitude, latitude, time, v10, u10) %>% 
-  mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) #%>% 
 
   # group_by(lon, lat, t) %>%
   # summarise(u10 = mean(u10, na.rm = T), # To get daily values from hourly
@@ -169,3 +163,65 @@ save(HC, file = "data_complete/HC.RData")
 rm(HC); gc()
 rm(HC_temp); gc()
 rm(OISST_HC);gc()
+# The AJ way ---------------------------------------------------------------------------------------------------------------------------------
+nc <- nc_open("/home/amieroh/Downloads/data1.nc")
+u10 <- ncvar_get(nc, varid = "u10")
+v10 <- ncvar_get(nc, varid = "v10")
+dimnames(v10) <- list(lon = nc$dim$longitude$vals,
+                      lat = nc$dim$latitude$vals,
+                      time = nc$dim$time$vals)
+
+t_origin <- ncatt_get(nc, "time", "units")$value
+t_origin
+
+as.ymd <- function(x) {
+  as.Date(as.POSIXct(x * 3600, origin = "1900-01-01 00:00:00.0"),
+          "GMT",
+          "%Y-%m-%d")
+}
+
+u10_df <- as_tibble(reshape2::melt(u10, value.name = "u10"), row.names = NULL) %>%
+  mutate(time = as.ymd(time)) %>%
+  na.omit()
+
+v10_df <- as_tibble(reshape2::melt(v10, value.name = "v10"), row.names = NULL) %>%
+  mutate(time = as.ymd(time)) %>%
+  na.omit()
+
+v10_df <- v10_df %>% 
+  dplyr::select(-lat,-lon,-time)
+wind1982 <- cbind(u10_df,v10_df)4
+
+###################################################################################################
+# Load with tidync --------------------------------------------------------
+rm(BC_match);gc()
+rm(BC_match1982);gc()
+rm(BC_wind_fin);gc()
+rm(wind_daily);gc()
+
+wind_daily <- tidync("/home/amieroh/Downloads/BC_wind/data39.nc") %>%
+  hyper_tibble() %>% 
+  dplyr::select(longitude, latitude, time, v10, u10) %>% 
+  rename(lon = longitude,
+         lat = latitude) %>% 
+  mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) %>% 
+  dplyr::select(-time)
+
+BC_wind_fin <- wind_daily %>% 
+  mutate( lat = lat - 0.125,
+          lon = lon + 0.125) %>% 
+  rename(date = t)
+
+match_func <- function(temp_df, wind_df){
+  match <- wind_df  %>%
+    left_join(temp_df, by = c("lon",  "lat", "date")) %>%
+    drop_na()
+  return(match)
+}
+
+
+BC_match1982 <- match_func(temp_df = BC_long, wind_df = BC_wind_fin) 
+
+combined <- rbind(combined,BC_match1982)
+save(combined, file = "data_complete/combined.RData")
+
