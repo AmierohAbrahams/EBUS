@@ -21,10 +21,10 @@ source("functions/theme.R")
 
 # Load data
 # Data loaded here was created in "1_Temp_wind_data.R"
-load("data_complete/CC_complete.RData")
-load("data_complete/CalC_complete.RData")
-load("data_complete/HC_complete.RData")
-load("data_complete/BC_complete.RData")
+load("data/CC_complete.RData")
+load("data/CalC_complete.RData")
+load("data/HC_complete.RData")
+load("data/BC_complete.RData")
 
 CC_complete <- CC_complete %>% 
   mutate(lon = lon - 360)
@@ -36,17 +36,10 @@ HC_complete <- HC_complete %>%
   mutate(lon = lon - 360)
 
 # Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVscript in the data extraction folder)
-CC_temp <- read_csv("data_complete/CC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
-CalC_temp <- read_csv("data_complete/CalC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
-HC_temp <- read_csv("data_complete/HC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
-BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
-
-# # Loading long time series data
-# load("~/Documents/EBUS/data_complete/BC.RData")
-# load("~/Documents/EBUS/data_complete/HC.RData")
-# load("~/Documents/EBUS/data_complete/CC.RData")
-# load("~/Documents/EBUS/data_complete/CalC.RData")
-# BC_temp <- BC
+load("~/Documents/EBUS/data_complete/BC.RData")
+load("~/Documents/EBUS/data_complete/HC.RData")
+load("~/Documents/EBUS/data_complete/CC.RData")
+load("~/Documents/EBUS/data_complete/CalC.RData")
 
 # 2: Find the coastal pixels ----------------------------------------------
 # Isolate the unique pixel coordinates
@@ -62,7 +55,7 @@ CC_coords <- coord_func(df = CC_temp)
 CalC_coords <- coord_func(df = CalC_temp)
 HC_coords <- coord_func(df = HC_temp)
 
-BC_coords <- BC_temp %>% 
+BC_coords <- BC %>% 
   dplyr::select(lon, lat) %>% 
   unique()
 
@@ -129,27 +122,23 @@ HC_transects <- transect_func(df = HC_coastal_coords)
 
 CC_coastal <- left_join(CC_coastal_coords, CC_complete, by = c("lon", "lat")) %>% 
   left_join(CC_transects, by = c("lon", "lat"))
-# save(CC_coastal, file = "data_complete/CC_coastal.RData")
+# save(CC_coastal, file = "data/CC_coastal.RData")
 rm(CC_complete, CC_temp); gc()
 
 CalC_coastal <- left_join(CalC_coastal_coords, CalC_complete, by = c("lon", "lat")) %>% 
   left_join(CalC_transects, by = c("lon", "lat"))
-# save(CalC_coastal, file = "data_complete/CalC_coastal.RData")
+# save(CalC_coastal, file = "data/CalC_coastal.RData")
 rm(CalC_complete, CalC_temp); gc()
 
 HC_coastal <- left_join(HC_coastal_coords, HC_complete, by = c("lon", "lat")) %>% 
   left_join(HC_transects, by = c("lon", "lat"))
-# save(HC_coastal, file = "data_complete/HC_coastal.RData")
+# save(HC_coastal, file = "data/HC_coastal.RData")
 rm(HC_complete, HC_temp); gc()
 
 BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>% 
   left_join(BC_transects, by = c("lon", "lat"))
-# save(BC_coastal, file = "data_complete/BC_coastal.RData")
+# save(BC_coastal, file = "data/BC_coastal.RData")
 
-# # Long time series
-# BC_long <- left_join(BC_coastal_coords, BC, by = c("lon", "lat")) %>% 
-#   left_join(BC_transects, by = c("lon", "lat"))
-# save(BC_long, file = "data_complete/BC_long.RData")
 
 # 3: Calculate upwelling and the metrics ----------------------------------
 
@@ -163,15 +152,20 @@ upwelling_func <- function(df){
 
 CC_UI <- upwelling_func(df = CC_coastal) %>% 
   dplyr::rename(t = date)
+# save(CC_UI, file = "data/CC_UI.RData")
 
 CalC_UI <- upwelling_func(df = CalC_coastal) %>% 
   dplyr::rename(t = date)
+# save(CalC_UI, file = "data/CalC_UI.RData")
 
 HC_UI <- upwelling_func(df = HC_coastal) %>% 
   dplyr::rename(t = date)
+# save(HC_UI, file = "data/HC_UI.RData")
+
 
 BC_UI <- upwelling_func(df = BC_coastal) %>% 
   dplyr::rename(t = date)
+# save(BC_UI, file = "data/BC_UI.RData")
 
 # The custom function for detecting upwelling and extracting only the metrics
 detect_event_custom <- function(df){
@@ -191,10 +185,16 @@ clim_func <- function(df){
 }
 
 CC_clim <- clim_func(df = CC_UI)
-CalC_clim <- clim_func(df = CalC_UI)
-HC_clim <- clim_func(df = HC_UI) 
-BC_clim <- clim_func(df = BC_UI) 
+# save(CC_clim, file = "data/CC_clim.RData")
 
+CalC_clim <- clim_func(df = CalC_UI)
+# save(CalC_clim, file = "data/CalC_clim.RData")
+
+HC_clim <- clim_func(df = HC_UI) 4
+# save(HC_clim, file = "data/HC_clim.RData")
+
+BC_clim <- clim_func(df = BC_UI) 
+# save(BC_clim, file = "data/BC_clim.RData")
 
 # Calculate the upwelling metrics
 UI_metrics_func <- function(df,clim_df){
@@ -214,6 +214,7 @@ HC_UI_metrics <- UI_metrics_func(df = HC_UI, clim_df = HC_clim)
 BC_UI_metrics <- UI_metrics_func(df = BC_UI, clim_df = BC_clim)
 
 # Save
-# save(CC_UI_metrics, file = "data_complete/CC_UI_metrics.RData")
-# save(CalC_UI_metrics, file = "data_complete/CalC_UI_metrics.RData")
-# save(HC_UI_metrics, file = "data_complete/HC_UI_metrics.RData")
+# save(CC_UI_metrics, file = "data/CC_UI_metrics.RData")
+# save(CalC_UI_metrics, file = "data/CalC_UI_metrics.RData")
+# save(HC_UI_metrics, file = "data/HC_UI_metrics.RData")
+# save(BC_UI_metrics, file = "data/BC_UI_metrics.RData")

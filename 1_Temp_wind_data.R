@@ -18,47 +18,47 @@ source("functions/theme.R")
 # This is the wind u and v data for each current (See extraction folder)
 
 # The data loaded here were extracted in the netCDF2CSV script in the data extraction folder
-load("data_wind_uv/CC_wind_fin.RData")
-load("data_wind_uv/CalC_wind_fin.RData")
-load("data_wind_uv/HC_wind_fin.RData")
-load("data_wind_uv/BC_wind_fin.RData") 
+load("data/CC_wind.RData")
+load("data/CalC_wind.RData")
+load("data/HC_wind.RData")
+load("data/BC_wind.RData") 
 
-BC_wind_fin <- BC_wind_fin %>% 
+BC_wind_fin <- BC_wind %>% 
   mutate( lat = lat - 0.125,
          lon = lon + 0.125) %>% 
   rename(date = t)
 
 wind_func <- function(df){
   wind <- df %>% 
-    mutate(date = as.Date(fastPOSIXct(date, tz = "GMT")),
-           lat = lat - 0.125,
+    mutate(lat = lat - 0.125,
            lon = lon + 360, #Adding 360 so that it will match the temperature data. 
-           lon = lon + 0.125)
+           lon = lon + 0.125) %>% 
+    rename(date = t)
 }
 
-CC_wind_fin <- wind_func(df = CC_wind_fin)
-CalC_wind_fin <- wind_func(df = CalC_wind_fin)
-HC_wind_fin <- wind_func(df = HC_wind_fin)
+CC_wind_fin <- wind_func(df = CC_wind)
+CalC_wind_fin <- wind_func(df = CalC_wind)
+HC_wind_fin <- wind_func(df = HC_wind)
 
 # Function for matching temps and wind
 # Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVscript in the data extraction folder)
-CC_temp <- read_csv("data_complete/CC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
-CalC_temp <- read_csv("data_complete/CalC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
-HC_temp <- read_csv("data_complete/HC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
-BC_temp <- read_csv("data_complete/BC_temp.csv", col_names = c("lon", "lat", "temp", "date"))
+load("~/Documents/EBUS/data_complete/BC.RData")
+load("~/Documents/EBUS/data_complete/HC.RData")
+load("~/Documents/EBUS/data_complete/CC.RData")
+load("~/Documents/EBUS/data_complete/CalC.RData")
 
 match_func <- function(temp_df, wind_df){
   match <- wind_df  %>%
     left_join(temp_df, by = c("lon",  "lat", "date")) %>%
-    drop_na()
+    na.trim()
   return(match)
 }
 
 # Matching the wind data with the 30yr time series OISST temperature data 
-CC_match <- match_func(temp_df = CC_temp, wind_df = CC_wind_fin)
-CalC_match <- match_func(temp_df = CalC_temp, wind_df = CalC_wind_fin)
-HC_match <- match_func(temp_df = HC_temp, wind_df = HC_wind_fin)
-BC_match <- match_func(temp_df = BC_long, wind_df = BC_wind_fin) 
+CC_match <- match_func(temp_df = CC, wind_df = CC_wind_fin)
+CalC_match <- match_func(temp_df = CalC, wind_df = CalC_wind_fin)
+HC_match <- match_func(temp_df = HC, wind_df = HC_wind_fin)
+BC_match <- match_func(temp_df = BC, wind_df = BC_wind_fin) 
 
 # save(CalC_match, file = "data_complete/CalC_match.RData") 
 # save(CC_match, file = "data_complete/CC_match.RData") 
@@ -70,15 +70,9 @@ BC_match <- match_func(temp_df = BC_long, wind_df = BC_wind_fin)
 # Calculate wind speed and direction
 load("data_complete/CC_match.RData")
 load("data_complete/HC_match.RData")
-load("data_complete/CalC_matched2.RData")
+load("data_complete/CalC_match.RData")
 load("data_complete/BC_match.RData")
 
-BC_match <- BC_match %>% 
-  rename(u = u_10,
-         v = v_10)
-
-CalC_matched2 <- wind_temp_match_test
-rm(wind_temp_match_test)
 
 wind_dir_func <- function(df){
   wind_dir <- df %>% 
@@ -88,14 +82,13 @@ wind_dir_func <- function(df){
 }
 
 CC_wind <- wind_dir_func(df = CC_match)
-#save(CC_wind, file = "data_complete/CC_wind.RData")
-#CalC_wind <- wind_dir_func(df = CalC_match)
-CalC_wind <- wind_dir_func(df = CalC_matched2)
-#save(CalC_wind, file = "data_complete/CalC_wind.RData")
+#save(CC_wind, file = "data/CC_wind.RData")
+CalC_wind <- wind_dir_func(df = CalC_match)
+#save(CalC_wind, file = "data/CalC_wind.RData")
 HC_wind <- wind_dir_func(df = HC_match)
-#save(HC_wind, file = "data_complete/HC_wind.RData")
-BC_wind <- wind_dir_func(df = combined)
-# save(BC_wind, file = "data_complete/BC_wind.RData")
+#save(HC_wind, file = "data/HC_wind.RData")
+BC_wind <- wind_dir_func(df = BC_match)
+# save(BC_wind, file = "data/BC_wind.RData")
 
 # Seasons for the southern hemisphere
 seasons_S_func <- function(df){
@@ -125,8 +118,7 @@ CalC_complete <- seasons_N_func(CalC_wind)
 HC_complete <- seasons_S_func(HC_wind)
 BC_complete <- seasons_S_func(BC_wind)
 
-# save(HC_complete, file = "data_complete/HC_complete.RData")
-# save(CC_complete, file = "data_complete/CC_complete.RData")
-# save(CalC_complete, file = "data_complete/CalC_complete.RData")
-# save(BC_complete, file = "data_complete/BC_complete.RData")
-
+# save(HC_complete, file = "data/HC_complete.RData")
+# save(CC_complete, file = "data/CC_complete.RData")
+# save(CalC_complete, file = "data/CalC_complete.RData")
+# save(BC_complete, file = "data/BC_complete.RData")

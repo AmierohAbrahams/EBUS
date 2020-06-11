@@ -139,11 +139,12 @@ wind1982 <- cbind(u10_df,v10_df)4
 rm(BC_match);gc()
 rm(BC_match1982);gc()
 rm(BC_wind_fin);gc()
+
 rm(wind_daily);gc()
 
-# rm(wind_daily_2)
+#rm(wind_daily_2)
 
-wind_daily <- tidync("/home/amieroh/Downloads/BC_wind/data4.nc") %>%
+wind_daily <- tidync("/home/amieroh/Downloads/BC_sub/data39.nc") %>%
   hyper_tibble() %>% 
   dplyr::select(longitude, latitude, time, v10, u10) %>% 
   rename(lon = longitude,
@@ -151,7 +152,9 @@ wind_daily <- tidync("/home/amieroh/Downloads/BC_wind/data4.nc") %>%
   mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) %>% 
   dplyr::select(-time)
 
-# wind_daily_2 <- tidync("/home/amieroh/Downloads/BC_wind/data2.nc") %>%
+combined <- rbind(combined,wind_daily)
+BC_wind <- combined
+# wind_daily_2 <- tidync("/home/amieroh/Downloads/BC_sub/data3.nc") %>%
 #   hyper_tibble() %>%
 #   dplyr::select(longitude, latitude, time, v10, u10) %>%
 #   rename(lon = longitude,
@@ -179,6 +182,6 @@ match_func <- function(temp_df, wind_df){
 BC_match1982 <- match_func(temp_df = BC_long, wind_df = BC_wind_fin) 
 
 combined <- rbind(combined,BC_match1982)
-save(combined, file = "data_complete/combined.RData")
+save(BC_wind, file = "data/BC_wind.RData")
 
 
