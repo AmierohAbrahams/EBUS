@@ -1,10 +1,10 @@
 # NB: The packages only need to be installed from GitHub once
-install.packages("dplyr")
-install.packages("lubridate")
-install.packages("ggplot2")
-install.packages("tidync")
-install.packages("doParallel")
-install.packages("plyr")
+# install.packages("dplyr")
+# install.packages("lubridate")
+# install.packages("ggplot2")
+# install.packages("tidync")
+# install.packages("doParallel")
+# install.packages("plyr")
 
 # Load the packages once they have been downloaded and installed
 # The packages we will use
@@ -72,5 +72,14 @@ OISST_CC <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
 save(OISST_CC , file = "data_complete/OISST_CC.RData")
 
 OISST_CalC <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
-                          lon1 = 280, lon2 = 290, lat1 = 25, lat2 = 45)
+                          lon1 = 230, lon2 = 250, lat1 = 25, lat2 = 45)
 save(OISST_CalC , file = "data_complete/OISST_CalC.RData")
+
+# the netCDF file extracts OISST data from 1982 -2018 see below loading the CalC
+CalC_avhrr_only_v2_Document_Document <- read_csv("~/Documents/CalC-avhrr-only-v2.Document-Document.csv",col_names = c("lon","lat","date","temp"))
+
+##Then combining the two datsets with rbind
+CalC <- rbind(CalC,OISST_CalC)
+#save(CalC , file = "data/CalC.RData")
+
+# For the next 2020 updated download rbind the new data with the data created on line 82, which is now the full dataset

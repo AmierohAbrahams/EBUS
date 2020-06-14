@@ -20,7 +20,7 @@ library(plyr)
 # Reduced Nearshore Warming Associated With Eastern Boundary Upwelling Systems 
 # Rui Seabra 1 , Rubén Varela 2 , António M. Santos 1,3 , Moncho Gómez-Gesteira 2 ,
 # Claudia Meneghesso 1,3 , David S. Wethey 4 and Fernando P. Lima 1 *
-
+  
 # Under Pressure: Climate Change, Upwelling, and Eastern Boundary  Upwelling Ecosystems
 # Marisol García-Reyes 1 *, William J. Sydeman 1 , David S. Schoeman 2 ,
 # Ryan R. Rykaczewski 3 , Bryan A. Black 4 , Albertus J. Smit 5 and Steven J. Bograd 6
@@ -135,7 +135,9 @@ wind1982 <- cbind(u10_df,v10_df)4
 
 ###################################################################################################
 # Load with tidync --------------------------------------------------------
-# Load with tidync --------------------------------------------------------
+# Downloading ERA5 data from the requesting site and subset it.
+# Extract and bind with current data
+
 rm(BC_match);gc()
 rm(BC_match1982);gc()
 rm(BC_wind_fin);gc()
@@ -144,44 +146,22 @@ rm(wind_daily);gc()
 
 #rm(wind_daily_2)
 
-wind_daily <- tidync("/home/amieroh/Downloads/BC_sub/data39.nc") %>%
+wind_daily <- tidync("/home/amieroh/Downloads/CC_sub/data1.nc") %>%
   hyper_tibble() %>% 
   dplyr::select(longitude, latitude, time, v10, u10) %>% 
   rename(lon = longitude,
          lat = latitude) %>% 
   mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) %>% 
   dplyr::select(-time)
-
 combined <- rbind(combined,wind_daily)
-BC_wind <- combined
-# wind_daily_2 <- tidync("/home/amieroh/Downloads/BC_sub/data3.nc") %>%
+# BC_wind <- combined
+# wind_daily_2 <- tidync("/home/amieroh/Downloads/CalC_sub/data.nc") %>%
 #   hyper_tibble() %>%
 #   dplyr::select(longitude, latitude, time, v10, u10) %>%
 #   rename(lon = longitude,
 #          lat = latitude) %>%
 #   mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) %>%
 #  dplyr::select(-time)
-# 
-# combined <- rbind(wind_daily,wind_daily_2)
 
-combined <- rbind(combined,wind_daily)
-
-BC_wind_fin <- combined %>% 
-  mutate( lat = lat - 0.125,
-          lon = lon + 0.125) %>% 
-  rename(date = t)
-
-match_func <- function(temp_df, wind_df){
-  match <- wind_df  %>%
-    left_join(temp_df, by = c("lon",  "lat", "date")) %>%
-    drop_na()
-  return(match)
-}
-
-
-BC_match1982 <- match_func(temp_df = BC_long, wind_df = BC_wind_fin) 
-
-combined <- rbind(combined,BC_match1982)
-save(BC_wind, file = "data/BC_wind.RData")
-
+#combined <- rbind(wind_daily,wind_daily_2)
 
