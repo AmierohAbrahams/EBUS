@@ -5,7 +5,6 @@
 # 2: Find the coastal pixels
 # 3: Calculate upwelling and the metrics
 
-- chnage alll scripts to latest version
 # 1: Setup environment ----------------------------------------------------
 
 # Loading Libraries
