@@ -35,10 +35,10 @@ HC_complete <- HC_complete %>%
   mutate(lon = lon - 360)
 
 # Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVscript in the data extraction folder)
-load("~/Documents/EBUS/data_complete/BC.RData")
-load("~/Documents/EBUS/data_complete/HC.RData")
-load("~/Documents/EBUS/data_complete/CC.RData")
-load("~/Documents/EBUS/data_complete/CalC.RData")
+load("~/Documents/EBUS/data/BC.RData")
+load("~/Documents/EBUS/data/HC.RData")
+load("~/Documents/EBUS/data/CC.RData")
+load("~/Documents/EBUS/data/CalC.RData")
 
 # 2: Find the coastal pixels ----------------------------------------------
 # Isolate the unique pixel coordinates
@@ -212,7 +212,6 @@ CalC_UI_metrics <- UI_metrics_func(df = CalC_UI, clim_df = CalC_clim)
 HC_UI_metrics <- UI_metrics_func(df = HC_UI, clim_df = HC_clim)
 BC_UI_metrics <- UI_metrics_func(df = BC_UI, clim_df = BC_clim)
 
-# Save
 # save(CC_UI_metrics, file = "data/CC_UI_metrics.RData")
 # save(CalC_UI_metrics, file = "data/CalC_UI_metrics.RData")
 # save(HC_UI_metrics, file = "data/HC_UI_metrics.RData")

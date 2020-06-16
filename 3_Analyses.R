@@ -31,10 +31,10 @@ options(scipen=999)
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
 # The datasets used here were created in script "2_upwelling_identification.R"
-load("data_complete/CC_coastal.RData") 
-load("data_complete/CalC_coastal.RData")
-load("data_complete/BC_coastal.RData")
-load("data_complete/HC_coastal.RData")
+load("data/CC_coastal.RData") 
+load("data/CalC_coastal.RData")
+load("data/BC_coastal.RData")
+load("data/HC_coastal.RData")
 
 BC <- BC_coastal%>% 
   mutate(current = "BC") %>% 
@@ -141,7 +141,7 @@ complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
 ggplot(data = BC_wind, aes(x = year, y = signal)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
- # facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+ facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Count") +
   theme(strip.text = element_text(face="bold", size=12))
 
@@ -264,12 +264,12 @@ load("data_complete/complete_signal.RData")
 
 summer_signal <- BC_signals %>% 
   filter(season == "Summer") %>% 
-  group_by(year, month) 
+  group_by(year, current, month) 
 
 ggplot(data = summer_signal, aes(x = year, y = signal)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-#  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+ facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Count") +
   theme(strip.text = element_text(face="bold", size=12))
 
