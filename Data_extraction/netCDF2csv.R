@@ -165,29 +165,33 @@ combined <- rbind(combined,wind_daily)
 #  dplyr::select(-time)
 
 #combined <- rbind(wind_daily,wind_daily_2)
-# save(wind_daily , file = "data_complete/wind_daily.RData")
-
 
 # 4: Extract the ERA5 SLP data ---------------------------------------------------------------------------------
 
-# set path and filename
-ncpath <- "/home/amieroh/Downloads/Cal_SLP/data1.nc"
-ncname <- "cru10min30_tmp"  
-ncfname <- paste(ncpath, ncname, ".nc", sep="")
-dname <- "tmp"  # note: tmp means temperature (not temporary)
-ncin <- nc_open(ncfname)
+# Viewing netCDF properties
+ncin <- nc_open("/home/amieroh/Downloads/CalC_SLP/data1.nc")
 print(ncin)
 
 
-wind_daily <- tidync("/home/amieroh/Downloads/HC_sub/data1.nc") %>%
+SLP_daily <- tidync("/home/amieroh/Downloads/CalC_SLP/data39.nc") %>%
   hyper_tibble() %>% 
-  dplyr::select(longitude, latitude, time, v10, u10) %>% 
+  dplyr::select(longitude, latitude, time, msl) %>% 
   rename(lon = longitude,
          lat = latitude) %>% 
   mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) %>% 
   dplyr::select(-time)
 
+msl_combined <- rbind(msl_combined,SLP_daily)
 
+# SLP_daily_2 <- tidync("/home/amieroh/Downloads/CalC_SLP/data2.nc") %>%
+#   hyper_tibble() %>%
+#   dplyr::select(longitude, latitude, time, msl) %>%
+#   rename(lon = longitude,
+#          lat = latitude) %>%
+#   mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) %>%
+#  dplyr::select(-time)
 
+# msl_combined <- rbind(SLP_daily,SLP_daily_2)
+save(msl_combined , file = "data/msl_combined.RData")
 
 

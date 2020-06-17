@@ -5,8 +5,6 @@
 # 2: Observe how wind patterns change over time
 # 3: ANOVA analyses
 # 4: Linear models
-# 5: GAMS
-# 6: Trends
 
 # climate change as a result of global warining resulted in changes in wind patterns and
 # ultimately lead to changes in the duration and intensity of upwelling events overtime.
@@ -228,9 +226,9 @@ combined_products <- rbind(BC_UI_metrics,HC_UI_metrics,CC_UI_metrics,CalC_UI_met
 load("data/combined_products.RData")
 
 # Total signals at each pixel
-total_signals <- BC_UI_metrics %>%
+total_signals <- combined_products %>%
   mutate(year = year(date_start)) %>% 
-  group_by(season,year) %>% 
+  group_by(current, season,year) %>% 
   group_by(lat, lon) %>% 
   summarise(y = n()) %>% 
   rename(count = y) %>% 
@@ -245,7 +243,7 @@ CC_signals <- CC_UI_metrics %>%
 
 BC_signals <- BC_UI_metrics %>% 
   mutate(year = year(date_start)) %>% 
-group_by( season,year, month) %>% 
+  group_by(current, season,year, month) %>% 
   summarise(y = n()) %>% 
   mutate(signal = y / 73)
 
@@ -263,8 +261,8 @@ HC_signals <- HC_UI_metrics %>%
   mutate(signal = y / 193)
     
 complete_signal <- rbind(CC_signals,BC_signals,CalC_signals,HC_signals)
-#save(complete_signal, file = "data_complete/complete_signal.RData")
-load("data_complete/complete_signal.RData")
+# save(complete_signal, file = "data/complete_signal.RData")
+load("data/complete_signal.RData")
 
 summer_signal <- complete_signal %>% 
   filter(season == "Summer") %>% 
@@ -292,11 +290,8 @@ summary(count_aov <- anova_func(df = complete_signal))
 # ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
 # between currents and seasons over a 30 year period
 
-load("data_complete/combined_products.RData")
-# load("data_complete/complete_signal.RData")
+load("data/combined_products.RData")
 
-# combined_products <- combined_products %>% 
-#   drop_na()
 # Calculate all of the linear models
 lm_coeff <- function(df){
   res <- lm(formula = val ~ date_peak, data = df)
@@ -325,41 +320,4 @@ summary(aov(duration ~ current + season + year, data = lm_metrics_wide))
 summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
-
-# 4: GAMS ----------------------------------------------------
-# GAMs used for findin a non-linear phenomonon but needs to be accounted for when making inferece about other variables.
-# Duration? - Observe if there was non linear change in the duration over a 30 year period?
-# Cummulative intensity? - Observe if there was non linear change in the cummulative intensity over a 30 year period?
-
-# make a tidy data frame
-tidy_combined <- gather(combined_products, key = variable, value = measurements, c(duration, intensity_mean:rate_decline))
-dur <- tidy_combined  %>%
-  filter(variable == "duration")
-
-dur_gam <- gam(measurements ~ s(current), data = dur, method = "REML")
-
-pred <- dur %>%
-  select(current, year)
-
-dur_pred <- cbind(dur, as.data.frame(predict(dur_gam, pred, se.fit = TRUE, unconditional = TRUE)))
-
-dur_pred <- transform(dur_pred,
-                      upper = fit + (2 * se.fit),
-                      lower = fit - (2 * se.fit))
-
-ggplot(tss_pred, aes(x = year, y = measurements, col = current, group = current)) +
-  geom_jitter(shape = 5, width = 0.05) +
-  geom_point(aes(y = fit)) +
-  geom_ribbon(aes(ymin = lower, ymax = upper, fill = current), colour = NA, alpha = 0.4) +
-  geom_line(aes(y = fit)) +
-  labs(x = "Year", y = "Duration (Days") +
-  theme_bw()
-
-# Plot upwelling using geom_smooth
-
-ggplot(data = combined_products, aes(x = date_start, y = duration, colour = current)) +
-  #geom_point() +
-  geom_smooth()
-
-
 
