@@ -3,7 +3,8 @@
 # The steps taken are:
 # 1: Setup environment
 # 2: Extract the OISST data
-# 3: Extract the ERA5 data
+# 3: Extract the ERA5 wind data
+# 4: Extract the ERA5  SLP data
 
 # 1: Setup environment -------------------------------------------------------------------------------------
 library(ncdf4) # library for processing netCDFs
@@ -81,7 +82,7 @@ CalC <- CalC-avhrr-only-v2.Document-Document.csv
 HC <- HC-avhrr-only-v2.Document-Document.csv
 
 
-# 2: Extract the ERA5 data ---------------------------------------------------------------------------------
+# 3: Extract the ERA5 wind data ---------------------------------------------------------------------------------
 # https://cds.climate.copernicus.eu/api-how-to#use-the-cds-api-client-for-data-access
 # Extracting ERA 5 wind u and v variables
 # N/W/S/E coordinate format when downloading
@@ -146,7 +147,7 @@ rm(wind_daily);gc()
 
 #rm(wind_daily_2)
 
-wind_daily <- tidync("/home/amieroh/Downloads/CC_sub/data1.nc") %>%
+wind_daily <- tidync("/home/amieroh/Downloads/HC_sub/data1.nc") %>%
   hyper_tibble() %>% 
   dplyr::select(longitude, latitude, time, v10, u10) %>% 
   rename(lon = longitude,
@@ -164,4 +165,29 @@ combined <- rbind(combined,wind_daily)
 #  dplyr::select(-time)
 
 #combined <- rbind(wind_daily,wind_daily_2)
+# save(wind_daily , file = "data_complete/wind_daily.RData")
+
+
+# 4: Extract the ERA5 SLP data ---------------------------------------------------------------------------------
+
+# set path and filename
+ncpath <- "/home/amieroh/Downloads/Cal_SLP/data1.nc"
+ncname <- "cru10min30_tmp"  
+ncfname <- paste(ncpath, ncname, ".nc", sep="")
+dname <- "tmp"  # note: tmp means temperature (not temporary)
+ncin <- nc_open(ncfname)
+print(ncin)
+
+
+wind_daily <- tidync("/home/amieroh/Downloads/HC_sub/data1.nc") %>%
+  hyper_tibble() %>% 
+  dplyr::select(longitude, latitude, time, v10, u10) %>% 
+  rename(lon = longitude,
+         lat = latitude) %>% 
+  mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1900-01-01"))) %>% 
+  dplyr::select(-time)
+
+
+
+
 

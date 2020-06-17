@@ -37,9 +37,7 @@ load("data/BC_coastal.RData")
 load("data/HC_coastal.RData")
 
 BC <- BC_coastal%>% 
-  mutate(current = "BC") %>% 
-  rename(u = u_10,
-         v = v_10)
+  mutate(current = "BC") 
 HC <- HC_coastal %>% 
   mutate(current = "HC")
 CC <- CC_coastal %>% 
@@ -48,18 +46,20 @@ CalC <- CalC_coastal %>%
   mutate(current = "CalC")
 
 current_winds <- rbind(BC,HC,CC,CalC)
-
+rm(BC,BC_coastal,CalC,CalC_coastal,CC_coastal,CC, HC_coastal,HC);gc()
 # Then create different temporal results
 # First filter out only the SE data
 
-SE_renamed <- BC_coastal %>% 
+SE_renamed <- current_winds %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique()
+
+rm(current_winds);gc()
 
 # Then create diifferent temporal results
 SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
-  group_by(year, season) %>% 
+  group_by(current, year, season) %>% 
   summarise(count = n(),
             circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
             circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
@@ -67,7 +67,7 @@ SE_summer <- SE_renamed %>%
 
 SE_monthly <- SE_renamed %>% 
   filter(season == "Summer") %>% 
-  group_by(year, season, month) %>% 
+  group_by(current, year, season, month) %>% 
   summarise(count = n(),
             circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
             circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
@@ -75,7 +75,7 @@ SE_monthly <- SE_renamed %>%
 
 # Determining the number of pixels within each current
 BC_pixels <- SE_renamed %>% 
-  # filter(current == "BC") %>% 
+  filter(current == "BC") %>% 
   dplyr::select(lon, lat) %>% 
   unique()
 
@@ -83,10 +83,12 @@ CC_pixels <- SE_renamed %>%
   filter(current == "CC") %>% 
   dplyr::select(lon, lat) %>% 
   unique()
+
 HC_pixels <- SE_renamed %>% 
   filter(current == "HC") %>% 
   dplyr::select(lon, lat) %>% 
   unique()
+
 CalC_pixels <- SE_renamed %>% 
   filter(current == "CalC") %>% 
   dplyr::select(lon, lat) %>% 
@@ -108,28 +110,29 @@ names(supp.labs) <- c("BC", "CalC","CC", "HC")
 ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
- # facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Temperature (°C)") +
-  theme(strip.text = element_text(face="bold", size=12))
+  theme(strip.text = element_text(face="bold", size=12)) +
+  theme_Publication()
 
 # No warming changes in SST over a 30 year periodwhen comparing summer seasons.
 
 # For each current and not each pixel
 CC_wind <- SE_monthly %>% 
   filter(current == "CC") %>% 
-  mutate(signal = count / 86)
+  mutate(signal = count / 106)
 
 BC_wind <- SE_monthly %>% 
-  #filter(current == "BC") %>% 
+  filter(current == "BC") %>% 
   mutate(signal = count / 73)
 
 CalC_wind <- SE_monthly %>% 
   filter(current == "CalC") %>%
-  mutate(signal = count / 45)
+  mutate(signal = count / 185)
 
 HC_wind <- SE_monthly %>% 
   filter(current == "HC") %>% 
-  mutate(signal = count / 42)
+  mutate(signal = count / 193)
 
 complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
 
@@ -138,12 +141,13 @@ complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
 ## Summer month count of SE winds
 
 # Number of signals
-ggplot(data = BC_wind, aes(x = year, y = signal)) +
+ggplot(data = complete_wind, aes(x = year, y = signal)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Count") +
-  theme(strip.text = element_text(face="bold", size=12))
+  theme(strip.text = element_text(face="bold", size=12)) +
+  theme_Publication()
 
 
 slope_calc <- function(df){
@@ -173,12 +177,12 @@ complete_wind%>%
   slope_calc()
 
 # 3: ANOVA analyses ----------------------------------------------------
-# ANOVA analyses comparing is the number of signals detected each year and each season varied over time
+# ANOVA analyses comparing is the number of gc(signals detected each year and each season varied over time
 
-load("data_complete/BC_UI_metrics.RData")
-load("data_complete/HC_UI_metrics.RData")
-load("data_complete/CC_UI_metrics.RData")
-load("data_complete/CalC_UI_metrics.RData")
+load("data/BC_UI_metrics.RData")
+load("data/HC_UI_metrics.RData")
+load("data/CC_UI_metrics.RData")
+load("data/CalC_UI_metrics.RData")
 
 # Seasons for the southern hemisphere
 seasons_S_func <- function(df){
@@ -219,15 +223,15 @@ CalC_UI_metrics <- CalC_UI_metrics %>%
 
 
 combined_products <- rbind(BC_UI_metrics,HC_UI_metrics,CC_UI_metrics,CalC_UI_metrics)
-#save(combined_products, file = "data_complete/combined_products.RData")
+#save(combined_products, file = "data/combined_products.RData")
 
-load("data_complete/combined_products.RData")
+load("data/combined_products.RData")
 
 # Total signals at each pixel
 total_signals <- BC_UI_metrics %>%
   mutate(year = year(date_start)) %>% 
   group_by(season,year) %>% 
-# group_by(lat, lon) %>% 
+  group_by(lat, lon) %>% 
   summarise(y = n()) %>% 
   rename(count = y) %>% 
   data.frame() 
@@ -236,7 +240,7 @@ CC_signals <- CC_UI_metrics %>%
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
   summarise(y = n()) %>% 
-  mutate(signal = y / 86)
+  mutate(signal = y / 106)
   
 
 BC_signals <- BC_UI_metrics %>% 
@@ -249,20 +253,20 @@ CalC_signals <- CalC_UI_metrics %>%
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
   summarise(y = n()) %>% 
-  mutate(signal = y / 45)
+  mutate(signal = y / 185)
 
 
 HC_signals <- HC_UI_metrics %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
   summarise(y = n()) %>% 
-  mutate(signal = y / 42)
+  mutate(signal = y / 193)
     
 complete_signal <- rbind(CC_signals,BC_signals,CalC_signals,HC_signals)
-# save(complete_signal, file = "data_complete/complete_signal.RData")
+#save(complete_signal, file = "data_complete/complete_signal.RData")
 load("data_complete/complete_signal.RData")
 
-summer_signal <- BC_signals %>% 
+summer_signal <- complete_signal %>% 
   filter(season == "Summer") %>% 
   group_by(year, current, month) 
 
@@ -270,8 +274,9 @@ ggplot(data = summer_signal, aes(x = year, y = signal)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Count") +
-  theme(strip.text = element_text(face="bold", size=12))
+  labs(x = "Year", y = "Number of upwelling signals") +
+  theme(strip.text = element_text(face="bold", size=12))+
+  theme_Publication()
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
 # signals detected by each of the currents for each year and season
@@ -356,6 +361,5 @@ ggplot(data = combined_products, aes(x = date_start, y = duration, colour = curr
   #geom_point() +
   geom_smooth()
 
-# work on gaps in data
 
 
