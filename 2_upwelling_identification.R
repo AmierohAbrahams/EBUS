@@ -50,9 +50,9 @@ coord_func <- function(df){
     unique()
 }
 
-CC_coords <- coord_func(df = CC_temp)
-CalC_coords <- coord_func(df = CalC_temp)
-HC_coords <- coord_func(df = HC_temp)
+CC_coords <- coord_func(df = CC)
+CalC_coords <- coord_func(df = CalC)
+HC_coords <- coord_func(df = HC)
 
 BC_coords <- BC %>% 
   dplyr::select(lon, lat) %>% 
