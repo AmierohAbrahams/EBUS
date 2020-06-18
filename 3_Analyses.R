@@ -45,13 +45,12 @@ CalC <- CalC_coastal %>%
 
 current_winds <- rbind(BC,HC,CC,CalC)
 rm(BC,BC_coastal,CalC,CalC_coastal,CC_coastal,CC, HC_coastal,HC);gc()
+
 # Then create different temporal results
 # First filter out only the SE data
-
 SE_renamed <- current_winds %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique()
-
 rm(current_winds);gc()
 
 # Then create diifferent temporal results
@@ -138,7 +137,7 @@ complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
 ## Annual count of SE wind in Summer
 ## Summer month count of SE winds
 
-# Number of signals
+# Number of SE wind
 ggplot(data = complete_wind, aes(x = year, y = signal)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +

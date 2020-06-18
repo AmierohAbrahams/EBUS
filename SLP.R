@@ -222,3 +222,20 @@ rm(HC_complete, HC); gc()
 BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon", "lat")) %>% 
   left_join(BC_transects_SLP, by = c("lon", "lat"))
 # save(BC_coastal, file = "data/BC_coastal.RData")
+
+
+# Plotting
+
+CalC_monthly <- CalC_coastal_SLP %>% 
+  filter(season == "Summer") %>% 
+  group_by(year, season, month) %>% 
+  summarise(mean_msl = mean(msl, na.rm = T))
+
+ggplot(data = CalC_monthly, aes(x = year, y = mean_msl)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  labs(x = "Year", y = "Mean sea level pressure (hPa)") +
+  theme(strip.text = element_text(face="bold", size=12)) +
+  theme_Publication()
+
+
