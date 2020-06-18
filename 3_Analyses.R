@@ -132,6 +132,7 @@ HC_wind <- SE_monthly %>%
   mutate(signal = count / 193)
 
 complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
+# save(complete_wind, file = "data/complete_wind.RData")
 
 # Plots
 ## Annual count of SE wind in Summer
