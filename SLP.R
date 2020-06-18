@@ -231,8 +231,9 @@ BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon"
 # upwelling-favorable winds
 # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1002/2015GL064694
 
-# Pressumably SLP gradients influence wind that ultimately influence upwelling
-# Observe changes in gradients
+# Observe changes in SLP gradients
+
+load("~/data/CalC_coastal_SLP.RData")
 
 CalC_monthly <- CalC_coastal_SLP %>% 
   filter(season == "Summer") %>% 
@@ -246,7 +247,8 @@ ggplot(data = CalC_monthly, aes(x = year, y = mean_msl)) +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
 
-
+# Negative trend in SLP
+# Regression analyses: Regressed SST with Regressed SLP 
 
 
 
