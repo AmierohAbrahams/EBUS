@@ -227,8 +227,7 @@ BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon"
 # Plotting
 
 # coastal upwelling is driven by alongshore winds stimulated by steep cross-shore gradients in sea level pressure (SLP). 
-# thermal low-pressure systems over the continents, intensiﬁcation of the land-sea SLP gradients, and subsequent increases in summertime 
-# upwelling-favorable winds
+# thermal low-pressure systems over the continents, intensiﬁcation of the land-sea SLP gradients, and subsequent increases in summertime upwelling-favorable winds
 # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1002/2015GL064694
 
 # Observe changes in SLP gradients
