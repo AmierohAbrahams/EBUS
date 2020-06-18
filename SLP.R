@@ -29,8 +29,8 @@ wind_func <- function(df){
     rename(date = t)
 }
 
-CC_SLP <- wind_func(df = CC_wind)
-CalC_SLP <- wind_func(df = CalC_wind)
+CC_SLP <- wind_func(df = msl_combined)
+CalC_SLP <- wind_func(df = msl_combined)
 HC_SLP <- wind_func(df = HC_wind)
 
 
@@ -38,7 +38,6 @@ load("~/Documents/EBUS/data/BC_match.RData")
 load("~/Documents/EBUS/data/HC_match.RData")
 load("~/Documents/EBUS/data/CC_match.RData")
 load("~/Documents/EBUS/data/CalC_match.RData")
-
 
 match_func <- function(match_df, SLP_df){
   match <- SLP_df  %>%
@@ -48,10 +47,10 @@ match_func <- function(match_df, SLP_df){
 }
 
 # Matching the wind data with the 30yr time series OISST temperature data 
-CC_match_SLP <- match_func(match_df = CC_match, wind_df = CC_wind_fin)
-CalC_match_SLP <- match_func(match_df = CalC_match, wind_df = CC_wind_fin)
-BC_match_SLP <- match_func(match_df = BC_match, wind_df = CC_wind_fin)
-HC_match_SLP <- match_func(match_df = HC_match, wind_df = CC_wind_fin)
+CC_match_SLP <- match_func(match_df = CC_match, SLP_df = CC_SLP)
+CalC_match_SLP <- match_func(match_df = CalC_match, SLP_df = CalC_SLP)
+BC_match_SLP <- match_func(match_df = BC_match, SLP_df = BC_SLP)
+HC_match_SLP <- match_func(match_df = HC_match, SLP_df = HC_SLP)
 
 # Calculate wind speed and direction
 load("data/CC_match_SLP.RData")
@@ -67,13 +66,13 @@ wind_dir_func <- function(df){
            wind_dir_to = ifelse(wind_dir_from >= 180, wind_dir_from-180, wind_dir_from+180))
 }
 
-CC_wind_SLP <- wind_dir_func(df = CC_match)
+CC_wind_SLP <- wind_dir_func(df = CC_match_SLP)
 #save(CC_wind, file = "data/CC_wind.RData")
-CalC_wind_SLP <- wind_dir_func(df = CalC_match)
+CalC_wind_SLP <- wind_dir_func(df = CalC_match_SLP)
 #save(CalC_wind, file = "data/CalC_wind.RData")
-HC_wind_SLP <- wind_dir_func(df = HC_match)
+HC_wind_SLP <- wind_dir_func(df = HC_match_SLP)
 #save(HC_wind, file = "data/HC_wind.RData")
-BC_windSLP <- wind_dir_func(df = BC_match)
+BC_wind_SLP <- wind_dir_func(df = BC_match_SLP)
 # save(BC_wind, file = "data/BC_wind.RData")
 
 # Seasons for the southern hemisphere
@@ -99,10 +98,13 @@ seasons_N_func <- function(df){
 }
 
 # Add the seasons to the wind + temp dataframes
-CC_complete_SLP <- seasons_N_func(CC_windc)
-CalC_complete_SLP <- seasons_N_func(CalC_windc)
-HC_complete_SLP <- seasons_S_func(HC_windc)
-BC_complete_SLP <- seasons_S_func(BC_windc)
+CC_complete_SLP <- seasons_N_func(CC_wind_SLP)
+CalC_complete_SLP <- seasons_N_func(CalC_wind_SLP)
+HC_complete_SLP <- seasons_S_func(HC_wind_SLP)
+BC_complete_SLP <- seasons_S_func(BC_wind_SLP)
+
+save(CalC_complete_SLP, file = "~/Desktop/EBUS/EBUS/data/CalC_complete_SLP.RData")
+
 
 # save(HC_complete_SLP, file = "data/HC_complete_SLP.RData")
 # save(CC_complete_SLP, file = "data/CC_complete_SLP.RData")
@@ -163,15 +165,6 @@ CalC_coastline_SLP <- coastline_func(df = CalC_coords_SLP)
 HC_coastline_SLP <- coastline_func(df = HC_coords_SLP)
 BC_coastline_SLP <- coastline_func(df = BC_coords_SLP)
 
-plot_func <- function(df){
-  ggplot(data = df, aes(x = long, y = lat)) +
-    geom_polygon(colour = "black", fill = "grey70", aes(group = group))
-}
-
-plot_func(df = CC_coastline_SLP)
-plot_func(df = CalC_coastline_SLP)
-plot_func(df = HC_coastline_SLP)
-plot_func(df = BC_coastline_SLP)
 
 # Find which of the EBUS pixels match closest to the coastal pixels
 
@@ -187,7 +180,7 @@ BC_coastal_index_SLP <- coastal_index_func(coord_df = BC_coords_SLP, coastline_d
 
 BC_coastal_coords_SLP <- unique(BC_coords[BC_coastal_index_SLP,])
 CC_coastal_coords_SLP <- unique(CC_coords[CC_coastal_index_SLP,])
-CalC_coastal_coords_SLP <- unique(CalC_coords[CalC_coastal_index_SLP,])
+CalC_coastal_coords_SLP <- unique(CalC_coords_SLP[CalC_coastal_index_SLP,])
 HC_coastal_coords_SLP <- unique(HC_coords[HC_coastal_index_SLP,])
 
 # Find the coastal angle for each point
@@ -219,6 +212,7 @@ CalC_coastal_SLP <- left_join(CalC_coastal_coords_SLP, CalC_complete_SLP, by = c
   left_join(CalC_transects_SLP, by = c("lon", "lat"))
 # save(CalC_coastal, file = "data/CalC_coastal.RData")
 rm(CalC_complete_SLP, CalC); gc()
+
 
 HC_coastal_SLP <- left_join(HC_coastal_coords_SLP, HC_complete_SLP, by = c("lon", "lat")) %>% 
   left_join(HC_transects_SLP, by = c("lon", "lat"))
