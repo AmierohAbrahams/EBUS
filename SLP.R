@@ -238,4 +238,7 @@ ggplot(data = CalC_monthly, aes(x = year, y = mean_msl)) +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
 
+# Pressumably SLP gradients influence wind that ultimately influence upwelling
+# Observe changes in gradients
+
 
