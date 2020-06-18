@@ -316,9 +316,10 @@ lm_metrics <- combined_products %>%
 
 lm_metrics_wide <- pivot_wider(lm_metrics, 
                                id_cols = current:season, 
-                               names_from = var, values_from = slope)
+                               names_from = var, values_from = slope,
+                               values_fn = mean)
 
-summary(aov(duration ~ current + season + year, data = lm_metrics_wide))
+summary(aov(duration ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
