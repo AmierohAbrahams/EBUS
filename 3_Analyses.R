@@ -134,6 +134,8 @@ HC_wind <- SE_monthly %>%
 complete_wind <- rbind(CC_wind,BC_wind,CalC_wind,HC_wind)
 # save(complete_wind, file = "data/complete_wind.RData")
 
+load("data/complete_wind.RData")
+
 # Plots
 ## Annual count of SE wind in Summer
 ## Summer month count of SE winds
