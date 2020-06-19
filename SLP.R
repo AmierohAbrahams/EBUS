@@ -2,7 +2,7 @@
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
-# 2: Match the SLP data with the SST and wind data created
+# 2: Match the SLP data with the SST and wind data (This is the same as script 1 and 2 but matching the wind and temp data to the msl data here)
 # 3: Determine SLP trends
 
 # 1: Setup environment ----------------------------------------------------
@@ -29,15 +29,15 @@ wind_func <- function(df){
     rename(date = t)
 }
 
-CC_SLP <- wind_func(df = msl_combined)
+CC_SLP <- wind_func(df = CC_msl)
 CalC_SLP <- wind_func(df = msl_combined)
-HC_SLP <- wind_func(df = HC_wind)
+HC_SLP <- wind_func(df = HC_msl)
 
 
-load("~/Documents/EBUS/data/BC_match.RData")
-load("~/Documents/EBUS/data/HC_match.RData")
-load("~/Documents/EBUS/data/CC_match.RData")
-load("~/Documents/EBUS/data/CalC_match.RData")
+load("data/BC_match.RData")
+load("data/HC_match.RData")
+load("data/CC_match.RData")
+load("data/CalC_match.RData")
 
 match_func <- function(match_df, SLP_df){
   match <- SLP_df  %>%
@@ -232,7 +232,7 @@ BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon"
 
 # Observe changes in SLP gradients
 
-load("~/data/CalC_coastal_SLP.RData")
+load("data/CalC_coastal_SLP.RData")
 
 CalC_monthly <- CalC_coastal_SLP %>% 
   filter(season == "Summer") %>% 

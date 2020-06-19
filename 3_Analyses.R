@@ -149,6 +149,14 @@ ggplot(data = complete_wind, aes(x = year, y = signal)) +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
 
+ggplot(data = complete_wind, aes(x = year, y = circ_wspd)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Wind speed") +
+  theme(strip.text = element_text(face="bold", size=12)) +
+  theme_Publication()
+
 
 slope_calc <- function(df){
   df %>% 
