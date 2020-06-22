@@ -19,22 +19,46 @@ library(FNN)
 source("functions/theme.R")
 
 # 2: Matching the SLP ------------------------------------------------------------------
-load("data/SLP_BC.RData")
-load("data/BC_match.RData")
+load("~/R/forOthers/Amieroh/SLP_BC.RData")
+load("~/R/forOthers/Amieroh/BC_match.RData")
+# load("data/SLP_BC.RData")
+# load("data/BC_match.RData")
 
-
+# Rename date column for matching
 SLP_BC <- SLP_BC %>% 
-  mutate( lat = lat - 1.25,
-          lon = lon + 1.25) %>% 
   rename(date = t)
 
-match_func <- function(match_df, SLP_df){
-  match <- SLP_df  %>%
-    left_join(match_df, by = c("lon",  "lat", "date")) %>%
-    na.trim()
+# Create index of unique high-res lon/lat values
+# NB: This takes a while to run and uses a lot of RAM
+# BC_coord_index <- BC_match %>% 
+#   dplyr::select(lon, lat) %>% 
+#   unique() %>% 
+#   mutate(row_index = 1:n())
+# save(BC_coord_index, file = "data/BC_coord_index.RData")
+load("data/BC_coord_index.RData")
+
+# Get the unique coordinates from the low-res data
+BC_SLP_coord_index <- SLP_BC %>%
+  dplyr::select(lon, lat) %>%
+  unique() %>%
+  mutate(row_index = 1:n())
+
+# Find the high-res pixels that match to the low-res data
+BC_coord_match_SLP <- BC_coord_index %>%
+  mutate(row_index = as.vector(knnx.index(as.matrix(BC_SLP_coord_index[,c("lon", "lat")]),
+                                          as.matrix(BC_coord_index[,c("lon", "lat")]), k = 1))) %>%
+  left_join(BC_SLP_coord_index, by = "row_index") %>%
+  dplyr::rename(lon = lon.x, lat = lat.x, lon_SLP = lon.y, lat_SLP = lat.y)
+
+# Function for joining 
+match_func <- function(match_df, SLP_df, coord_df){
+  match <- match_df  %>%
+    left_join(coord_df, by = c("lon", "lat")) %>% 
+    left_join(SLP_df, by = c("lon_SLP" = "lon",  "lat_SLP" = "lat", "date"))
   return(match)
 }
 
+# Match up all of the data
 BC_match_SLP <- match_func(match_df = BC_match, SLP_df = SLP_BC) 
 
 
