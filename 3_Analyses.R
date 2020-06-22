@@ -25,7 +25,7 @@ library(circular)
 source("functions/theme.R")
 options(scipen=999) 
 
-# 2: Wind pattern observation ----------------------------------------------------
+# 2: Wind pattern observation ----------------------------------------------------  
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
 # The datasets used here were created in script "2_upwelling_identification.R"

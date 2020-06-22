@@ -19,19 +19,50 @@ library(FNN)
 source("functions/theme.R")
 
 # 2: Matching the SLP ------------------------------------------------------------------
+load("data/SLP_BC.RData")
+load("data/BC_match.RData")
+
+
+SLP_BC <- SLP_BC %>% 
+  mutate( lat = lat - 1.25,
+          lon = lon + 1.25) %>% 
+  rename(date = t)
+
+match_func <- function(match_df, SLP_df){
+  match <- SLP_df  %>%
+    left_join(match_df, by = c("lon",  "lat", "date")) %>%
+    na.trim()
+  return(match)
+}
+
+BC_match_SLP <- match_func(match_df = BC_match, SLP_df = SLP_BC) 
+
+
+
+
+######################################
+
+
+
+
+
 
 wind_func <- function(df){
   wind <- df %>% 
     mutate(lat = lat - 0.125,
            lon = lon + 360, #Adding 360 so that it will match the temperature data. 
-           lon = lon + 0.125,
-           msl = msl/100) %>% # To convert Pa to hPa
+           lon = lon + 0.125) %>% # To convert Pa to hPa
     rename(date = t)
 }
 
 CC_SLP <- wind_func(df = CC_msl)
 CalC_SLP <- wind_func(df = msl_combined)
 HC_SLP <- wind_func(df = HC_msl)
+
+SLP_BC <- SLP_BC %>% 
+  mutate(lat = lat - 0.125,
+         lon = lon + 0.125) %>% # To convert Pa to hPa
+  rename(date = t)
 
 
 load("data/BC_match.RData")
@@ -49,7 +80,7 @@ match_func <- function(match_df, SLP_df){
 # Matching the wind data with the 30yr time series OISST temperature data 
 CC_match_SLP <- match_func(match_df = CC_match, SLP_df = CC_SLP)
 CalC_match_SLP <- match_func(match_df = CalC_match, SLP_df = CalC_SLP)
-BC_match_SLP <- match_func(match_df = BC_match, SLP_df = BC_SLP)
+BC_match_SLP <- match_func(match_df = BC_match, SLP_df = SLP_BC)
 HC_match_SLP <- match_func(match_df = HC_match, SLP_df = HC_SLP)
 
 # Calculate wind speed and direction
