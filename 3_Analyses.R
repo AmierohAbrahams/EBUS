@@ -29,18 +29,18 @@ options(scipen=999)
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
 # The datasets used here were created in script "2_upwelling_identification.R"
-load("data/CC_coastal.RData") 
-load("data/CalC_coastal.RData")
-load("data/BC_coastal.RData")
-load("data/HC_coastal.RData")
+load("data/CC_coastal_SLP.RData") 
+load("data/CalC_coastal_SLP.RData")
+load("data/BC_coastal_SLP.RData")
+load("data/HC_coastal_SLP.RData")
 
-BC <- BC_coastal%>% 
+BC <- BC_coastal_SLP%>% 
   mutate(current = "BC") 
-HC <- HC_coastal %>% 
+HC <- HC_coastal_SLP %>% 
   mutate(current = "HC")
-CC <- CC_coastal %>% 
+CC <- CC_coastal_SLP %>% 
   mutate(current = "CC")
-CalC <- CalC_coastal %>% 
+CalC <- CalC_coastal_SLP %>% 
   mutate(current = "CalC")
 
 current_winds <- rbind(BC,HC,CC,CalC)
