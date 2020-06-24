@@ -44,7 +44,7 @@ CalC <- CalC_coastal_SLP %>%
   mutate(current = "CalC")
 
 current_winds <- rbind(BC,HC,CC,CalC)
-rm(BC,BC_coastal,CalC,CalC_coastal,CC_coastal,CC, HC_coastal,HC);gc()
+rm(BC,BC_coastal_SLP,CalC,CalC_coastal_SLP,CC_coastal_SLP,CC, HC_coastal_SLP,HC);gc()
 
 # Then create different temporal results
 # First filter out only the SE data
@@ -60,7 +60,8 @@ SE_summer <- SE_renamed %>%
   summarise(count = n(),
             circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
             circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
-            mean_temp = mean(temp, na.rm = T))
+            mean_temp = mean(temp, na.rm = T),
+            mean_SLP = mean(slp, na.rm = T))
 
 SE_monthly <- SE_renamed %>% 
   filter(season == "Summer") %>% 
@@ -68,7 +69,8 @@ SE_monthly <- SE_renamed %>%
   summarise(count = n(),
             circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
             circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
-            mean_temp = mean(temp, na.rm = T))
+            mean_temp = mean(temp, na.rm = T),
+            mean_SLP = mean(slp, na.rm = T))
 
 # Determining the number of pixels within each current
 BC_pixels <- SE_renamed %>% 
@@ -109,6 +111,14 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Temperature (°C)") +
+  theme(strip.text = element_text(face="bold", size=12)) +
+  theme_Publication()
+
+ggplot(data = SE_monthly, aes(x = year, y = mean_SLP)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Sea level pressure") +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
 
@@ -187,10 +197,10 @@ complete_wind%>%
 # 3: ANOVA analyses ----------------------------------------------------
 # ANOVA analyses comparing is the number of gc(signals detected each year and each season varied over time
 
-load("data/BC_UI_metrics.RData")
-load("data/HC_UI_metrics.RData")
-load("data/CC_UI_metrics.RData")
-load("data/CalC_UI_metrics.RData")
+load("data/BC_UI_metrics_SLP.RData")
+load("data/HC_UI_metrics_SLP.RData")
+load("data/CC_UI_metrics_SLP.RData")
+load("data/CalC_UI_metrics_SLP.RData")
 
 # Seasons for the southern hemisphere
 seasons_S_func <- function(df){
@@ -203,8 +213,8 @@ seasons_S_func <- function(df){
                               month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
 }
 
-BC_UI_metrics <- seasons_S_func(df = BC_UI_metrics)
-HC_UI_metrics <- seasons_S_func(df = HC_UI_metrics)
+BC_UI_metrics <- seasons_S_func(df = BC_UI_metrics_SLP)
+HC_UI_metrics <- seasons_S_func(df = HC_UI_metrics_SLP)
 
 # Seasons for the Northern Hemisphere
 seasons_N_func <- function(df){
@@ -217,8 +227,8 @@ seasons_N_func <- function(df){
                               month %in% c("Sep", "Oct", "Nov") ~ "Autumn"))
 }
 
-CC_UI_metrics <- seasons_N_func(df = CC_UI_metrics)
-CalC_UI_metrics <- seasons_N_func(df = CalC_UI_metrics)
+CC_UI_metrics <- seasons_N_func(df = CC_UI_metrics_SLP)
+CalC_UI_metrics <- seasons_N_func(df = CalC_UI_metrics_SLP)
 
 BC_UI_metrics <- BC_UI_metrics %>% 
   mutate(current = "BC") 
@@ -331,4 +341,12 @@ summary(aov(duration ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
+
+# Pressure gradient
+
+# The pressure gradient can be determined mathematically by taking the difference in pressure between two locations (in Pascals) 
+# and dividing it by the distance between the two locations (in meters).
+
+# Load the BC SLP
+
 

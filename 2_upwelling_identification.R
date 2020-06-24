@@ -144,9 +144,8 @@ BC_coastal <- left_join(BC_coastal_coords, BC_complete, by = c("lon", "lat")) %>
 # Determining the upwelling index per coastal pixel
 upwelling_func <- function(df){
   UI <- df %>%  
-    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)), # RWS: Please double check this
-           ui_TF = ifelse(ui > 0, TRUE, FALSE)) #%>%
-  # drop_na()
+    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)), 
+           ui_TF = ifelse(ui > 0, TRUE, FALSE)) 
 }
 
 CC_UI <- upwelling_func(df = CC_coastal) %>% 
@@ -168,7 +167,7 @@ BC_UI <- upwelling_func(df = BC_coastal) %>%
 
 # The custom function for detecting upwelling and extracting only the metrics
 detect_event_custom <- function(df){
-  res <- detect_event(df, threshClim2 = df$ui_TF, minDuration = 1, coldSpells = T)$event # I thought the min duration was 1 day, not 3?
+  res <- detect_event(df, threshClim2 = df$ui_TF, minDuration = 1, coldSpells = T)$event
   return(res)
 }
 

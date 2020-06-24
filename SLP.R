@@ -19,14 +19,20 @@ library(FNN)
 source("functions/theme.R")
 
 # 2: Matching the SLP ------------------------------------------------------------------
-load("~/R/forOthers/Amieroh/SLP_BC.RData")
-load("~/R/forOthers/Amieroh/BC_match.RData")
-# load("data/SLP_BC.RData")
-# load("data/BC_match.RData")
+# load("data/SLP_BC.RData")  # Extracted from netCDF, see netCDF2CSV.R scipt in the Data_extraction folder
+# load("data/BC_match.RData") # Created in script 1_Temp_wind_data.R
 
 # Rename date column for matching
-SLP_BC <- SLP_BC %>% 
-  rename(date = t)
+date_func <- function(df){
+  SLP <- df %>% 
+   rename(date = t)
+  return(SLP)
+}
+
+SLP_BC<- match_func(df = SLP_BC) 
+SLP_CC<- match_func(df = SLP_CC) 
+SLP_CalC<- match_func(df = SLP_CalC) 
+SLP_HC<- match_func(df = SLP_HC) 
 
 # Function for joining low-res and high-res data
 match_func <- function(match_df, SLP_df){
@@ -62,50 +68,17 @@ match_func <- function(match_df, SLP_df){
 # Match up all of the data
 BC_match_SLP <- match_func(match_df = BC_match, SLP_df = SLP_BC) 
 rm(BC_match, SLP_BC); gc()
+CC_match_SLP <- match_func(match_df = CC_match, SLP_df = SLP_CC) 
+rm(CC_match, SLP_CC); gc()
+CalC_match_SLP <- match_func(match_df = CalC_match, SLP_df = SLP_CalC) 
+rm(CalC_match, SLP_CalC); gc()
+HC_match_SLP <- match_func(match_df = HC_match, SLP_df = SLP_HC) 
+rm(HC_match, SLP_HC); gc()
 
-
-######################################
-
-
-
-
-
-
-wind_func <- function(df){
-  wind <- df %>% 
-    mutate(lat = lat - 0.125,
-           lon = lon + 360, #Adding 360 so that it will match the temperature data. 
-           lon = lon + 0.125) %>% # To convert Pa to hPa
-    rename(date = t)
-}
-
-CC_SLP <- wind_func(df = CC_msl)
-CalC_SLP <- wind_func(df = msl_combined)
-HC_SLP <- wind_func(df = HC_msl)
-
-SLP_BC <- SLP_BC %>% 
-  mutate(lat = lat - 0.125,
-         lon = lon + 0.125) %>% # To convert Pa to hPa
-  rename(date = t)
-
-
-load("data/BC_match.RData")
-load("data/HC_match.RData")
-load("data/CC_match.RData")
-load("data/CalC_match.RData")
-
-match_func <- function(match_df, SLP_df){
-  match <- SLP_df  %>%
-    left_join(match_df, by = c("lon",  "lat", "date")) %>%
-    na.trim()
-  return(match)
-}
-
-# Matching the wind data with the 30yr time series OISST temperature data 
-CC_match_SLP <- match_func(match_df = CC_match, SLP_df = CC_SLP)
-CalC_match_SLP <- match_func(match_df = CalC_match, SLP_df = CalC_SLP)
-BC_match_SLP <- match_func(match_df = BC_match, SLP_df = SLP_BC)
-HC_match_SLP <- match_func(match_df = HC_match, SLP_df = HC_SLP)
+#save(BC_match_SLP, file = "data/BC_match_SLP.RData")
+#save(CC_match_SLP, file = "data/CC_match_SLP.RData")
+#save(CalC_match_SLP, file = "data/CalC_match_SLP.RData")
+#save(HC_match_SLP, file = "data/HC_match_SLP.RData")
 
 # Calculate wind speed and direction
 load("data/CC_match_SLP.RData")
@@ -122,13 +95,13 @@ wind_dir_func <- function(df){
 }
 
 CC_wind_SLP <- wind_dir_func(df = CC_match_SLP)
-#save(CC_wind, file = "data/CC_wind.RData")
+#save(CC_wind_SLP, file = "data/CC_wind_SLP.RData")
 CalC_wind_SLP <- wind_dir_func(df = CalC_match_SLP)
-#save(CalC_wind, file = "data/CalC_wind.RData")
+#save(CalC_wind_SLP, file = "data/CalC_wind_SLP.RData")
 HC_wind_SLP <- wind_dir_func(df = HC_match_SLP)
-#save(HC_wind, file = "data/HC_wind.RData")
+#save(HC_wind_SLP, file = "data/HC_wind_SLP.RData")
 BC_wind_SLP <- wind_dir_func(df = BC_match_SLP)
-# save(BC_wind, file = "data/BC_wind.RData")
+# save(BC_wind_SLP, file = "data/BC_wind_SLP.RData")
 
 # Seasons for the southern hemisphere
 seasons_S_func <- function(df){
@@ -157,9 +130,6 @@ CC_complete_SLP <- seasons_N_func(CC_wind_SLP)
 CalC_complete_SLP <- seasons_N_func(CalC_wind_SLP)
 HC_complete_SLP <- seasons_S_func(HC_wind_SLP)
 BC_complete_SLP <- seasons_S_func(BC_wind_SLP)
-
-save(CalC_complete_SLP, file = "~/Desktop/EBUS/EBUS/data/CalC_complete_SLP.RData")
-
 
 # save(HC_complete_SLP, file = "data/HC_complete_SLP.RData")
 # save(CC_complete_SLP, file = "data/CC_complete_SLP.RData")
@@ -260,49 +230,98 @@ HC_transects_SLP <- transect_func(df = HC_coastal_coords_SLP)
 
 CC_coastal_SLP <- left_join(CC_coastal_coords_SLP, CC_complete_SLP, by = c("lon", "lat")) %>% 
   left_join(CC_transects_SLP, by = c("lon", "lat"))
-# save(CC_coastal, file = "data/CC_coastal.RData")
+# save(CC_coastal_SLP, file = "data/CC_coastal_SLP.RData")
 rm(CC_complete_SLP, CC); gc()
 
 CalC_coastal_SLP <- left_join(CalC_coastal_coords_SLP, CalC_complete_SLP, by = c("lon", "lat")) %>% 
   left_join(CalC_transects_SLP, by = c("lon", "lat"))
-# save(CalC_coastal, file = "data/CalC_coastal.RData")
+# save(CalC_coastal_SLP, file = "data/CalC_coastal_SLP.RData")
 rm(CalC_complete_SLP, CalC); gc()
 
 
 HC_coastal_SLP <- left_join(HC_coastal_coords_SLP, HC_complete_SLP, by = c("lon", "lat")) %>% 
   left_join(HC_transects_SLP, by = c("lon", "lat"))
-# save(HC_coastal, file = "data/HC_coastal.RData")
+# save(HC_coastal_SLP, file = "data/HC_coastal_SLP.RData")
 rm(HC_complete, HC); gc()
 
 BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon", "lat")) %>% 
   left_join(BC_transects_SLP, by = c("lon", "lat"))
-# save(BC_coastal, file = "data/BC_coastal.RData")
+# save(BC_coastal_SLP, file = "data/BC_coastal_SLP.RData")
 
+# Determining the upwelling index per coastal pixel
+upwelling_func <- function(df){
+  UI <- df %>%  
+    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)), 
+           ui_TF = ifelse(ui > 0, TRUE, FALSE)) 
+}
 
-# Plotting
+CC_UI_SLP <- upwelling_func(df = CC_coastal_SLP) %>% 
+  dplyr::rename(t = date)
+# save(CC_UI_SLP, file = "data/CC_UI_SLP.RData")
 
-# coastal upwelling is driven by alongshore winds stimulated by steep cross-shore gradients in sea level pressure (SLP). 
-# thermal low-pressure systems over the continents, intensiﬁcation of the land-sea SLP gradients, and subsequent increases in summertime upwelling-favorable winds
-# https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1002/2015GL064694
+CalC_UI_SLP <- upwelling_func(df = CalC_coastal_SLP) %>% 
+  dplyr::rename(t = date)
+# save(CalC_UI_SLP, file = "data/CalC_UI_SLP.RData")
 
-# Observe changes in SLP gradients
+HC_UI_SLP <- upwelling_func(df = HC_coastal_SLP) %>% 
+  dplyr::rename(t = date)
+# save(HC_UI_SLP, file = "data/HC_UI_SLP.RData")
 
-load("data/CalC_coastal_SLP.RData")
+BC_UI_SLP <- upwelling_func(df = BC_coastal_SLP) %>% 
+  dplyr::rename(t = date)
+# save(BC_UI_SLP, file = "data/BC_UI_SLP.RData")
 
-CalC_monthly <- CalC_coastal_SLP %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, season, month) %>% 
-  summarise(mean_msl = mean(msl, na.rm = T))
+# The custom function for detecting upwelling and extracting only the metrics
+detect_event_custom <- function(df){
+  res <- detect_event(df, threshClim2 = df$ui_TF, minDuration = 1, coldSpells = T)$event # I thought the min duration was 1 day, not 3?
+  return(res)
+}
 
-ggplot(data = CalC_monthly, aes(x = year, y = mean_msl)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  labs(x = "Year", y = "Mean sea level pressure (hPa)") +
-  theme(strip.text = element_text(face="bold", size=12)) +
-  theme_Publication()
+# Calculate the upwelling event metrics
+clim_func <- function(df){
+  clim <- df %>% 
+    group_by(lon, lat) %>% 
+    nest() %>% 
+    mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2019-12-31"))) %>% 
+    select(-data) %>%
+    unnest(cols = clim) %>% 
+    ungroup()
+}
 
-# Negative trend in SLP
-# Regression analyses: Regressed SST with Regressed SLP 
+CC_clim_SLP <- clim_func(df = CC_UI_SLP)
+# save(CC_clim_SLP, file = "data/CC_clim_SLP.RData")
+
+CalC_clim_SLP <- clim_func(df = CalC_UI_SLP)
+# save(CalC_clim_SLP, file = "data/CalC_clim_SLP.RData")
+
+HC_clim_SLP <- clim_func(df = HC_UI_SLP) 4
+# save(HC_clim_SLP, file = "data/HC_clim_SLP.RData")
+
+BC_clim_SLP <- clim_func(df = BC_UI_SLP) 
+# save(BC_clim_SLP, file = "data/BC_clim_SLP.RData")
+
+# Calculate the upwelling metrics
+UI_metrics_func <- function(df,clim_df){
+  UI_metrics <- df %>% 
+    left_join(clim_df, by = c("lon", "lat", "t", "temp")) %>% 
+    group_by(lon, lat) %>% 
+    nest() %>% 
+    mutate(event = purrr::map(data, detect_event_custom)) %>% 
+    select(-data) %>%
+    unnest(cols = event) %>% 
+    ungroup()
+}
+
+CC_UI_metrics_SLP <- UI_metrics_func(df = CC_UI_SLP, clim_df = CC_clim_SLP)
+CalC_UI_metrics_SLP <- UI_metrics_func(df = CalC_UI_SLP, clim_df = CalC_clim_SLP)
+HC_UI_metrics_SLP <- UI_metrics_func(df = HC_UI_SLP, clim_df = HC_clim_SLP)
+BC_UI_metrics_SLP <- UI_metrics_func(df = BC_UI_SLP, clim_df = BC_clim_SLP)
+
+# save(CC_UI_metrics_SLP, file = "data/CC_UI_metrics_SLP.RData")
+# save(CalC_UI_metrics_SLP, file = "data/CalC_UI_metrics_SLP.RData")
+# save(HC_UI_metrics_SLP, file = "data/HC_UI_metrics_SLP.RData")
+# save(BC_UI_metrics_SLP, file = "data/BC_UI_metrics_SLP.RData")
+
 
 
 

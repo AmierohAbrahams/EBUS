@@ -169,11 +169,29 @@ combined <- rbind(combined,wind_daily)
 # 4: Extract the ERA5 SLP data ---------------------------------------------------------------------------------
 
 # Viewing netCDF properties
-ncin <- nc_open("/home/amieroh/Downloads/SLP_BC.nc")
-print(ncin)
+# ncin <- nc_open("/home/amieroh/Downloads/CC_test.nc")
+# print(ncin)
+
+SLP_HC <- tidync("/home/amieroh/Downloads/HC_SLP.nc") %>%
+  hyper_tibble() %>% 
+  dplyr::select(lon, lat, time, slp) %>% 
+  mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1800-01-01 00:00:00.0"))) %>% 
+  dplyr::select(-time)
+
+SLP_BC <- tidync("/home/amieroh/Downloads/BC_SLP.nc") %>%
+  hyper_tibble() %>% 
+  dplyr::select(lon, lat, time, slp) %>% 
+  mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1800-01-01 00:00:00.0"))) %>% 
+  dplyr::select(-time)
+
+SLP_CalC <- tidync("/home/amieroh/Downloads/CalC_SLP.nc") %>%
+  hyper_tibble() %>% 
+  dplyr::select(lon, lat, time, slp) %>% 
+  mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1800-01-01 00:00:00.0"))) %>% 
+  dplyr::select(-time)
 
 
-SLP_HC <- tidync("/home/amieroh/Downloads/SLP_HC.nc") %>%
+SLP_CC <- tidync("/home/amieroh/Downloads/CC_SLP.nc") %>%
   hyper_tibble() %>% 
   dplyr::select(lon, lat, time, slp) %>% 
   mutate(t = as.Date(as.POSIXct(time * 60 * 60, origin = "1800-01-01 00:00:00.0"))) %>% 

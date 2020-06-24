@@ -14,7 +14,7 @@ library(zoo)
 source("functions/theme.R")
 
 # : Match wind and temperature data ----------------------------------------------------
-# This is the wind u and v data for each current (See extraction folder)
+# This is the wind u and v data for each current (See data extraction folder)
 
 # The data loaded here were extracted in the netCDF2CSV script in the data extraction folder
 load("data/CC_wind.RData")
@@ -40,7 +40,7 @@ CalC_wind_fin <- wind_func(df = CalC_wind)
 HC_wind_fin <- wind_func(df = HC_wind)
 
 # Function for matching temps and wind
-# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVscript in the data extraction folder)
+# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVs cript in the data extraction folder)
 load("~/Documents/EBUS/data/BC.RData")
 load("~/Documents/EBUS/data/HC.RData")
 load("~/Documents/EBUS/data/CC.RData")
