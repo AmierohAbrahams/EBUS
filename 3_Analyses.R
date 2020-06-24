@@ -29,7 +29,7 @@ options(scipen=999)
 # 2: Wind pattern observation ----------------------------------------------------  
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
-# The datasets used here were created in script "2_upwelling_identification.R"
+# The datasets used here were created in script "5_SLP.R"
 load("data/CC_coastal_SLP.RData") 
 load("data/CalC_coastal_SLP.RData")
 load("data/BC_coastal_SLP.RData")
@@ -49,10 +49,13 @@ rm(BC,BC_coastal_SLP,CalC,CalC_coastal_SLP,CC_coastal_SLP,CC, HC_coastal_SLP,HC)
 
 # Then create different temporal results
 # First filter out only the SE data
+
 SE_renamed <- current_winds %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique()
 rm(current_winds);gc()
+#save(SE_renamed, file = "data/SE_renamed.RData")
+
 
 # Then create diifferent temporal results
 SE_summer <- SE_renamed %>% 
@@ -72,6 +75,24 @@ SE_monthly <- SE_renamed %>%
             circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
             mean_temp = mean(temp, na.rm = T),
             mean_SLP = mean(slp, na.rm = T))
+
+
+# Wind duration
+# Already have all the SE winds
+
+load("data/SE_renamed.RData")
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Determining the number of pixels within each current
 BC_pixels <- SE_renamed %>% 
@@ -98,13 +119,6 @@ CalC_pixels <- SE_renamed %>%
 # New facet label names
 supp.labs <- c("Benguela current", "California current", "Canary current", "Humboldt current")
 names(supp.labs) <- c("BC", "CalC","CC", "HC")
-
-# ggplot(data = SE_monthly, aes(x = year, y = count)) +
-#   geom_line(aes(colour = month)) +
-#   geom_smooth(aes(colour = month), method = "lm") +
-#   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-#   labs(x = "Year", y = "Wind") +
-#   theme(strip.text = element_text(face="bold", size=12))
 
 # Monthly mean temperature
 ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
@@ -353,11 +367,6 @@ summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
 
-# Pressure gradient
 
-# The pressure gradient can be determined mathematically by taking the difference in pressure between two locations (in Pascals) 
-# and dividing it by the distance between the two locations (in meters).
-
-# Load the BC SLP
 
 

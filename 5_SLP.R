@@ -255,14 +255,15 @@ BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon"
 # and dividing it by the distance between the two locations (in meters).
 
 # Determining distance
+load("data/CalC_coastal_SLP.RData")
 
-BC_coastal_SLP_prep <- BC_coastal_SLP %>% 
+CalC_coastal_SLP_prep <- CalC_coastal_SLP %>% 
   mutate(site = 1:nrow(.),
          lon = deg2rad(lon),
          lat = deg2rad(lat)) %>% 
   select(site, lon, lat)
 
-BC_coastal_SLP_dist <- as.data.frame(round(PairsDists(BC_coastal_SLP_prep), 2))
+CalC_coastal_SLP_dist <- as.data.frame(round(PairsDists(CalC_coastal_SLP_prep), 2))
   dplyr::rename(dist = V1) %>%
   select(lon, lat, dist) %>% 
   mutate(cum_dist = cumsum(dist)) %>% 
