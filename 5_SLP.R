@@ -1,4 +1,4 @@
-# 4_SLP
+# 5_SLP
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
@@ -21,6 +21,10 @@ source("functions/theme.R")
 # 2: Matching the SLP ------------------------------------------------------------------
 # load("data/SLP_BC.RData")  # Extracted from netCDF, see netCDF2CSV.R scipt in the Data_extraction folder
 # load("data/BC_match.RData") # Created in script 1_Temp_wind_data.R
+
+# Calculating SLP Gradient (SLPG)
+# The pressure gradient can be determined mathematically by taking the difference in pressure between two locations (in Pascals) 
+# and dividing it by the distance between the two locations (in meters).
 
 # Rename date column for matching
 date_func <- function(df){
