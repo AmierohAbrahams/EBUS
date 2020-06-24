@@ -17,14 +17,12 @@ library(heatwaveR)
 library(coastR)
 library(FNN)
 source("functions/theme.R")
+source("functions/earthdist.R")
+options(scipen=999)
 
 # 2: Matching the SLP ------------------------------------------------------------------
-# load("data/SLP_BC.RData")  # Extracted from netCDF, see netCDF2CSV.R scipt in the Data_extraction folder
-# load("data/BC_match.RData") # Created in script 1_Temp_wind_data.R
-
-# Calculating SLP Gradient (SLPG)
-# The pressure gradient can be determined mathematically by taking the difference in pressure between two locations (in Pascals) 
-# and dividing it by the distance between the two locations (in meters).
+load("data/SLP_BC.RData")  # Extracted from netCDF, see netCDF2CSV.R scipt in the Data_extraction folder
+load("data/BC_match.RData") # Created in script 1_Temp_wind_data.R
 
 # Rename date column for matching
 date_func <- function(df){
@@ -252,80 +250,27 @@ BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon"
   left_join(BC_transects_SLP, by = c("lon", "lat"))
 # save(BC_coastal_SLP, file = "data/BC_coastal_SLP.RData")
 
-# Determining the upwelling index per coastal pixel
-upwelling_func <- function(df){
-  UI <- df %>%  
-    mutate(ui = wind_spd * (cos(wind_dir_from - coastal_angle)), 
-           ui_TF = ifelse(ui > 0, TRUE, FALSE)) 
-}
+# Calculating SLP Gradient (SLPG)
+# The pressure gradient can be determined mathematically by taking the difference in pressure between two locations (in Pascals) 
+# and dividing it by the distance between the two locations (in meters).
 
-CC_UI_SLP <- upwelling_func(df = CC_coastal_SLP) %>% 
-  dplyr::rename(t = date)
-# save(CC_UI_SLP, file = "data/CC_UI_SLP.RData")
+# Determining distance
 
-CalC_UI_SLP <- upwelling_func(df = CalC_coastal_SLP) %>% 
-  dplyr::rename(t = date)
-# save(CalC_UI_SLP, file = "data/CalC_UI_SLP.RData")
+BC_coastal_SLP_prep <- BC_coastal_SLP %>% 
+  mutate(site = 1:nrow(.),
+         lon = deg2rad(lon),
+         lat = deg2rad(lat)) %>% 
+  select(site, lon, lat)
 
-HC_UI_SLP <- upwelling_func(df = HC_coastal_SLP) %>% 
-  dplyr::rename(t = date)
-# save(HC_UI_SLP, file = "data/HC_UI_SLP.RData")
-
-BC_UI_SLP <- upwelling_func(df = BC_coastal_SLP) %>% 
-  dplyr::rename(t = date)
-# save(BC_UI_SLP, file = "data/BC_UI_SLP.RData")
-
-# The custom function for detecting upwelling and extracting only the metrics
-detect_event_custom <- function(df){
-  res <- detect_event(df, threshClim2 = df$ui_TF, minDuration = 1, coldSpells = T)$event # I thought the min duration was 1 day, not 3?
-  return(res)
-}
-
-# Calculate the upwelling event metrics
-clim_func <- function(df){
-  clim <- df %>% 
-    group_by(lon, lat) %>% 
-    nest() %>% 
-    mutate(clim = purrr::map(data, ts2clm, pctile = 25, climatologyPeriod = c("1982-01-01", "2019-12-31"))) %>% 
-    select(-data) %>%
-    unnest(cols = clim) %>% 
-    ungroup()
-}
-
-CC_clim_SLP <- clim_func(df = CC_UI_SLP)
-# save(CC_clim_SLP, file = "data/CC_clim_SLP.RData")
-
-CalC_clim_SLP <- clim_func(df = CalC_UI_SLP)
-# save(CalC_clim_SLP, file = "data/CalC_clim_SLP.RData")
-
-HC_clim_SLP <- clim_func(df = HC_UI_SLP) 4
-# save(HC_clim_SLP, file = "data/HC_clim_SLP.RData")
-
-BC_clim_SLP <- clim_func(df = BC_UI_SLP) 
-# save(BC_clim_SLP, file = "data/BC_clim_SLP.RData")
-
-# Calculate the upwelling metrics
-UI_metrics_func <- function(df,clim_df){
-  UI_metrics <- df %>% 
-    left_join(clim_df, by = c("lon", "lat", "t", "temp")) %>% 
-    group_by(lon, lat) %>% 
-    nest() %>% 
-    mutate(event = purrr::map(data, detect_event_custom)) %>% 
-    select(-data) %>%
-    unnest(cols = event) %>% 
-    ungroup()
-}
-
-CC_UI_metrics_SLP <- UI_metrics_func(df = CC_UI_SLP, clim_df = CC_clim_SLP)
-CalC_UI_metrics_SLP <- UI_metrics_func(df = CalC_UI_SLP, clim_df = CalC_clim_SLP)
-HC_UI_metrics_SLP <- UI_metrics_func(df = HC_UI_SLP, clim_df = HC_clim_SLP)
-BC_UI_metrics_SLP <- UI_metrics_func(df = BC_UI_SLP, clim_df = BC_clim_SLP)
-
-# save(CC_UI_metrics_SLP, file = "data/CC_UI_metrics_SLP.RData")
-# save(CalC_UI_metrics_SLP, file = "data/CalC_UI_metrics_SLP.RData")
-# save(HC_UI_metrics_SLP, file = "data/HC_UI_metrics_SLP.RData")
-# save(BC_UI_metrics_SLP, file = "data/BC_UI_metrics_SLP.RData")
-
+BC_coastal_SLP_dist <- as.data.frame(round(PairsDists(BC_coastal_SLP_prep), 2))
+  dplyr::rename(dist = V1) %>%
+  select(lon, lat, dist) %>% 
+  mutate(cum_dist = cumsum(dist)) %>% 
+  mutate(dist = lag(dist),
+         cum_dist = lag(cum_dist))
+  
+# Determining sea level pressure gradient
+# Difference in p1-p2/distance
 
 
 

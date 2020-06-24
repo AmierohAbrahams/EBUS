@@ -22,6 +22,7 @@ library(mgcv) # for gam
 library(FNN)
 library(broom)
 library(circular)
+library(grid)
 source("functions/theme.R")
 options(scipen=999) 
 
