@@ -159,6 +159,7 @@ ggplot(data = complete_wind, aes(x = year, y = signal)) +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
 
+# Wind intensity
 ggplot(data = complete_wind, aes(x = year, y = circ_wspd)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
@@ -167,6 +168,15 @@ ggplot(data = complete_wind, aes(x = year, y = circ_wspd)) +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
 
+# Wind duration
+wind_exc <- exceedance(sst_WA, threshold = 25)
+
+# Look at a few metrics
+wind_exc$exceedance %>%
+  ungroup() %>%
+  select(exceedance_no, duration, date_start, date_peak)
+
+# Linear model -------------------------------------------------------------------------------------------------------
 
 slope_calc <- function(df){
   df %>% 
@@ -194,7 +204,7 @@ complete_wind%>%
   group_by(current, season, month) %>% 
   slope_calc()
 
-# 3: ANOVA analyses ----------------------------------------------------
+# 3: ANOVA analyses ------------------------------------------------------------------------------------------------
 # ANOVA analyses comparing is the number of gc(signals detected each year and each season varied over time
 
 load("data/BC_UI_metrics_SLP.RData")
