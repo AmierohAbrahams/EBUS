@@ -258,12 +258,16 @@ BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon"
 load("data/CalC_coastal_SLP.RData")
 
 CalC_coastal_SLP_prep <- CalC_coastal_SLP %>% 
-  mutate(site = 1:nrow(.),
-         lon = deg2rad(lon),
-         lat = deg2rad(lat)) %>% 
-  select(site, lon, lat)
+  dplyr::select(lon, lat) %>% 
+  unique() %>% 
+  mutate(lon = deg2rad(lon),
+         lat = deg2rad(lat)) %>%
+  mutate(site = 1:nrow(.)) %>% 
+  select(site, lon, lat) %>% 
+  data.frame()
 
-CalC_coastal_SLP_dist <- as.data.frame(round(PairsDists(CalC_coastal_SLP_prep), 2))
+CalC_coastal_SLP_dist <- as.data.frame(round(PairsDists(CalC_coastal_SLP_prep), 2)) %>% 
+  cbind(CalC_coastal_SLP_prep) %>% 
   dplyr::rename(dist = V1) %>%
   select(lon, lat, dist) %>% 
   mutate(cum_dist = cumsum(dist)) %>% 
