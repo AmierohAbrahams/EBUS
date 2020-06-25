@@ -160,7 +160,7 @@ load("~/Documents/EBUS/data/HC.RData")
 load("~/Documents/EBUS/data/CC.RData")
 load("~/Documents/EBUS/data/CalC.RData")
 
-# 2: Find the coastal pixels ----------------------------------------------
+# 2: Find the coastal pixels ----------------------------------------------------------------------------------------------------------
 # Isolate the unique pixel coordinates
 
 coord_func <- function(df){
@@ -227,7 +227,7 @@ transect_func <- function(df){
 CC_transects_SLP <- transect_func(df = CC_coastal_coords_SLP)
 CalC_transects_SLP <- transect_func(df = CalC_coastal_coords_SLP)
 HC_transects_SLP <- transect_func(df = HC_coastal_coords_SLP)
-
+  
 # Bind it all together
 
 CC_coastal_SLP <- left_join(CC_coastal_coords_SLP, CC_complete_SLP, by = c("lon", "lat")) %>% 
@@ -250,7 +250,7 @@ BC_coastal_SLP <- left_join(BC_coastal_coords_SLP, BC_complete_SLP, by = c("lon"
   left_join(BC_transects_SLP, by = c("lon", "lat"))
 # save(BC_coastal_SLP, file = "data/BC_coastal_SLP.RData")
 
-# Calculating SLP Gradient (SLPG)
+# 3 Calculating SLP Gradient (SLPG) ---------------------------------------------------------------------------------------------------
 # The pressure gradient can be determined mathematically by taking the difference in pressure between two locations (in Pascals) 
 # and dividing it by the distance between the two locations (in meters).
 

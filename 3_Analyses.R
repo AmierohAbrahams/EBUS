@@ -46,10 +46,10 @@ CalC <- CalC_coastal_SLP %>%
 
 current_winds <- rbind(BC,HC,CC,CalC)
 rm(BC,BC_coastal_SLP,CalC,CalC_coastal_SLP,CC_coastal_SLP,CC, HC_coastal_SLP,HC);gc()
+# save(current_winds, file = "data/current_winds.RData")
 
 # Then create different temporal results
 # First filter out only the SE data
-
 SE_renamed <- current_winds %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique()
@@ -76,25 +76,24 @@ SE_monthly <- SE_renamed %>%
             mean_temp = mean(temp, na.rm = T),
             mean_SLP = mean(slp, na.rm = T))
 
+# Determine wind duration-------------------------------------------------------------------------------------------------------------------
 
-# Wind duration
-# Already have all the SE winds
+load("data/CalC_coastal_SLP.RData") # All of the wind data and not only data blowing in SE direction
+load("data/SE_renamed.RData") # Wind blowing in a SE direction for all of the EBUS
+wind_duration <- SE_renamed %>% 
+  select(date, wind_dir_from) %>% 
+  rename(t = date,
+         temp = wind_dir_from)
 
-load("data/SE_renamed.RData")
+# Threshold?
+exc_wind <- exceedance(wind_duration, minDuration = 1)
 
-
-
-
-
-
-
-
-
-
-
+wind_duration <- exc_wind$exceedance %>%
+  ungroup() %>%
+  select(exceedance_no, duration, date_start, date_peak, intensity_max, intensity_cumulative) 
 
 
-# Determining the number of pixels within each current
+# Determining the number of pixels within each current -----------------------------------------------------------------------------------
 BC_pixels <- SE_renamed %>% 
   filter(current == "BC") %>% 
   dplyr::select(lon, lat) %>% 
