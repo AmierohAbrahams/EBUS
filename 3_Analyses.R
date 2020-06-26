@@ -85,6 +85,8 @@ wind_duration <- SE_renamed %>%
   rename(t = date,
          temp = wind_dir_from)
 
+# Match with a fully date dataset
+
 # Threshold?
 exc_wind <- exceedance(wind_duration, minDuration = 1)
 
