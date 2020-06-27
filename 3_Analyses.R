@@ -80,15 +80,22 @@ SE_monthly <- SE_renamed %>%
 
 load("data/CalC_coastal_SLP.RData") # All of the wind data and not only data blowing in SE direction
 load("data/SE_renamed.RData") # Wind blowing in a SE direction for all of the EBUS
-wind_duration <- SE_renamed %>% 
+CalC_wind_duration <- CalC_coastal_SLP %>% 
   select(date, wind_dir_from) %>% 
-  rename(t = date,
-         temp = wind_dir_from)
+  rename(date = date,
+         wind_se = wind_dir_from)
+
+SE_renamed <- CalC_coastal_SLP %>% 
+  filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
+  unique()
+rm(current_winds);gc()
+
+test <- right_join(SE_renamed, CalC_wind_duration)
 
 # Match with a fully date dataset
 
 # Threshold?
-exc_wind <- exceedance(wind_duration, minDuration = 1)
+exc_wind <- exceedance(CalC_wind_duration, minDuration = 1, threshold  = 180)
 
 wind_duration <- exc_wind$exceedance %>%
   ungroup() %>%
