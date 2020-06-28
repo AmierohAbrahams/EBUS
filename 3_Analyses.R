@@ -106,25 +106,25 @@ wind_duration <- exc_wind$exceedance %>%
 
 
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
-BC_pixels <- SE_renamed %>% 
-  filter(current == "BC") %>% 
-  dplyr::select(lon, lat) %>% 
-  unique()
-
-CC_pixels <- SE_renamed %>% 
-  filter(current == "CC") %>% 
-  dplyr::select(lon, lat) %>% 
-  unique()
-
-HC_pixels <- SE_renamed %>% 
-  filter(current == "HC") %>% 
-  dplyr::select(lon, lat) %>% 
-  unique()
-
-CalC_pixels <- SE_renamed %>% 
-  filter(current == "CalC") %>% 
-  dplyr::select(lon, lat) %>% 
-  unique()
+# BC_pixels <- SE_renamed %>% 
+#   filter(current == "BC") %>% 
+#   dplyr::select(lon, lat) %>% 
+#   unique()
+# 
+# CC_pixels <- SE_renamed %>% 
+#   filter(current == "CC") %>% 
+#   dplyr::select(lon, lat) %>% 
+#   unique()
+# 
+# HC_pixels <- SE_renamed %>% 
+#   filter(current == "HC") %>% 
+#   dplyr::select(lon, lat) %>% 
+#   unique()
+# 
+# CalC_pixels <- SE_renamed %>% 
+#   filter(current == "CalC") %>% 
+#   dplyr::select(lon, lat) %>% 
+#   unique()
 
 
 # New facet label names
@@ -193,14 +193,6 @@ ggplot(data = complete_wind, aes(x = year, y = circ_wspd)) +
   labs(x = "Year", y = "Wind speed") +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
-
-# Wind duration
-wind_exc <- exceedance(sst_WA, threshold = 25)
-
-# Look at a few metrics
-wind_exc$exceedance %>%
-  ungroup() %>%
-  select(exceedance_no, duration, date_start, date_peak)
 
 # Linear model -------------------------------------------------------------------------------------------------------
 
