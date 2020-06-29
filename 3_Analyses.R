@@ -64,6 +64,7 @@ ggplot(data = temp, aes(x = year, y = mean_temp)) +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Temperature (°C)")+
   theme_bw() +
+  labs(colour = "Month") +
   theme(panel.border = element_rect(size = 1.0),
         # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
         panel.grid.major = element_line(colour = NA),
@@ -182,6 +183,7 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Temperature (°C)")+
   theme_bw() +
+  labs(colour = "Month") +
   theme(panel.border = element_rect(size = 1.0),
         # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
         panel.grid.major = element_line(colour = NA),
@@ -247,6 +249,7 @@ ggplot(data = complete_wind, aes(x = year, y = circ_wspd)) +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Wind speed (ms-1)") +
   theme_bw() +
+  labs(colour = "Month") +
   theme(panel.border = element_rect(size = 1.0),
         # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
         panel.grid.major = element_line(colour = NA),
@@ -387,6 +390,7 @@ ggplot(data = summer_signal, aes(x = year, y = signal)) +
  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Number of upwelling signals")+
   theme_bw() +
+  labs(colour = "Month") +
   theme(panel.border = element_rect(size = 1.0),
         # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
         panel.grid.major = element_line(colour = NA),
