@@ -64,26 +64,18 @@ ggplot(data = temp, aes(x = year, y = mean_temp)) +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Temperature (°C)")+
   theme_bw() +
-  theme(plot.background = element_blank(),
-        panel.background = element_rect(fill = "white"),
-        panel.border = element_rect(colour = "black", fill = NA, size = 0.4),
+  theme(panel.border = element_rect(size = 1.0),
+        # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
+        panel.grid.major = element_line(colour = NA),
         panel.grid.minor = element_line(colour = NA),
-        panel.grid.major = element_line(colour = "black", size = 0.2, linetype = "dotted"),
-        axis.title = element_text(size = 8),
-        axis.text = element_text(size = 8),
-        axis.ticks = element_line(size = 0.4),
-        axis.ticks.length = unit(2, "mm"),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_text(size = 8),
-        legend.text = element_text(size = 6),
-        legend.key = element_blank(),
-        legend.key.height = unit(.22, "cm"),
-        legend.key.width = unit(0.30, "cm"),
-        legend.background = element_blank(),
-        plot.title = element_text(size = 8, hjust = 0),
-        strip.background = element_rect(colour = "white", fill = "white"),
-        strip.text = element_text(size = 8))
+        axis.title = element_text(size = 12, face = "bold"),
+        axis.text = element_text(size = 12, colour = "black"),
+        plot.title = element_text(size = 12, hjust = 0),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        legend.key = element_rect(size = 0.8, colour = NA),
+        strip.background = element_rect(colour = NA, fill = NA),
+        strip.text = element_text(size = 10))
 
 # Then create different temporal results
 # First filter out only the SE data
@@ -135,11 +127,31 @@ BC_dur <- prepping_dur %>%
          t = date) %>% 
   select(temp,t)
 
-exc_wind <- exceedance(BC_dur, minDuration = 1, threshold > 0)
+exc_wind <- exceedance(BC_dur, minDuration = 1, threshold = 0)
 
 wind_duration <- exc_wind$exceedance %>%
   ungroup() %>%
   select(exceedance_no, duration, date_start, date_peak, intensity_max, intensity_cumulative) 
+
+seasons_S_func <- function(df){
+  df_seasons <- df %>% 
+    mutate(month = month(date_start, abbr = T, label = T),
+           year = year(date_start)) %>% 
+    mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Summer", 
+                              month %in% c("Mar", "Apr", "May") ~ "Autumn",
+                              month %in% c("Jun", "Jul", "Aug") ~ "Winter",
+                              month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
+}
+
+BC_wind_dur <- seasons_S_func(df = wind_duration)
+
+
+wind_duration_test <- BC_wind_dur %>% 
+  filter(season == "Summer") %>% 
+  group_by(year, duration, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(current = "BC")
+
 
 
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
@@ -170,26 +182,18 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Temperature (°C)")+
   theme_bw() +
-  theme(plot.background = element_blank(),
-        panel.background = element_rect(fill = "white"),
-        panel.border = element_rect(colour = "black", fill = NA, size = 0.4),
+  theme(panel.border = element_rect(size = 1.0),
+        # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
+        panel.grid.major = element_line(colour = NA),
         panel.grid.minor = element_line(colour = NA),
-        panel.grid.major = element_line(colour = "black", size = 0.2, linetype = "dotted"),
-        axis.title = element_text(size = 8),
-        axis.text = element_text(size = 8),
-        axis.ticks = element_line(size = 0.4),
-        axis.ticks.length = unit(2, "mm"),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_text(size = 8),
-        legend.text = element_text(size = 6),
-        legend.key = element_blank(),
-        legend.key.height = unit(.22, "cm"),
-        legend.key.width = unit(0.30, "cm"),
-        legend.background = element_blank(),
-        plot.title = element_text(size = 8, hjust = 0),
-        strip.background = element_rect(colour = "white", fill = "white"),
-        strip.text = element_text(size = 8))
+        axis.title = element_text(size = 12, face = "bold"),
+        axis.text = element_text(size = 12, colour = "black"),
+        plot.title = element_text(size = 12, hjust = 0),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        legend.key = element_rect(size = 0.8, colour = NA),
+        strip.background = element_rect(colour = NA, fill = NA),
+        strip.text = element_text(size = 10))
 
 ggplot(data = SE_monthly, aes(x = year, y = mean_SLP)) +
   geom_line(aes(colour = month)) +
@@ -241,29 +245,20 @@ ggplot(data = complete_wind, aes(x = year, y = circ_wspd)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Wind speed (m.s-1)") +
+  labs(x = "Year", y = "Wind speed (ms-1)") +
   theme_bw() +
-  theme(plot.background = element_blank(),
-        panel.background = element_rect(fill = "white"),
-        panel.border = element_rect(colour = "black", fill = NA, size = 0.4),
+  theme(panel.border = element_rect(size = 1.0),
+        # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
+        panel.grid.major = element_line(colour = NA),
         panel.grid.minor = element_line(colour = NA),
-        panel.grid.major = element_line(colour = "black", size = 0.2, linetype = "dotted"),
-        axis.title = element_text(size = 8),
-        axis.text = element_text(size = 8),
-        axis.ticks = element_line(size = 0.4),
-        axis.ticks.length = unit(2, "mm"),
-        #legend.title = "Months",
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_text(size = 8),
-        legend.text = element_text(size = 6),
-        legend.key = element_blank(),
-        legend.key.height = unit(.22, "cm"),
-        legend.key.width = unit(0.30, "cm"),
-        legend.background = element_blank(),
-        plot.title = element_text(size = 8, hjust = 0),
-        strip.background = element_rect(colour = "white", fill = "white"),
-        strip.text = element_text(size = 8))
+        axis.title = element_text(size = 12, face = "bold"),
+        axis.text = element_text(size = 12, colour = "black"),
+        plot.title = element_text(size = 12, hjust = 0),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        legend.key = element_rect(size = 0.8, colour = NA),
+        strip.background = element_rect(colour = NA, fill = NA),
+        strip.text = element_text(size = 10))
 
 # Linear model -------------------------------------------------------------------------------------------------------
 
@@ -390,29 +385,20 @@ ggplot(data = summer_signal, aes(x = year, y = signal)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Number of upwelling signals") +
+  labs(x = "Year", y = "Number of upwelling signals")+
   theme_bw() +
-  theme(plot.background = element_blank(),
-        panel.background = element_rect(fill = "white"),
-        panel.border = element_rect(colour = "black", fill = NA, size = 0.4),
+  theme(panel.border = element_rect(size = 1.0),
+        # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
+        panel.grid.major = element_line(colour = NA),
         panel.grid.minor = element_line(colour = NA),
-        panel.grid.major = element_line(colour = "black", size = 0.2, linetype = "dotted"),
-        axis.title = element_text(size = 8),
-        axis.text = element_text(size = 8),
-        axis.ticks = element_line(size = 0.4),
-        axis.ticks.length = unit(2, "mm"),
-        #legend.title = "Months",
-        legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.title = element_text(size = 8),
-        legend.text = element_text(size = 6),
-        legend.key = element_blank(),
-        legend.key.height = unit(.22, "cm"),
-        legend.key.width = unit(0.30, "cm"),
-        legend.background = element_blank(),
-        plot.title = element_text(size = 8, hjust = 0),
-        strip.background = element_rect(colour = "white", fill = "white"),
-        strip.text = element_text(size = 8))
+        axis.title = element_text(size = 12, face = "bold"),
+        axis.text = element_text(size = 12, colour = "black"),
+        plot.title = element_text(size = 12, hjust = 0),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        legend.key = element_rect(size = 0.8, colour = NA),
+        strip.background = element_rect(colour = NA, fill = NA),
+        strip.text = element_text(size = 10))
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
 # signals detected by each of the currents for each year and season
@@ -422,7 +408,7 @@ anova_func <- function(df){
   return(sites_aov)
 }
 
-summary(count_aov <- anova_func(df = complete_signal))
+summary(count_aov <- anova_func(df = summer_signal))
 
 # 3: Linear models ----------------------------------------------------
 # ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
