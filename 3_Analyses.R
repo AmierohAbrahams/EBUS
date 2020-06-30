@@ -118,32 +118,84 @@ SE_monthly <- SE_renamed %>%
 
 # Determine wind duration-------------------------------------------------------------------------------------------------------------------
 
-load("data/BC_coastal_SLP.RData") 
+load("data/CC_coastal_SLP.RData") 
+load("data/CalC_coastal_SLP.RData")
+load("data/BC_coastal_SLP.RData")
+load("data/HC_coastal_SLP.RData")
 
-BC_wind_duration <- BC_coastal_SLP %>% 
+HC_coastal_SLP <- HC_coastal_SLP %>% 
+  arrange(date)
+
+wind_dur_func <- function(df){
+  wind<- df %>% 
   select(date, wind_dir_from, lat, lon) %>% 
   rename(date = date,
          wind_se = wind_dir_from)
+}
 
-SE_BC <- BC_coastal_SLP %>% 
+BC_wind_dur <- wind_dur_func(df = BC_coastal_SLP)
+CC_wind_dur <- wind_dur_func(df = CC_coastal_SLP)
+CalC_wind_dur <- wind_dur_func(df = CalC_coastal_SLP)
+HC_wind_dur <- wind_dur_func(df = HC_coastal_SLP)
+
+SE_wind_func <- function(df){
+  SE<- df %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique() %>% 
   select(date,wind_dir_from,lat,lon)
+}
 
-prepping_dur <- right_join(SE_BC, BC_wind_duration)
-prepping_dur[is.na(prepping_dur)] <- 0
+BC_SE <- SE_wind_func(df = BC_coastal_SLP)
+CC_SE <- SE_wind_func(df = CC_coastal_SLP)
+CalC_SE <- SE_wind_func(df = CalC_coastal_SLP)
+HC_SE<- SE_wind_func(df = HC_coastal_SLP)
 
-BC_dur <- prepping_dur %>% 
+
+BC_prep <- right_join(BC_SE, BC_wind_dur)
+BC_prep[is.na(BC_prep)] <- 0
+
+CalC_prep <- right_join(CalC_SE, CalC_wind_dur)
+CalC_prep[is.na(CalC_prep)] <- 0
+
+CC_prep <- right_join(CC_SE, CC_wind_dur)
+CC_prep[is.na(CC_prep)] <- 0
+
+HC_prep <- right_join(HC_SE, HC_wind_dur)
+HC_prep[is.na(HC_prep)] <- 0
+
+
+dur_prep <- function(df){
+  dur <- df %>% 
   rename(temp = wind_dir_from,
          t = date) %>% 
   select(temp,t)
+}
 
-exc_wind <- exceedance(BC_dur, minDuration = 1, threshold = 0)
+BC_dur <- dur_prep(df = BC_prep)
+CC_dur <- dur_prep(df = CC_prep)
+CalC_dur <- dur_prep(df = CalC_prep)
+HC_dur <- dur_prep(df = HC_prep)
 
-wind_duration <- exc_wind$exceedance %>%
+HC_dur <- HC_dur %>% 
+  arrange(t)
+
+exc_BC <- exceedance(BC_dur, minDuration = 1, threshold = 0)
+exc_CC <- exceedance(CC_dur, minDuration = 1, threshold = 0)
+exc_CalC <- exceedance(CalC_dur, minDuration = 1, threshold = 0)
+exc_HC <- exceedance(HC_dur, minDuration = 1, threshold = 0)
+
+wind_func <- function(df){
+  wind_duration <- df$exceedance %>%
   ungroup() %>%
   select(exceedance_no, duration, date_start, date_peak, intensity_max, intensity_cumulative) 
+}
 
+BC_dur <- wind_func(df = exc_BC)
+CC_dur <- wind_func(df = exc_CC)
+CalC_dur <- wind_func(df = exc_CalC)
+HC_dur <- wind_func(df = exc_HC)
+
+# Seasons for the southern hemisphere
 seasons_S_func <- function(df){
   df_seasons <- df %>% 
     mutate(month = month(date_start, abbr = T, label = T),
@@ -154,16 +206,61 @@ seasons_S_func <- function(df){
                               month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
 }
 
-BC_wind_dur <- seasons_S_func(df = wind_duration)
-
-
-wind_duration_test <- BC_wind_dur %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, duration, month) %>% 
-  summarise(y = n()) %>% 
+BC_wind<- seasons_S_func(df = BC_dur)
+BC_wind <- BC_wind %>% 
   mutate(current = "BC")
+HC_wind <- seasons_S_func(df = HC_dur)
+HC_wind <- HC_wind %>% 
+  mutate(current = "HC")
+
+# Seasons for the Northern Hemisphere
+seasons_N_func <- function(df){
+  df_seasons <- df %>% 
+    mutate(month = month(date_start, abbr = T, label = T),
+           year = year(date_start)) %>% 
+    mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Winter", 
+                              month %in% c("Mar", "Apr", "May") ~ "Spring",
+                              month %in% c("Jun", "Jul", "Aug") ~ "Summer",
+                              month %in% c("Sep", "Oct", "Nov") ~ "Autumn"))
+}
+
+CC_wind <- seasons_N_func(df = CC_dur)
+CC_wind <- CC_wind %>% 
+  mutate(current = "CC")
+CalC_wind <- seasons_N_func(df = CalC_dur)
+CalC_wind <- CalC_wind %>% 
+  mutate(current = "CalC")
+
+duration_wind_currents <- rbind(BC_wind,CC_wind,CalC_wind,HC_wind)
+# save(duration_wind_currents, file = "data/duration_wind_currents.RData")
+load("data/duration_wind_currents.RData")
+
+wind_currents <- duration_wind_currents %>% 
+  filter(season == "Summer") %>% 
+  group_by(year, month, current) %>% 
+  summarise(mean_dur = mean(duration))
 
 
+
+ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Duration (Days)")+
+  theme_bw() +
+  labs(colour = "Month") +
+  theme(panel.border = element_rect(size = 1.0),
+        # panel.grid.major = element_line(colour = "black", size = 0.2, linetype = 2),
+        panel.grid.major = element_line(colour = NA),
+        panel.grid.minor = element_line(colour = NA),
+        axis.title = element_text(size = 12, face = "bold"),
+        axis.text = element_text(size = 12, colour = "black"),
+        plot.title = element_text(size = 12, hjust = 0),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        legend.key = element_rect(size = 0.8, colour = NA),
+        strip.background = element_rect(colour = NA, fill = NA),
+        strip.text = element_text(size = 10))
 
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
 # BC_pixels <- SE_renamed %>% 
@@ -353,7 +450,7 @@ CalC_UI_metrics <- CalC_UI_metrics %>%
 combined_products <- rbind(BC_UI_metrics,HC_UI_metrics,CC_UI_metrics,CalC_UI_metrics)
 #save(combined_products, file = "data/combined_products.RData")
 
-load("data/combined_products.RData")
+
 
 # Total signals at each pixel
 total_signals <- combined_products %>%
