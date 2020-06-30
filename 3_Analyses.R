@@ -58,9 +58,14 @@ temp <- current_winds %>%
   group_by(current, year, season,month) %>% 
   summarise(mean_temp = mean(temp, na.rm = T))
 
-ggplot(data = temp, aes(x = year, y = mean_temp)) +
+my.formula <- y ~ x
+
+ggplot(data = temp, aes(x = year, y = mean_temp, colour = month)) +
   geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
+  # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
+  # stat_poly_eq(formula = my.formula, 
+  #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+  #              parse = TRUE) + 
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Temperature (°C)")+
   theme_bw() +
@@ -105,6 +110,11 @@ SE_monthly <- SE_renamed %>%
             circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
             mean_temp = mean(temp, na.rm = T),
             mean_SLP = mean(slp, na.rm = T))
+
+SE_monthly <- SE_renamed %>% 
+  group_by(current, year, season, month) %>% 
+  summarise( mode_eg = mode(temp))
+
 
 # Determine wind duration-------------------------------------------------------------------------------------------------------------------
 
@@ -243,11 +253,15 @@ ggplot(data = complete_wind, aes(x = year, y = signal)) +
   theme_Publication()
 
 # Wind intensity
-ggplot(data = complete_wind, aes(x = year, y = circ_wspd)) +
+ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Wind speed (ms-1)") +
+  geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
+  stat_poly_eq(formula = my.formula,
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
+               parse = TRUE) +
   theme_bw() +
   labs(colour = "Month") +
   theme(panel.border = element_rect(size = 1.0),
@@ -384,11 +398,15 @@ summer_signal <- complete_signal %>%
   filter(season == "Summer") %>% 
   group_by(year, current, month) 
 
-ggplot(data = summer_signal, aes(x = year, y = signal)) +
+ggplot(data = summer_signal, aes(x = year, y = signal, colour = month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Number of upwelling signals")+
+  # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
+  # stat_poly_eq(formula = my.formula,
+  #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
+  #              parse = TRUE) +
   theme_bw() +
   labs(colour = "Month") +
   theme(panel.border = element_rect(size = 1.0),
@@ -449,7 +467,5 @@ summary(aov(duration ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
-
-
 
 
