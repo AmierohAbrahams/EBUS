@@ -252,6 +252,11 @@ ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
+# Plotting wind duration in bix plot
+
+
+
+
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
 # BC_pixels <- SE_renamed %>% 
 #   filter(current == "BC") %>% 
@@ -509,6 +514,9 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
     legend.text = element_text(size = 10),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
+
+
+
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
 # signals detected by each of the currents for each year and season
