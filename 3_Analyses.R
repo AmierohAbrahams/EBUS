@@ -254,10 +254,10 @@ ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
 
 # Plotting wind duration in bix plot
 
-wind_currents %>% 
+wind_currents_box <- wind_currents %>% 
   ggplot(aes(x = year)) +
   geom_boxplot(aes(y = mean_dur, fill = month)) +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  facet_wrap(~current) +
   labs(y = "Years", x = "Duration")+
   theme_set(theme_grey()) +
   theme_grey() +
@@ -271,8 +271,6 @@ wind_currents %>%
     legend.text = element_text(size = 10),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
-
-                 
 
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
 # BC_pixels <- SE_renamed %>% 
@@ -532,7 +530,24 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
-
+# box plot
+ complete_signal %>% 
+  ggplot(aes(x = year)) +
+  geom_boxplot(aes(y = signal, fill = season)) +
+  facet_wrap(~current, labeller = labeller(current = supp.labs)) +
+  labs(y = "Number of upwelling signals", x = "Year")+
+  theme_set(theme_grey()) +
+  theme_grey() +
+  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+    panel.grid.major = element_line(size = 0.2, linetype = 2),
+    panel.grid.minor = element_line(colour = NA),
+    axis.title = element_text(size = 12, face = "bold"),
+    axis.text = element_text(size = 12, colour = "black"),
+    plot.title = element_text(size = 12, hjust = 0),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.background = element_blank())
 
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
