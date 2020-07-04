@@ -252,25 +252,6 @@ ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
-# Plotting wind duration in bix plot
-
-wind_currents_box <- wind_currents %>% 
-  ggplot(aes(x = year)) +
-  geom_boxplot(aes(y = mean_dur, fill = month)) +
-  facet_wrap(~current) +
-  labs(y = "Years", x = "Duration")+
-  theme_set(theme_grey()) +
-  theme_grey() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
-    axis.title = element_text(size = 12, face = "bold"),
-    axis.text = element_text(size = 12, colour = "black"),
-    plot.title = element_text(size = 12, hjust = 0),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 10),
-    legend.key = element_rect(size = 0.8, colour = NA),
-    legend.background = element_blank())
 
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
 # BC_pixels <- SE_renamed %>% 
@@ -595,5 +576,56 @@ summary(aov(duration ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
+
+## Combined products to view for changes in the intensity of upwelling signals
+
+load("data/combined_products.RData")
+
+mean_intensity <- combined_products %>% 
+  filter(season == "Summer") %>% 
+  group_by(year, month, current) %>% 
+  summarise(mean_intensity = mean(intensity_mean),
+            mean_cum_int = mean(intensity_cumulative))
+
+
+mean_intensity %>% 
+  ggplot(aes(x = year)) +
+  geom_boxplot(aes(y = mean_intensity, fill = month)) +
+  facet_wrap(~current, labeller = labeller(current = supp.labs)) +
+  labs(y = "Mean intensity", x = "Years")+
+  theme_set(theme_grey()) +
+  theme_grey() +
+  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+    panel.grid.major = element_line(size = 0.2, linetype = 2),
+    panel.grid.minor = element_line(colour = NA),
+    axis.title = element_text(size = 12, face = "bold"),
+    axis.text = element_text(size = 12, colour = "black"),
+    plot.title = element_text(size = 12, hjust = 0),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.background = element_blank())
+
+ggplot(data = mean_intensity, aes(x = year, y = mean_intensity, colour = Month)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Intensity of signals")+
+  # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
+  # stat_poly_eq(formula = my.formula,
+  #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
+  #              parse = TRUE) +
+  theme_set(theme_grey()) +
+  theme_grey() +
+  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+    panel.grid.major = element_line(size = 0.2, linetype = 2),
+    panel.grid.minor = element_line(colour = NA),
+    axis.title = element_text(size = 12, face = "bold"),
+    axis.text = element_text(size = 12, colour = "black"),
+    plot.title = element_text(size = 12, hjust = 0), 
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.background = element_blank())
 
 
