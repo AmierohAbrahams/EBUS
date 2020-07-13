@@ -587,7 +587,6 @@ mean_intensity <- combined_products %>%
   summarise(mean_intensity = mean(intensity_mean),
             mean_cum_int = mean(intensity_cumulative))
 
-
 mean_intensity %>% 
   ggplot(aes(x = year)) +
   geom_boxplot(aes(y = mean_intensity, fill = month)) +
