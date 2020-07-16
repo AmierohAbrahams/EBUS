@@ -1,3 +1,11 @@
+# 4_site_map
+# The purpose of this script is to...
+# The steps taken are:
+# 1: Setup environment
+# 2: Plotting the EBUS
+# 3: Using plotdap to plot EBUS
+
+# 1: Setup environment ----------------------------------------------------------------------------------------------------
 library("ggplot2")
 library(dplyr)
 library("raster")
@@ -7,8 +15,7 @@ library("rnaturalearth")
 library("rnaturalearthdata")
 library("PBSmapping")
 library(viridis)
-
-
+library(plotdap)
 # Packages used in this vignette
 library(tidyverse) # Base suite of functions
 library(heatwaveR) # For detecting MHWs
@@ -18,11 +25,12 @@ library(tidync) # For a more tidy approach to managing NetCDF data
 library(SDMTools) # For finding points within polygons
 library(lubridate)
 
+
+# 2: Plotting EBUS ----------------------------------------------------------------------------------------------------------
 # Default CRS
 # +proj=longlat +datum=WGS84 +no_defs
 # Load the Global Self-consistent, Hierarchical, High-resolution Geography Database
 # Use the full resolution version
-
 gshhsDir <- "/home/amieroh/Documents/Data/Datasets/gshhg-bin-2.3.7"
 b <- c(5, 10, 15, 20, 25,30)
 colors <- c('#EFF573', '#EFF573', '#EFF573', '#3DA394', '#3A828C', '#456075')
@@ -112,9 +120,36 @@ CalC <- importGSHHS(paste0(gshhsDir, "/gshhs_f.b"),
     theme_opts +
     theme(axis.text = element_text(size = 12)))
   
+# 3: Using plotdap to plot EBUS ----------------------------------------------------------------------------------------------------------
 
-
-
-
-
-
+library(plotdap)
+plotdap()
+plotdap("base")
+sstInfo <- rerddap::info('erdVHsstaWS3day')
+# get latest 3-day composite sst
+viirsSST <- rerddap::griddap(sstInfo, 
+                             latitude = c(41., 31.), 
+                             longitude = c(-128., -115), 
+                             time = c('last','last'), 
+                             fields = 'sst')
+xpos <- c(135.25, 240.25)
+ypos <- c(20.25, 60.25)
+zpos <- c(70.02, 70.02)
+remove <- c("UK:Great Britain", "France", "Spain", "Algeria", "Mali", "
+            Burkina Faso", "Ghana", "Togo")
+#subset world2Hires with those countries removed
+w <- map("world2Hires", plot = FALSE, fill = TRUE, ylim = ypos, xlim = xpos)
+w <- map("world2Hires", regions = w$names[!(w$names %in% remove)], 
+         plot = FALSE, fill = TRUE, ylim = ypos, xlim = xpos)
+# plot result
+plotdap(mapData = w)
+# write plot to disk using the Cairo package
+library(sf)
+#> Linking to GEOS 3.7.2, GDAL 2.4.2, PROJ 5.2.0
+library(mapdata)
+plotdap(mapTitle = "Grid over Land") %>%
+  add_griddap(
+    viirsSST, 
+    ~sst, 
+    fill = "thermal"
+  )

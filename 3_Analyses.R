@@ -1,4 +1,4 @@
-# 7_Analyses
+# 3_Analyses
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
