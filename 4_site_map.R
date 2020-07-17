@@ -173,32 +173,19 @@ ggplot(world.points, aes(long,lat,group=group)) +
 # 4: Plotting Robs suggesion----------------------------------------------------------------------------------------------------------------------------------
 
 load("data/OISST_global.RData") # Created in Data_extraction folder/Downloading_OISST.R
-# OISST_global <- OISST_global %>% 
-#   mutate(lon = lon - 360)
+OISST_global <- OISST_global %>%
+  mutate(lon = ifelse(lon > 180, lon - 360, lon))
 
 map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE)) %>%
   dplyr::rename(lon = long) %>%
   mutate(group = ifelse(lon > 180, group+9999, group),
          lon = ifelse(lon > 180, lon-360, lon))
 
-ggplot(map_base, aes(lon, lat, group = group)) + 
-  geom_polygon()
+# ggplot(map_base, aes(lon, lat, group = group)) + 
+#   geom_polygon()
 
 ggplot(OISST_global, aes(x = lon, y = lat)) +
   geom_raster(aes(fill = temp), show.legend = F) +
-  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) #+
-  # coord_cartesian(expand = F, ylim = c(min(OISST_ocean_coords$lat),
-  #                                     max(OISST_ocean_coords$lat)))
-
-
-
-
-
-
-
-
-
-
-
-
+  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
+  coord_cartesian(expand = F)
 
