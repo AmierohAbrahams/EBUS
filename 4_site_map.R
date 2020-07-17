@@ -173,6 +173,8 @@ ggplot(world.points, aes(long,lat,group=group)) +
 # 4: Plotting Robs suggesion----------------------------------------------------------------------------------------------------------------------------------
 
 load("data/OISST_global.RData") # Created in Data_extraction folder/Downloading_OISST.R
+# OISST_global <- OISST_global %>% 
+#   mutate(lon = lon - 360)
 
 map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE)) %>%
   dplyr::rename(lon = long) %>%
