@@ -83,3 +83,13 @@ CalC <- rbind(CalC,OISST_CalC)
 #save(CalC , file = "data/CalC.RData")
 
 # For the next 2020 updated download rbind the new data with the data created on line 82, which is now the full dataset
+OISST_global <- tidync("~/Documents/EBUS/data/OISST/oisst-avhrr-v02r01.20180701.nc") %>%
+  # hyper_filter(lon = between(lon, lon1, lon2),
+  #              lat = between(lat, lat1, lat2)) %>%
+  hyper_tibble() %>%
+  dplyr::select(lon, lat, time, sst) %>%
+  dplyr::rename(t = time, temp = sst) %>%
+  mutate(t = as.Date(t, origin = "1978-01-01"))
+
+save(OISST_global, file = "data/OISST_global.RData")
+
