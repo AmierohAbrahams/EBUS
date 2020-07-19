@@ -202,6 +202,6 @@ ggplot(OISST_global, aes(x = lon, y = lat)) +
   theme_bw() +
   theme(legend.position = "right")+
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
-        axis.text = element_text(colour = "black", size = 12),
-        axis.title = element_text(colour = "black", size = 12),
+        axis.text = element_text(colour = "black", size = 20),
+        axis.title = element_text(colour = "black", size = 20),
         axis.ticks = element_line(colour = "black"))
