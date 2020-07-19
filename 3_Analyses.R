@@ -504,7 +504,7 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     panel.grid.major = element_line(size = 0.2, linetype = 2),
     panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=12),
+    strip.text = element_text(size=14),
     axis.title = element_text(size = 18, face = "bold"),
     axis.text = element_text(size = 18, colour = "black"),
     plot.title = element_text(size = 18, hjust = 0),
