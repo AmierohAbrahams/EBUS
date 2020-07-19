@@ -185,7 +185,23 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 #   geom_polygon()
 
 ggplot(OISST_global, aes(x = lon, y = lat)) +
-  geom_raster(aes(fill = temp), show.legend = F) +
+  geom_raster(aes(fill = temp), show.legend = TRUE) +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-  coord_cartesian(expand = F)
-
+  coord_cartesian(expand = F) +
+  #geom_point(data = site_squares, aes(x = lon, y = lat), colour = "red", shape = 0, alpha = 0.8, size = 3) +
+  coord_fixed(ratio = 1, xlim = c(-170,180), ylim = c(90, -80),
+              expand = TRUE) +
+  scale_x_continuous(expand = c(0,0),
+                     labels = scales::unit_format(unit = "°W", sep = "")) +
+  scale_y_continuous(expand = c(0, 0),
+                     labels = scales::unit_format(unit = "°S", sep = "")) +
+  scale_fill_gradientn("SST (°C)", values = scales::rescale(c(-1, 7,19,26)),
+  colors = c("lightcyan1", "orchid1", "skyblue", "blue3")) +
+  xlab("") +
+  ylab("") +
+  theme_bw() +
+  theme(legend.position = "right")+
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
+        axis.text = element_text(colour = "black", size = 12),
+        axis.title = element_text(colour = "black", size = 12),
+        axis.ticks = element_line(colour = "black"))
