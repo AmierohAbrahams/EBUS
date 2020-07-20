@@ -173,6 +173,8 @@ ggplot(world.points, aes(long,lat,group=group)) +
 # 4: Plotting Robs suggesion----------------------------------------------------------------------------------------------------------------------------------
 
 load("data/OISST_global.RData") # Created in Data_extraction folder/Downloading_OISST.R
+site_squares <- read_csv("data/site_squares.csv")
+
 OISST_global <- OISST_global %>%
   mutate(lon = ifelse(lon > 180, lon - 360, lon))
 
