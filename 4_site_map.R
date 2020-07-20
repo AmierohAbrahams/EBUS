@@ -183,18 +183,36 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 
 # ggplot(map_base, aes(lon, lat, group = group)) + 
 #   geom_polygon()
+# world <- ne_countries(scale = "medium", returnclass = "sf")
+# class(world)
+# ggplot(data = world) + 
+#   geom_sf(color = "black", fill = "black")
+
+# SA_map <- ggplot() +
+#   geom_sf(data = world_ne, col = "black", fill = NA, size = 0.6) +
+#   # geom_sf(data = SA_prov_coast, col = "black", fill = "grey80", size = 0.4) +
+#   geom_sf(data = SA_prov_coast, col = "black", fill = NA, size = 0.3) +
+#   coord_sf(xlim = c(xmin, xmax),
+#            ylim = c(ymin, ymax),
+#            expand = FALSE) +
+#   scale_x_continuous(breaks = seq(-15, 35, by = 5)) +
+#   scale_y_continuous(breaks = seq(-35, -25, by = 5)) +
+#   labs(x = NULL, y = NULL) +
+#   theme_map2()
 
 ggplot(OISST_global, aes(x = lon, y = lat)) +
   geom_raster(aes(fill = temp), show.legend = TRUE) +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
   coord_cartesian(expand = F) +
-  #geom_point(data = site_squares, aes(x = lon, y = lat), colour = "red", shape = 0, alpha = 0.8, size = 3) +
+  geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), fill = NA, size = 0.75) +
   coord_fixed(ratio = 1, xlim = c(-170,180), ylim = c(90, -80),
               expand = TRUE) +
   scale_x_continuous(expand = c(0,0),
                      labels = scales::unit_format(unit = "°W", sep = "")) +
   scale_y_continuous(expand = c(0, 0),
                      labels = scales::unit_format(unit = "°S", sep = "")) +
+  # scale_x_continuous(breaks = seq(-170, 180, by = 30)) +
+  # scale_y_continuous(breaks = seq(-80, 90, by = 30)) +
   scale_fill_gradientn("SST (°C)", values = scales::rescale(c(-1, 7,19,26)),
   colors = c("lightcyan1", "orchid1", "skyblue", "blue3")) +
   xlab("") +
@@ -205,3 +223,4 @@ ggplot(OISST_global, aes(x = lon, y = lat)) +
         axis.text = element_text(colour = "black", size = 20),
         axis.title = element_text(colour = "black", size = 20),
         axis.ticks = element_line(colour = "black"))
+
