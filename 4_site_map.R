@@ -215,5 +215,7 @@ ggplot() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
         axis.text = element_text(colour = "black", size = 20),
         axis.title = element_text(colour = "black", size = 20),
-        axis.ticks = element_line(colour = "black"))
+        axis.ticks = element_line(colour = "black"),
+        legend.text=element_text(size=15),
+        legend.title = element_text(size = 15))
 
