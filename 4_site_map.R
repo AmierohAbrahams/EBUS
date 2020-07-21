@@ -1,29 +1,25 @@
-# 4_site_map
-# The purpose of this script is to...
-# The steps taken are:
+# 4_site_map\
+# The steps taken in this script are:
 # 1: Setup environment
 # 2: Plotting the EBUS
 # 3: Using plotdap to plot EBUS
-# 4: Plotting Robs suggesion
+# 4: Plotting Robs suggestion
 
 # 1: Setup environment ----------------------------------------------------------------------------------------------------
-library("ggplot2")
-library(dplyr)
-library("raster")
-library("sf")
-library("ggspatial")
-library("rnaturalearth")
-library("rnaturalearthdata")
-library("PBSmapping")
+library(tidyverse) # Base suite of functions
+library(raster)
+library(sf)
+library(ggspatial)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(PBSmapping)
 library(viridis)
 library(plotdap)
-# Packages used in this vignette
-library(tidyverse) # Base suite of functions
 library(heatwaveR) # For detecting MHWs
 # cat(paste0("heatwaveR version = ", packageDescription("heatwaveR")$Version))
 library(FNN) # For fastest nearest neighbour searches
 library(tidync) # For a more tidy approach to managing NetCDF data
-library(SDMTools) # For finding points within polygons
+# library(SDMTools) # For finding points within polygons
 library(lubridate)
 
 
@@ -202,25 +198,20 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 #   labs(x = NULL, y = NULL) +
 #   theme_map2()
 
-ggplot(OISST_global, aes(x = lon, y = lat)) +
-  geom_raster(aes(fill = temp), show.legend = TRUE) +
+ggplot() +
+  geom_raster(data = OISST_global, aes(x = lon, y = lat, fill = temp), show.legend = TRUE) +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-  coord_cartesian(expand = F) +
-  geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), fill = NA, size = 0.75) +
-  coord_fixed(ratio = 1, xlim = c(-170,180), ylim = c(90, -80),
-              expand = TRUE) +
-  scale_x_continuous(expand = c(0,0),
-                     labels = scales::unit_format(unit = "°W", sep = "")) +
-  scale_y_continuous(expand = c(0, 0),
-                     labels = scales::unit_format(unit = "°S", sep = "")) +
-  # scale_x_continuous(breaks = seq(-170, 180, by = 30)) +
-  # scale_y_continuous(breaks = seq(-80, 90, by = 30)) +
+  geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+            colour = "red", fill = NA, size = 0.75) +
+  scale_x_continuous(breaks = seq(-150, 150, by = 50),
+                     labels  = c("150°W", "100°W", "50°W", "0°E", "50°E", "100°E", "150°E")) +
+  scale_y_continuous(breaks = seq(-60, 60, by = 30),
+                     labels = c("60°S", "30°S", "0°N", "30°N", "60°N")) +
+  coord_quickmap(ylim = c(-78.5, 90), expand = FALSE) +
   scale_fill_gradientn("SST (°C)", values = scales::rescale(c(-1, 7,19,26)),
-  colors = c("lightcyan1", "orchid1", "skyblue", "blue3")) +
-  xlab("") +
-  ylab("") +
+                       colors = c("lightcyan1", "orchid1", "skyblue", "blue3")) +
+  labs(x = NULL, y = NULL) +
   theme_bw() +
-  theme(legend.position = "right")+
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
         axis.text = element_text(colour = "black", size = 20),
         axis.title = element_text(colour = "black", size = 20),
