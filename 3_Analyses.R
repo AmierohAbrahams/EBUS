@@ -53,29 +53,6 @@ current_winds <- rbind(BC,HC,CC,CalC)
 rm(BC,BC_coastal_SLP,CalC,CalC_coastal_SLP,CC_coastal_SLP,CC, HC_coastal_SLP,HC);gc()
 # save(current_winds, file = "data/current_winds.RData")
 
-ggplot(data = temp, aes(x = year, y = mean_temp, colour = month)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  # stat_poly_eq(formula = my.formula, 
-  #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-  #              parse = TRUE) + 
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Temperature (°C)")+
-  theme_bw() +
-  labs(colour = "Month") +
-  theme_set(theme_grey()) +
-  theme_grey() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
-    axis.title = element_text(size = 18, face = "bold"),
-    axis.text = element_text(size = 18, colour = "black"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18),
-    legend.text = element_text(size = 18),
-    legend.key = element_rect(size = 0.8, colour = NA),
-    legend.background = element_blank())
-
 # Then create different temporal results
 # First filter out only the SE data
 SE_renamed <- current_winds %>% 
@@ -282,16 +259,18 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   labs(x = "Year", y = "Temperature (°C)")+
   theme_bw() +
   labs(colour = "Month") +
+  theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     panel.grid.major = element_line(size = 0.2, linetype = 2),
     panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14),
-    axis.title = element_text(size = 18, face = "bold"),
-    axis.text = element_text(size = 18, colour = "black"),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.4, "cm"),
+    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18),
-    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 18, family = "Palatino"),
+    legend.text = element_text(size = 16, family = "Palatino"),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
@@ -504,12 +483,13 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     panel.grid.major = element_line(size = 0.2, linetype = 2),
     panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14),
-    axis.title = element_text(size = 18, face = "bold"),
-    axis.text = element_text(size = 18, colour = "black"),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.4, "cm"),
+    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18),
-    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 18, family = "Palatino"),
+    legend.text = element_text(size = 16, family = "Palatino"),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
@@ -519,18 +499,20 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   geom_boxplot(aes(y = signal, fill = season)) +
   facet_wrap(~current, labeller = labeller(current = supp.labs)) +
   labs(y = "Number of upwelling signals", x = "Year")+
-  theme_set(theme_grey()) +
-  theme_grey() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
-    axis.title = element_text(size = 12, face = "bold"),
-    axis.text = element_text(size = 12, colour = "black"),
-    plot.title = element_text(size = 12, hjust = 0),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 10),
-    legend.key = element_rect(size = 0.8, colour = NA),
-    legend.background = element_blank())
+   theme_set(theme_grey()) +
+   theme_grey() +
+   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+     panel.grid.major = element_line(size = 0.2, linetype = 2),
+     panel.grid.minor = element_line(colour = NA),
+     strip.text = element_text(size=14, family = "Palatino"),
+     axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+     axis.ticks.length = unit(0.4, "cm"),
+     axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+     plot.title = element_text(size = 18, hjust = 0),
+     legend.title = element_text(size = 18, family = "Palatino"),
+     legend.text = element_text(size = 16, family = "Palatino"),
+     legend.key = element_rect(size = 0.8, colour = NA),
+     legend.background = element_blank())
 
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 

@@ -216,6 +216,7 @@ ggplot() +
         axis.text = element_text(colour = "black", size = 20),
         axis.title = element_text(colour = "black", size = 20),
         axis.ticks = element_line(colour = "black"),
+        axis.ticks.length = unit(0.4, "cm"),
         legend.text=element_text(size=15),
         legend.title = element_text(size = 15))
 
