@@ -204,19 +204,20 @@ ggplot() +
   geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
             colour = "red", fill = NA, size = 0.75) +
   scale_x_continuous(breaks = seq(-150, 150, by = 50),
-                     labels  = c("150°W", "100°W", "50°W", "0°E", "50°E", "100°E", "150°E")) +
+                     labels  = c("150°W", "100°W", "50°W", "0", "50°E", "100°E", "150°E")) +
   scale_y_continuous(breaks = seq(-60, 60, by = 30),
-                     labels = c("60°S", "30°S", "0°N", "30°N", "60°N")) +
+                     labels = c("60°S", "30°S", "0", "30°N", "60°N")) +
   coord_quickmap(ylim = c(-78.5, 90), expand = FALSE) +
   scale_fill_gradientn("SST (°C)", values = scales::rescale(c(-1, 7,19,26)),
                        colors = c("lightcyan1", "orchid1", "skyblue", "blue3")) +
   labs(x = NULL, y = NULL) +
-  theme_bw() +
+  theme_set(theme_grey()) +
+  theme_grey() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
-        axis.text = element_text(colour = "black", size = 20),
-        axis.title = element_text(colour = "black", size = 20),
+        axis.text = element_text(colour = "black", size = 20, family = "Palatino"),
+        axis.title = element_text(colour = "black", size = 20, family = "Palatino"),
         axis.ticks = element_line(colour = "black"),
         axis.ticks.length = unit(0.4, "cm"),
-        legend.text=element_text(size=15),
-        legend.title = element_text(size = 15))
+        legend.text=element_text(size=15, family = "Palatino"),
+        legend.title = element_text(size = 15, family = "Palatino"))
 
