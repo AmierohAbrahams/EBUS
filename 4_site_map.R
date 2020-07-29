@@ -4,6 +4,7 @@
 # 2: Plotting the EBUS
 # 3: Using plotdap to plot EBUS
 # 4: Plotting Robs suggestion
+# 5: Plotting paper discription
 
 # 1: Setup environment ----------------------------------------------------------------------------------------------------
 library(tidyverse) # Base suite of functions
@@ -220,4 +221,56 @@ ggplot() +
         axis.ticks.length = unit(0.4, "cm"),
         legend.text=element_text(size=15, family = "Palatino"),
         legend.title = element_text(size = 15, family = "Palatino"))
+
+
+# 5: Plotting paper discription------------------------------------------------------------------------------------------------------------------------------------
+
+# Regions surrounding the Benguela EBUS, are dominated by anticyclonic high-pressure cells with quasi-stationary positions, resulting in abundant southerly 
+# and south easterly winds (Risien et al., 2004; Hagen et al., 2009). The South Atlantic Ocean High is situated along the west, drawing cool, dry air onto the
+# west of the subcontinent (Van Heerden and Hurry, 1998). Solar heating during summer may result in the development of low-pressure cells, known as heat lows, 
+# which are absent during the winter (Tyson and Preston-Whyte, 2000). 
+
+load("data/south_africa_coast.RData")
+load("data/BC_wind_plot.RData")
+
+south_africa_coast <- south_africa_coast %>% 
+  dplyr::rename(lon = long)
+
+ggplot() + 
+  geom_polygon(data = south_africa_coast, aes(x = lon, y = lat,group = group),fill = "grey", colour = "grey", size = 0.1, show.legend = FALSE) +
+  geom_raster(data = BC_wind_plot, aes(x = lon, y = lat, fill = wind_spd, angle = wind_dir_from,  radius = scales::rescale(wind_spd, c(.2, .8))))+
+  geom_spoke(arrow = arrow(length = unit(.05, 'inches'))) + 
+  scale_fill_distiller(palette = "RdYlGn") +
+  xlab("") + ylab("") +
+  annotate("text", label = "ATLANTIC\nOCEAN", x = 16.5, y = -31.5,
+           size =5, angle = 0, colour = "black") +
+  guides(fill = guide_colourbar()) +
+  scale_x_continuous(expand = c(0, 0),
+                     labels = scales::unit_format(unit = "°E", sep = "")) +
+  scale_y_continuous(expand = c(0, 0),
+                     labels = scales::unit_format(unit = "°S", sep = "")) +
+  coord_fixed(ratio = 1, xlim = c(15.7, 20), ylim = c(-34.7,-28),
+              expand = TRUE) +
+  theme(axis.text = element_text(size = rel(1.2), colour = "black", family = "Palatino"),
+        axis.text.x = element_text(vjust = 1, family = "Palatino"),
+        axis.text.y = element_text(hjust = 1, family = "Palatino"),
+        axis.title.x = element_text(vjust = 0, family = "Palatino"),
+        axis.title.y = element_text(angle = 90, vjust = 0.3, family = "Palatino"),
+        axis.ticks = element_line(colour = "black"),
+        axis.ticks.length = unit(0.4, "cm"),
+        panel.background = element_rect(fill = "white", colour = "black", size = 0.5),
+        panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.text = element_text(size = rel(1.0), family = "Palatino"),
+        strip.background = element_rect(fill = "white", colour = NA),
+        strip.text.x = element_text(),
+        strip.text.y = element_text(angle = -90),        
+        plot.background = element_rect(colour = "white"),
+        plot.title = element_text(size = rel(1.2), vjust = 1),
+        plot.margin = unit(c(1, 1, 0.5, 0.5), "lines"))
+
+
+
 
