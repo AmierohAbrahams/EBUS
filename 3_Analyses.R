@@ -6,9 +6,9 @@
 # 3: ANOVA analyses
 # 4: Linear models
 
-# climate change as a result of global warining resulted in changes in wind patterns and
+# climate change as a result of global warning resulted in changes in wind patterns and
 # ultimately lead to changes in the duration and intensity of upwelling events overtime.
-# Changing upwelling region boundries for each current
+# Changing upwelling region boundaries for each current
 
 # 1: Setup environment ----------------------------------------------------
 library(gridExtra)
