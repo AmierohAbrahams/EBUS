@@ -223,7 +223,7 @@ ggplot() +
         legend.title = element_text(size = 15, family = "Palatino"))
 
 
-# 5: Plotting paper discription------------------------------------------------------------------------------------------------------------------------------------
+# 5: Plotting paper description------------------------------------------------------------------------------------------------------------------------------------
 
 # Regions surrounding the Benguela EBUS, are dominated by anticyclonic high-pressure cells with quasi-stationary positions, resulting in abundant southerly 
 # and south easterly winds (Risien et al., 2004; Hagen et al., 2009). The South Atlantic Ocean High is situated along the west, drawing cool, dry air onto the
@@ -238,20 +238,23 @@ south_africa_coast <- south_africa_coast %>%
 # Continental data
 
 ggplot() + 
-  geom_polygon(data = south_africa_coast, aes(x = lon, y = lat,group = group),fill = "grey", colour = "grey", size = 0.1, show.legend = FALSE) +
-  geom_raster(data = BC_wind_plot, aes(x = lon, y = lat, fill = wind_spd, angle = wind_dir_from,  radius = scales::rescale(wind_spd, c(.2, .8))))+
+  geom_raster(data = BC_wind_plot, aes(x = lon, y = lat, fill = wind_spd)) +
+  geom_polygon(data = south_africa_coast, aes(x = lon, y = lat,group = group),
+               fill = NA, colour = "black", size = 1.0, show.legend = FALSE) +
   geom_spoke(arrow = arrow(length = unit(.05, 'inches'))) + 
   scale_fill_distiller(palette = "RdYlGn") +
+  labs(x = NULL, y = NULL,  fill = "Wind\nSpeed") +
   xlab("") + ylab("") +
-  annotate("text", label = "ATLANTIC\nOCEAN", x = 16.5, y = -31.5,
-           size =5, angle = 0, colour = "black") +
+  annotate("text", label = "ATLANTIC\nOCEAN", x = 15.0, y = -32.0,
+           size = 5, angle = 0, colour = "black") + # RWS: I don't know that this label is necessary
   guides(fill = guide_colourbar()) +
   scale_x_continuous(expand = c(0, 0),
+                     breaks = seq(14, 18, 2),
                      labels = scales::unit_format(unit = "°E", sep = "")) +
   scale_y_continuous(expand = c(0, 0),
-                     labels = scales::unit_format(unit = "°S", sep = "")) +
-  coord_fixed(ratio = 1, xlim = c(15.7, 20), ylim = c(-34.7,-28),
-              expand = TRUE) +
+                     breaks = seq(-34, -31), labels = c("34°S", "33°S", "32°S", "31°S")) +
+                     # labels = scales::unit_format(unit = "°S", sep = "")) + # RWS: If you label the latitude with degrees South, the numbers should no longer be negative
+  coord_fixed(ratio = 1, xlim = c(12.5, 20), ylim = c(-35, -30),  expand = TRUE) +
   theme(axis.text = element_text(size = rel(1.2), colour = "black", family = "Palatino"),
         axis.text.x = element_text(vjust = 1, family = "Palatino"),
         axis.text.y = element_text(hjust = 1, family = "Palatino"),
@@ -260,7 +263,7 @@ ggplot() +
         axis.ticks = element_line(colour = "black"),
         axis.ticks.length = unit(0.4, "cm"),
         panel.background = element_rect(fill = "white", colour = "black", size = 0.5),
-        panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.border = element_rect(colour = "black", fill = NA, size = 2),
         panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         panel.grid.minor = element_blank(),
@@ -270,7 +273,10 @@ ggplot() +
         strip.text.y = element_text(angle = -90),        
         plot.background = element_rect(colour = "white"),
         plot.title = element_text(size = rel(1.2), vjust = 1),
-        plot.margin = unit(c(1, 1, 0.5, 0.5), "lines"))
+        plot.margin = unit(c(1, 1, 0.5, 0.5), "lines"),
+        legend.position = "top",
+        legend.title = element_text(family = "Palatino"),
+        legend.text = element_text(family = "Palatino"))
 
 
 
