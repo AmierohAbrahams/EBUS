@@ -235,6 +235,7 @@ load("data/BC_wind_plot.RData")
 
 south_africa_coast <- south_africa_coast %>% 
   dplyr::rename(lon = long)
+# Continental data
 
 ggplot() + 
   geom_polygon(data = south_africa_coast, aes(x = lon, y = lat,group = group),fill = "grey", colour = "grey", size = 0.1, show.legend = FALSE) +
