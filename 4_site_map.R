@@ -237,11 +237,10 @@ south_africa_coast <- south_africa_coast %>%
   dplyr::rename(lon = long)
 # Continental data
 
-ggplot() + 
+test <- ggplot() + 
   geom_raster(data = BC_wind_plot, aes(x = lon, y = lat, fill = wind_spd)) +
   geom_polygon(data = south_africa_coast, aes(x = lon, y = lat,group = group),
                fill = NA, colour = "black", size = 1.0, show.legend = FALSE) +
-  geom_spoke(arrow = arrow(length = unit(.05, 'inches'))) + 
   scale_fill_distiller(palette = "RdYlGn") +
   labs(x = NULL, y = NULL,  fill = "Wind\nSpeed") +
   xlab("") + ylab("") +
@@ -277,7 +276,4 @@ ggplot() +
         legend.position = "top",
         legend.title = element_text(family = "Palatino"),
         legend.text = element_text(family = "Palatino"))
-
-
-
 
