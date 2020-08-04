@@ -1,4 +1,4 @@
-# 5_SLP
+# 5_SLP (Sea Level Pressure)
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
