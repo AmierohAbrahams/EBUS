@@ -344,7 +344,7 @@ ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = Month)) +
 # ANOVA analyses on wind speed
 
 anova_func <- function(df){
-  sites_aov <- aov(circ_wspd ~ current * year , data = df)
+  sites_aov <- aov(circ_wspd ~ current * year * month , data = df)
   return(sites_aov)
 }
 
@@ -519,7 +519,7 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
 # signals detected by each of the currents for each year and season
 
 anova_func <- function(df){
-  sites_aov <- aov(signal ~ current * year , data = df)
+  sites_aov <- aov(signal ~ current * year * month, data = df)
   return(sites_aov)
 }
 
