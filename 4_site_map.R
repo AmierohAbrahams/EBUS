@@ -204,6 +204,14 @@ ggplot() +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
   geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
             colour = "red", fill = NA, size = 0.75) +
+  annotate("text", label = "D", x = 4.0, y = -25.0,
+           size =5, angle = 0, colour = "black") +
+  annotate("text", label = "C", x = -25.0, y = 29.5,
+           size =5, angle = 0, colour = "black") +
+  annotate("text", label = "B", x = -88, y = -30,
+           size =5, angle = 0, colour = "black") +
+  annotate("text", label = "A", x = -133, y = 40.0,
+           size =5, angle = 0, colour = "black") +
   scale_x_continuous(breaks = seq(-150, 150, by = 50),
                      labels  = c("150°W", "100°W", "50°W", "0", "50°E", "100°E", "150°E")) +
   scale_y_continuous(breaks = seq(-60, 60, by = 30),

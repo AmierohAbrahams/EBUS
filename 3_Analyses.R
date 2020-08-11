@@ -10,7 +10,7 @@
 # ultimately lead to changes in the duration and intensity of upwelling events overtime.
 # Changing upwelling region boundaries for each current
 
-# 1: Setup environment ----------------------------------------------------
+# 1: Setup environment --------------------------------------------------------------------------------------------------------------------------------------------
 library(gridExtra)
 library(geosphere)
 library(tidyverse)
@@ -31,7 +31,7 @@ supp.labs <- c("Benguela current", "California current", "Canary current", "Humb
 names(supp.labs) <- c("BC", "CalC","CC", "HC")
 my.formula <- y ~ x
 
-# 2: Wind pattern observation ----------------------------------------------------  
+# 2: Wind pattern observation --------------------------------------------------------------------------------------------------------------------------------------
 # Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
 
 # The datasets used here were created in script "5_SLP.R"
@@ -61,7 +61,6 @@ SE_renamed <- current_winds %>%
 rm(current_winds);gc()
 #save(SE_renamed, file = "data/SE_renamed.RData")
 
-
 # Then create diifferent temporal results
 SE_summer <- SE_renamed %>% 
   filter(season == "Summer") %>% 
@@ -81,10 +80,58 @@ SE_monthly <- SE_renamed %>%
             mean_temp = mean(temp, na.rm = T),
             mean_SLP = mean(slp, na.rm = T))
 
-SE_monthly <- SE_renamed %>% 
-  group_by(current, year, season, month) %>% 
-  summarise( mode_eg = mode(temp))
+# Wind-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Changes in the number of SE wind blown
+SE_monthly_BC <- SE_monthly %>% 
+  filter(current == "BC") %>% 
+  mutate(no_SE = count/73)
 
+SE_monthly_CC <- SE_monthly %>% 
+  filter(current == "CC") %>% 
+  mutate(no_SE = count/106)
+
+
+SE_monthly_CalC <- SE_monthly %>% 
+  filter(current == "CalC") %>% 
+  mutate(no_SE = count/185)
+
+SE_monthly_HC <- SE_monthly %>% 
+  filter(current == "HC") %>% 
+  mutate(no_SE = count/193)
+
+SE_winds <- rbind(SE_monthly_BC,SE_monthly_CalC,SE_monthly_CC,SE_monthly_HC)
+
+ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "SE wind direction")+
+  theme_bw() +
+  labs(colour = "Month") +
+  theme_set(theme_grey()) +
+  theme_grey() +
+  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.4, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 18, hjust = 0),
+    legend.title = element_text(size = 18, family = "Palatino"),
+    legend.text = element_text(size = 16, family = "Palatino"),
+    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.background = element_blank())
+
+
+anova_func <- function(df){
+  sites_aov <- aov(no_SE ~ current * year * month, data = df)
+  return(sites_aov)
+}
+
+summary(count_aov <- anova_func(df = SE_winds))
 
 # Determine wind duration-------------------------------------------------------------------------------------------------------------------
 
@@ -210,25 +257,39 @@ wind_currents <- duration_wind_currents %>%
   group_by(year, month, current) %>% 
   summarise(mean_dur = mean(duration))
 
+wind_currents <- as.data.frame(wind_currents)
+
 ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Duration (Days)")+
+  labs(x = "Year", y = "Duration of SE winds (Days)")+
   theme_bw() +
   labs(colour = "Month") +
+  theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
-    axis.title = element_text(size = 18, face = "bold"),
-    axis.text = element_text(size = 18, colour = "black"),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.4, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18),
-    legend.text = element_text(size = 18),
+    legend.title = element_text(size = 18, family = "Palatino"),
+    legend.text = element_text(size = 16, family = "Palatino"),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
+
+anova_func <- function(df){
+  sites_aov <- aov(mean_dur ~ current * year * month, data = df)
+  return(sites_aov)
+}
+
+summary(count_aov <- anova_func(df = wind_currents))
 
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
 # BC_pixels <- SE_renamed %>% 
@@ -262,17 +323,28 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
     strip.text = element_text(size=14, family = "Palatino"),
     axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.4, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
     axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
     legend.title = element_text(size = 18, family = "Palatino"),
     legend.text = element_text(size = 16, family = "Palatino"),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
+
+
+anova_func <- function(df){
+  sites_aov <- aov(mean_temp ~ current * year * month, data = df)
+  return(sites_aov)
+}
+
+summary(count_aov <- anova_func(df = SE_monthly))
+
 
 ggplot(data = SE_monthly, aes(x = year, y = mean_SLP)) +
   geom_line(aes(colour = month)) +
@@ -324,20 +396,25 @@ ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Wind speed (ms-1)") +
+  labs(x = "Year", y = "Wind intensity") +
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
   # stat_poly_eq(formula = my.formula,
   #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
   #              parse = TRUE) +
+  theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
-    axis.title = element_text(size = 12, face = "bold"),
-    axis.text = element_text(size = 12, colour = "black"),
-    plot.title = element_text(size = 12, hjust = 0),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 10),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.4, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 18, hjust = 0),
+    legend.title = element_text(size = 18, family = "Palatino"),
+    legend.text = element_text(size = 16, family = "Palatino"),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
@@ -481,8 +558,10 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
     strip.text = element_text(size=14, family = "Palatino"),
     axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.4, "cm"),
@@ -519,13 +598,13 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
 # signals detected by each of the currents for each year and season
 
 anova_func <- function(df){
-  sites_aov <- aov(signal ~ current * year, data = df)
+  sites_aov <- aov(signal ~ current * year * month, data = df)
   return(sites_aov)
 }
 
 summary(count_aov <- anova_func(df = summer_signal))
 
-# 3: Linear models ----------------------------------------------------
+# 3: Linear models -------------------------------------------------------------------------------------------------------------------------------------------------
 # ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
 # between currents and seasons over a 30 year period
 
@@ -557,7 +636,8 @@ lm_metrics <- combined_products %>%
 lm_metrics_wide <- pivot_wider(lm_metrics, 
                                id_cols = current:season, 
                                names_from = var, values_from = slope,
-                               values_fn = mean)
+                               values_fn = mean) %>% 
+  filter(season == "Summer")
 
 
 summary(aov(duration ~ current + season, data = lm_metrics_wide))
@@ -565,54 +645,123 @@ summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
 
+
+summary(aov(duration ~ current + year, data = lm_metrics_wide))
+  summary(aov(intensity_mean ~ current + year, data = lm_metrics_wide))
+summary(aov(intensity_max ~ current  + year, data = lm_metrics_wide))
+summary(aov(intensity_cumulative ~ year + season, data = lm_metrics_wide))
+
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Combined products to view for changes in the intensity of upwelling signals
 
-load("data/combined_products.RData")
+CC_int <- CC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(mean_intensity = mean(intensity_mean)) #%>% 
+  #mutate(signal = y / 106)
 
-mean_intensity <- combined_products %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, month, current) %>% 
-  summarise(mean_intensity = mean(intensity_mean),
-            mean_cum_int = mean(intensity_cumulative))
+HC_int <- HC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(mean_intensity = mean(intensity_mean)) #%>% 
+  #mutate(mean_int = mean_intensity / 193)
 
-mean_intensity %>% 
-  ggplot(aes(x = year)) +
-  geom_boxplot(aes(y = mean_intensity, fill = month)) +
-  facet_wrap(~current, labeller = labeller(current = supp.labs)) +
-  labs(y = "Mean intensity", x = "Years")+
-  theme_set(theme_grey()) +
-  theme_grey() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
-    axis.title = element_text(size = 12, face = "bold"),
-    axis.text = element_text(size = 12, colour = "black"),
-    plot.title = element_text(size = 12, hjust = 0),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 10),
-    legend.key = element_rect(size = 0.8, colour = NA),
-    legend.background = element_blank())
+CalC_int <- CalC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(mean_intensity = mean(intensity_mean)) #%>% 
+ # mutate(signal = y / 185)
 
-ggplot(data = mean_intensity, aes(x = year, y = mean_intensity, colour = Month)) +
+BC_int <- BC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(mean_intensity = mean(intensity_mean)) #%>% 
+ # mutate(signal = y / 73)
+
+mean_int <- rbind(BC_int,CC_int, CalC_int, HC_int)
+mean_int <- mean_int %>% 
+  filter(season == "Summer")
+
+ggplot(data = mean_int, aes(x = year, y = mean_intensity, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Intensity of signals")+
-  # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
-  # stat_poly_eq(formula = my.formula,
-  #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-  #              parse = TRUE) +
+  labs(x = "Year", y = "Mean intensity of signals")+
   theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    panel.grid.major = element_line(size = 0.2, linetype = 2),
-    panel.grid.minor = element_line(colour = NA),
-    axis.title = element_text(size = 12, face = "bold"),
-    axis.text = element_text(size = 12, colour = "black"),
-    plot.title = element_text(size = 12, hjust = 0), 
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 10),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.4, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 18, hjust = 0),
+    legend.title = element_text(size = 18, family = "Palatino"),
+    legend.text = element_text(size = 16, family = "Palatino"),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
 
+anova_func <- function(df){
+  sites_aov <- aov(mean_intensity ~ current * year * month, data = df)
+  return(sites_aov)
+}
+summary(count_aov <- anova_func(df = mean_int))
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CC_int <- CC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(cum_intensity = mean(intensity_cumulative)) 
+
+HC_int <- HC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(cum_intensity = mean(intensity_cumulative))
+
+CalC_int <- CalC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(cum_intensity = mean(intensity_cumulative)) 
+
+BC_int <- BC_UI_metrics %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(cum_intensity = mean(intensity_cumulative)) 
+
+cum_int <- rbind(BC_int,CC_int, CalC_int, HC_int)
+cum_int <- cum_int %>% 
+  filter(season == "Summer")
+
+ggplot(data = cum_int, aes(x = year, y = cum_intensity, colour = Month)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Upwelling cumulative intensity")+
+  theme_set(theme_grey()) +
+  theme_grey() +
+  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.4, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 18, hjust = 0),
+    legend.title = element_text(size = 18, family = "Palatino"),
+    legend.text = element_text(size = 16, family = "Palatino"),
+    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.background = element_blank())
+
+
+anova_func <- function(df){
+  sites_aov <- aov(cum_intensity ~ current * year * month, data = df)
+  return(sites_aov)
+}
+summary(count_aov <- anova_func(df = cum_int))
