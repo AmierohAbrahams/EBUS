@@ -652,7 +652,7 @@ summary(aov(intensity_max ~ current  + year, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ year + season, data = lm_metrics_wide))
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Combined products to view for changes in the intensity of upwelling signals
+## Combined products to view for changes in the intensity of upwelling signals...
 
 CC_int <- CC_UI_metrics %>% 
   mutate(year = year(date_start)) %>% 
