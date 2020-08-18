@@ -51,7 +51,7 @@ CalC <- CalC_coastal_SLP %>%
 
 current_winds <- rbind(BC,HC,CC,CalC)
 rm(BC,BC_coastal_SLP,CalC,CalC_coastal_SLP,CC_coastal_SLP,CC, HC_coastal_SLP,HC);gc()
-# save(current_winds, file = "data/current_winds.RData")
+  # save(current_winds, file = "data/current_winds.RData")
 
 # Then create different temporal results
 # First filter out only the SE data
@@ -572,27 +572,6 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
-# box plot
- complete_signal %>% 
-  ggplot(aes(x = year)) +
-  geom_boxplot(aes(y = signal, fill = season)) +
-  facet_wrap(~current, labeller = labeller(current = supp.labs)) +
-  labs(y = "Number of upwelling signals", x = "Year")+
-   theme_set(theme_grey()) +
-   theme_grey() +
-   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-     panel.grid.major = element_line(size = 0.2, linetype = 2),
-     panel.grid.minor = element_line(colour = NA),
-     strip.text = element_text(size=14, family = "Palatino"),
-     axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-     axis.ticks.length = unit(0.4, "cm"),
-     axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
-     plot.title = element_text(size = 18, hjust = 0),
-     legend.title = element_text(size = 18, family = "Palatino"),
-     legend.text = element_text(size = 16, family = "Palatino"),
-     legend.key = element_rect(size = 0.8, colour = NA),
-     legend.background = element_blank())
-
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
 # signals detected by each of the currents for each year and season
@@ -603,6 +582,17 @@ anova_func <- function(df){
 }
 
 summary(count_aov <- anova_func(df = summer_signal))
+
+## Regression
+#Comparing signal
+
+# There is a significant difference between the number of upwelling signals detected over year and month
+count <- lm(signal~ current * year * month, data = summer_signal)
+summary(count)
+
+# There is a significant difference between the number of upwelling signals over time
+count <- lm(signal~ current * year, data = summer_signal)
+summary(count)
 
 # 3: Linear models -------------------------------------------------------------------------------------------------------------------------------------------------
 # ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
