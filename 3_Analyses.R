@@ -543,13 +543,13 @@ complete_signal <- rbind(CC_signals,BC_signals,CalC_signals,HC_signals)
 load("data/complete_signal.RData")
 
 summer_signal <- complete_signal %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, current, month) 
+  filter(season == "Summer") #%>% 
+  # group_by(year, current, month)
 
 ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
- facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
   labs(x = "Year", y = "Number of upwelling signals")+
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
   # stat_poly_eq(formula = my.formula,
@@ -557,20 +557,20 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   #              parse = TRUE) +
   theme_set(theme_grey()) +
   theme_grey() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
-    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.4, "cm"),
-    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18, family = "Palatino"),
-    legend.text = element_text(size = 16, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
-    legend.background = element_blank())
+  theme(panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+        panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+        #panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+        # panel.grid.major = element_line(size = 0.2, linetype = 2),
+        # panel.grid.minor = element_line(colour = NA),
+        strip.text = element_text(size=14, family = "Palatino"),
+        axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+        axis.ticks.length = unit(0.4, "cm"),
+        axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+        plot.title = element_text(size = 18, hjust = 0),
+        legend.title = element_text(size = 18, family = "Palatino"),
+        legend.text = element_text(size = 16, family = "Palatino"),
+        legend.key = element_rect(size = 0.8, colour = NA),
+        legend.background = element_blank())
 
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
@@ -584,14 +584,42 @@ anova_func <- function(df){
 summary(count_aov <- anova_func(df = summer_signal))
 
 ## Regression
-#Comparing signal
+# Comparing signal
+
+# Alter the summer signals data frame for the linear models
+  # We want to create a month smart dataframe, too
+
+summer_signal_month <- summer_signal %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(signal ~ year_month, data = .)),
+         model_glance = purrr::map(model_out, broom::glance)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_glance")
+  # ungroup() %>% 
+  # mutate(month = as.character(month)) %>% 
+  # data.frame()
+
+ss_Jul <- summer_signal_lm %>% 
+  filter(current %in% c("CalC", "CC"))
+  # filter(month == "Jul")
+
+# Some checks
+summer_signal %>% 
+  ungroup() %>% 
+  filter(current == "BC") %>% 
+  dplyr::select(year) %>% 
+  data.frame() %>% 
+  unique()
 
 # There is a significant difference between the number of upwelling signals detected over year and month
-count <- lm(signal~ current * year * month, data = summer_signal)
+count <- lm(signal ~ year * current * month, data = ss_Jul)
+broom::tidy(count)
 summary(count)
 
 # There is a significant difference between the number of upwelling signals over time
-count <- lm(signal~ current * year, data = summer_signal)
+count <- lm(signal ~ year * current, data = summer_signal_lm)
 summary(count)
 
 # 3: Linear models -------------------------------------------------------------------------------------------------------------------------------------------------
