@@ -133,6 +133,39 @@ anova_func <- function(df){
 
 summary(count_aov <- anova_func(df = SE_winds))
 
+noSE_year <- SE_winds %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(no_SE ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+# Slope in upwelling signals per month over years
+noSE_month <- SE_winds %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(no_SE ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+ggplot(data = SE_monthly, aes(x = year, y = mean_SLP)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
+  labs(x = "Year", y = "Sea level pressure") +
+  theme(strip.text = element_text(face="bold", size=12)) +
+  theme_Publication()
+
+
 # Determine wind duration-------------------------------------------------------------------------------------------------------------------
 
 load("data/CC_coastal_SLP.RData") 
@@ -291,6 +324,30 @@ anova_func <- function(df){
 
 summary(count_aov <- anova_func(df = wind_currents))
 
+dur_year <- wind_currents %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(mean_dur ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+# Slope in upwelling signals per month over years
+dur_month <- wind_currents %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(mean_dur ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
 # Determining the number of pixels within each current -----------------------------------------------------------------------------------
 # BC_pixels <- SE_renamed %>% 
 #   filter(current == "BC") %>% 
@@ -345,6 +402,31 @@ anova_func <- function(df){
 
 summary(count_aov <- anova_func(df = SE_monthly))
 
+## Regression
+# Slope in summer signals over time, years+months
+count_year <- SE_monthly %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(count ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+# Slope in upwelling signals per month over years
+count_month <- SE_monthly %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(count ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
 
 ggplot(data = SE_monthly, aes(x = year, y = mean_SLP)) +
   geom_line(aes(colour = month)) +
@@ -426,6 +508,31 @@ anova_func <- function(df){
 }
 
 summary(count_aov <- anova_func(df = complete_wind))
+#### Regression
+
+circwspd_year <- complete_wind %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(circ_wspd ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+# Slope in upwelling signals per month over years
+circwspd_month <- complete_wind %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(circ_wspd ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
 
 # Linear model -------------------------------------------------------------------------------------------------------
 
@@ -716,6 +823,31 @@ anova_func <- function(df){
 }
 summary(count_aov <- anova_func(df = mean_int))
 
+mean_int_year <- mean_int %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(mean_intensity ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+# Slope in upwelling signals per month over years
+mean_int_month <- mean_int %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(mean_intensity ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 CC_int <- CC_UI_metrics %>% 
@@ -770,3 +902,28 @@ anova_func <- function(df){
   return(sites_aov)
 }
 summary(count_aov <- anova_func(df = cum_int))
+
+cum_int_year <- cum_int %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(cum_intensity ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+# Slope in upwelling signals per month over years
+cum_int_month <- cum_int %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(cum_intensity ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
