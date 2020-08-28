@@ -408,7 +408,7 @@ count_year <- SE_monthly %>%
   group_by(current) %>% 
   mutate(year_month = 1:n()) %>% 
   nest() %>% 
-  mutate(model_out = purrr::map(data, ~lm(count ~ year_month, data = .)),
+  mutate(model_out = purrr::map(data, ~lm(mean_temp ~ year_month, data = .)),
          model_tidy = purrr::map(model_out, broom::tidy)) %>% 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
@@ -420,7 +420,7 @@ count_year <- SE_monthly %>%
 count_month <- SE_monthly %>% 
   group_by(current, month) %>% 
   nest() %>% 
-  mutate(model_out = purrr::map(data, ~lm(count ~ year, data = .)),
+  mutate(model_out = purrr::map(data, ~lm(mean_temp ~ year, data = .)),
          model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
@@ -522,7 +522,7 @@ circwspd_year <- complete_wind %>%
   dplyr::rename(slope = estimate) %>% 
   mutate(p.value = round(p.value, 4))
 
-# Slope in upwelling signals per month over years
+  # Slope in upwelling signals per month over years
 circwspd_month <- complete_wind %>% 
   group_by(current, month) %>% 
   nest() %>% 
@@ -700,8 +700,8 @@ summer_signal_year <- summer_signal %>%
          model_tidy = purrr::map(model_out, broom::tidy)) %>% 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
-  filter(term == "year_month") %>% 
-  dplyr::rename(slope = estimate) %>% 
+  filter(term == "year_month") %>%
+  dplyr::rename(slope = estimate) %>%
   mutate(p.value = round(p.value, 4))
 
 # Slope in upwelling signals per month over years
@@ -709,12 +709,12 @@ summer_signal_month <- summer_signal %>%
   group_by(current, month) %>% 
   nest() %>% 
   mutate(model_out = purrr::map(data, ~lm(signal ~ year, data = .)),
-         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+         model_tidy = purrr::map(model_out, broom::glance)) %>% # Using 'broom::glance' will provide the R2 value 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
-  filter(term == "year") %>% 
-  dplyr::rename(slope = estimate) %>% 
-  mutate(p.value = round(p.value, 4))
+  # filter(term == "year") %>%  3To use broom function comment this out
+  # dplyr::rename(slope = estimate) %>% 
+  # mutate(p.value = round(p.value, 4))
 
 # 3: Linear models -------------------------------------------------------------------------------------------------------------------------------------------------
 # ANOVA Analyses testing if there is a significant difference in the duration/mean intensity etc,
@@ -846,6 +846,16 @@ mean_int_month <- mean_int %>%
   filter(term == "year") %>% 
   dplyr::rename(slope = estimate) %>% 
   mutate(p.value = round(p.value, 4))
+
+# To get R2 value
+
+mean_int_month <- mean_int %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(mean_intensity ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::glance)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") 
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
