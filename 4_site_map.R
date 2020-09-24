@@ -203,7 +203,7 @@ ggplot() +
   geom_raster(data = OISST_global, aes(x = lon, y = lat, fill = temp), show.legend = TRUE) +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
   geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-            colour = "red", fill = NA, size = 0.75) +
+              colour = "red", fill = NA, size = 0.75) +
   annotate("text", label = "D", x = 4.0, y = -25.0,
            size =5, angle = 0, colour = "black") +
   annotate("text", label = "C", x = -25.0, y = 29.5,
