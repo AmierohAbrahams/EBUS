@@ -27,8 +27,8 @@ source("functions/theme.R")
 options(scipen=999) 
 
 # New facet label names
-supp.labs <- c("Benguela current", "California current", "Canary current", "Humboldt current")
-names(supp.labs) <- c("BC", "CalC","CC", "HC")
+supp.labs <- c("Benguela current", "Humboldt current", "California current", "Canary current")
+names(supp.labs) <- c("BC","HC","CalC","CC")
 my.formula <- y ~ x
 
 # 2: Wind pattern observation --------------------------------------------------------------------------------------------------------------------------------------
@@ -101,11 +101,12 @@ SE_monthly_HC <- SE_monthly %>%
 
 SE_winds <- rbind(SE_monthly_BC,SE_monthly_CalC,SE_monthly_CC,SE_monthly_HC)
 
-ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
+plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "SE wind direction")+
+  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "SE wind events 
+(count)")+
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
@@ -113,17 +114,20 @@ ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.4, "cm"),
+    strip.text = element_text(size=8, family = "Palatino"),
+    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18, family = "Palatino"),
-    legend.text = element_text(size = 16, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
+    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 15, hjust = 0),
+    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.text = element_text(size = 9, family = "Palatino"),
+   # legend.key = element_rect(size = 0.8, colour = NA),
+   legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
+
+ggsave(filename = "PlotA.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
 
 
 anova_func <- function(df){
@@ -292,11 +296,17 @@ wind_currents <- duration_wind_currents %>%
 
 wind_currents <- as.data.frame(wind_currents)
 
-ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
+
+wind_currents$month <- as.factor(wind_currents$month)
+wind_currents$month <- factor(wind_currents$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+wind_currents$current = factor(wind_currents$current, levels=c('BC','HC','CalC','CC'))
+
+plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Duration of SE winds (Days)")+
+  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Duration of SE winds
+(Days)")+
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
@@ -304,18 +314,20 @@ ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.4, "cm"),
+    strip.text = element_text(size=8, family = "Palatino"),
+    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18, family = "Palatino"),
-    legend.text = element_text(size = 16, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.text = element_text(size = 9, family = "Palatino"),
+   # legend.key = element_rect(size = 0.8, colour = NA),
+   legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
+ggsave(filename = "PlotB.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
 
 anova_func <- function(df){
   sites_aov <- aov(mean_dur ~ current * year * month, data = df)
@@ -369,12 +381,15 @@ dur_month <- wind_currents %>%
 #   dplyr::select(lon, lat) %>% 
 #   unique()
 
+SE_monthly$month <- as.factor(SE_monthly$month)
+SE_monthly$month <- factor(SE_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+SE_monthly$current = factor(SE_monthly$current, levels=c('BC','HC','CalC','CC'))
 # Monthly mean temperature
 ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Temperature (°C)")+
+  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "SST (°C)")+
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
@@ -384,13 +399,13 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
     # panel.grid.minor = element_line(colour = NA),
     strip.text = element_text(size=14, family = "Palatino"),
     axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.4, "cm"),
+    axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18, family = "Palatino"),
-    legend.text = element_text(size = 16, family = "Palatino"),
+    axis.text = element_text(size = 14, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 15, hjust = 0),
+    legend.title = element_text(size = 12, family = "Palatino"),
+    legend.text = element_text(size = 10, family = "Palatino"),
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
@@ -473,12 +488,19 @@ ggplot(data = complete_wind, aes(x = year, y = signal)) +
   theme(strip.text = element_text(face="bold", size=12)) +
   theme_Publication()
 
+complete_wind$month <- as.factor(complete_wind$month)
+complete_wind$month <- factor(complete_wind$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+complete_wind$current = factor(complete_wind$current, levels=c('BC','HC','CalC','CC'))
+
 # Wind intensity
-ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = Month)) +
+plotC <- ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Wind intensity") +
+  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  ylab(expression("SE wind intensity"~(m.s^-1))) + 
+  labs(x ="")
+#   labs(x = "", y = "SE wind intensity
+# (m.s^-1)") +
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
   # stat_poly_eq(formula = my.formula,
   #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
@@ -488,17 +510,24 @@ ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = Month)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.4, "cm"),
+    strip.text = element_text(size=8, family = "Palatino"),
+    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18, family = "Palatino"),
-    legend.text = element_text(size = 16, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
-    legend.background = element_blank())
+    axis.text = element_text(size = 9, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 15, hjust = 0),
+    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.text = element_text(size = 9, family = "Palatino"),
+  #  legend.key = element_rect(size = 0.8, colour = NA),
+  legend.key.size = unit(0.2, "cm"),
+  legend.background = element_blank())
+
+ggsave(filename = "plotC.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
+
+combined <- ggarrange(plotA, plotB, plotC,labels = c("A", "B", "C"), ncol = 1, common.legend = TRUE,legend = "right")
+
+ggsave(filename = "combined.jpg", plot = combined, width=180, height = 200, units = "mm",dpi = 300,  path = "figures/")
 
 # ANOVA analyses on wind speed
 
@@ -653,11 +682,16 @@ summer_signal <- complete_signal %>%
   filter(season == "Summer") #%>% 
   # group_by(year, current, month)
 
-ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
+summer_signal$month <- as.factor(summer_signal$month)
+summer_signal$month <- factor(summer_signal$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+summer_signal$current = factor(summer_signal$current, levels=c('BC','HC','CalC','CC'))
+
+plot_1 <- ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Number of upwelling signals")+
+  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Upwelling events
+(count)")+
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
   # stat_poly_eq(formula = my.formula,
   #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
@@ -669,15 +703,18 @@ ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
         #panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
         # panel.grid.major = element_line(size = 0.2, linetype = 2),
         # panel.grid.minor = element_line(colour = NA),
-        strip.text = element_text(size=14, family = "Palatino"),
-        axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-        axis.ticks.length = unit(0.4, "cm"),
-        axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+        strip.text = element_text(size=8, family = "Palatino"),
+        axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+        axis.ticks.length = unit(0.2, "cm"),
+        axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
         plot.title = element_text(size = 18, hjust = 0),
-        legend.title = element_text(size = 18, family = "Palatino"),
-        legend.text = element_text(size = 16, family = "Palatino"),
-        legend.key = element_rect(size = 0.8, colour = NA),
-        legend.background = element_blank())
+        legend.title = element_text(size = 10, family = "Palatino"),
+        legend.text = element_text(size = 9, family = "Palatino"),
+        legend.key.size = unit(0.2, "cm"))
+        
+ggsave(filename = "Plot1.pdf", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "pdf", path = "figures/")
+
+ggsave(filename = "Plot1.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
 
 
 # Anova analyses to test whether or not a significant difference exist in the amount of 
@@ -794,27 +831,37 @@ mean_int <- rbind(BC_int,CC_int, CalC_int, HC_int)
 mean_int <- mean_int %>% 
   filter(season == "Summer")
 
-ggplot(data = mean_int, aes(x = year, y = mean_intensity, colour = Month)) +
+mean_int$month <- as.factor(mean_int$month)
+mean_int$month <- factor(mean_int$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+mean_int$current = factor(mean_int$current, levels=c('BC','HC','CalC','CC'))
+
+plot_2 <- ggplot(data = mean_int, aes(x = year, y = mean_intensity, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Mean intensity of signals")+
+  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Mean intensity of 
+signals")+
   theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.4, "cm"),
+    strip.text = element_text(size=8, family = "Palatino"),
+    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18, family = "Palatino"),
-    legend.text = element_text(size = 16, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.text = element_text(size = 9, family = "Palatino"),
+    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
+
+ggsave(filename = "Plot2.pdf", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "pdf", path = "figures/")
+
+ggsave(filename = "Plot2.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
 
 
 anova_func <- function(df){
@@ -884,27 +931,39 @@ cum_int <- rbind(BC_int,CC_int, CalC_int, HC_int)
 cum_int <- cum_int %>% 
   filter(season == "Summer")
 
-ggplot(data = cum_int, aes(x = year, y = cum_intensity, colour = Month)) +
+cum_int$month <- as.factor(cum_int$month)
+cum_int$month <- factor(cum_int$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+cum_int$current = factor(cum_int$current, levels=c('BC','HC','CalC','CC'))
+
+plot_3 <- ggplot(data = cum_int, aes(x = year, y = cum_intensity, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs)) +
-  labs(x = "Year", y = "Upwelling cumulative intensity")+
+  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Cumulative intensity
+of signals")+
   theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.4, "cm"),
+    strip.text = element_text(size=8, family = "Palatino"),
+    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 18, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 18, family = "Palatino"),
-    legend.text = element_text(size = 16, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
+    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 8, hjust = 0),
+    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.text = element_text(size = 9, family = "Palatino"),
+    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
+
+ggsave(filename = "Plot3.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
+
+
+combined_upwellng <- ggarrange(plot_1, plot_2, plot_3,labels = c("A", "B", "C"), ncol = 1, common.legend = TRUE,legend = "right")
+ggsave(filename = "combined_upwellng.jpg", plot = combined_upwellng, width=180, height = 200, units = "mm",dpi = 300,  path = "figures/")
 
 
 anova_func <- function(df){
