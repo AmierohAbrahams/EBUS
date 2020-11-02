@@ -199,19 +199,19 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 #   labs(x = NULL, y = NULL) +
 #   theme_map2()
 
-ggplot() +
+Map <- ggplot() +
   geom_raster(data = OISST_global, aes(x = lon, y = lat, fill = temp), show.legend = TRUE) +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
   geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
               colour = "red", fill = NA, size = 0.75) +
   annotate("text", label = "D", x = 4.0, y = -25.0,
-           size =5, angle = 0, colour = "black") +
+           size =3, angle = 0, colour = "black") +
   annotate("text", label = "C", x = -25.0, y = 29.5,
-           size =5, angle = 0, colour = "black") +
+           size =3, angle = 0, colour = "black") +
   annotate("text", label = "B", x = -88, y = -30,
-           size =5, angle = 0, colour = "black") +
+           size =3, angle = 0, colour = "black") +
   annotate("text", label = "A", x = -133, y = 40.0,
-           size =5, angle = 0, colour = "black") +
+           size =3, angle = 0, colour = "black") +
   scale_x_continuous(breaks = seq(-150, 150, by = 50),
                      labels  = c("150°W", "100°W", "50°W", "0", "50°E", "100°E", "150°E")) +
   scale_y_continuous(breaks = seq(-60, 60, by = 30),
@@ -223,15 +223,18 @@ ggplot() +
   theme_set(theme_grey()) +
   theme_grey() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
-        axis.text = element_text(colour = "black", size = 20, family = "Palatino"),
+        axis.text = element_text(colour = "black", size = 13, family = "Palatino"),
         axis.title = element_text(colour = "black", size = 20, family = "Palatino"),
         axis.ticks = element_line(colour = "black"),
-        axis.ticks.length = unit(0.4, "cm"),
-        legend.text=element_text(size=15, family = "Palatino"),
-        legend.title = element_text(size = 15, family = "Palatino"))
+        axis.ticks.length = unit(0.2, "cm"),
+        legend.text=element_text(size=5, family = "Palatino"),
+        legend.title = element_text(size = 6, family = "Palatino"),
+        legend.key.size = unit(0.5, "cm"))
+
+ggsave(filename = "Map.jpg", plot = last_plot(), width=180, height = 200, units = "mm",dpi = 300, device = "jpg", path = "figures/")
 
 
-# 5: Plotting paper description------------------------------------------------------------------------------------------------------------------------------------
+  # 5: Plotting paper description------------------------------------------------------------------------------------------------------------------------------------
 
 # Regions surrounding the Benguela EBUS, are dominated by anticyclonic high-pressure cells with quasi-stationary positions, resulting in abundant southerly 
 # and south easterly winds (Risien et al., 2004; Hagen et al., 2009). The South Atlantic Ocean High is situated along the west, drawing cool, dry air onto the
