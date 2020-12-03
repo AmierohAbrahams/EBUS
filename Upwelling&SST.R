@@ -1,4 +1,11 @@
-# Here I plot SST data to observe changes over time withing EBUS
+# 3_Analyses
+# The purpose of this script is to...
+# The steps taken are:
+# 1: Setup environment
+# 2: Create new bounding boxes for the correct upwelling regions as per Varela et al., 2018. I used theold EBUS regions and split them according 
+# 3: Observe how temperature change overtime
+# 4:  Creating the new EBUS regions
+# 5: Analysing the upwelling data - Specifically the number of signals detected and cumulative intensity
 
 # 1: Setup environment --------------------------------------------------------------------------------------------------------------------------------------------
 library(gridExtra)
@@ -17,10 +24,7 @@ source("functions/theme.R")
 options(scipen=999) 
 supp.labs <- c("Benguela current South", "Benguela current North", "Chile", "Peru", "California current South", "California current North", "Canary current")
 
-
-# 2: Wind pattern observation --------------------------------------------------------------------------------------------------------------------------------------
-# Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
-
+#2: Correcting the bounding boxes to fit the paper proposed by Varela et al., 2018 and many others----------------------------------------------------------------
 # # The datasets used here were created in script "5_SLP.R"
 # load("data/CC_coastal_SLP.RData") 
 # load("data/CalC_coastal_SLP.RData")
@@ -65,7 +69,8 @@ supp.labs <- c("Benguela current South", "Benguela current North", "Chile", "Per
 # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
 # # save(current_winds, file = "data_official/current_winds.RData")
 
-#----------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3:Observe how temperature change overtime ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Then create different temporal results
 load("data_official/current_winds.RData")
 
@@ -92,7 +97,7 @@ SE_monthly$current = factor(SE_monthly$current, levels=c('BC_south','BC_north','
 ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current, ncol = 2) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "SST (°C)")+
   theme_bw() +
   labs(colour = "Month") +
@@ -113,18 +118,20 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
     legend.key = element_rect(size = 0.8, colour = NA),
     legend.background = element_blank())
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------
-# Upwelling metrics (Generated previously using the large EBUS areas as one (Before Varela et al., 2018 split))
+# # 4: Creating the new regions---------------------------------------------------------------------------------------------------------------------------------------------------------
+The data below were enerated previously using the large EBUS areas (Before Varela et al., 2018 split), this next steps simply takes the large areas and split it into the new regions 
+
+# Upwelling metrics 
 # load("data/BC_UI_metrics_SLP.RData")
 # load("data/HC_UI_metrics_SLP.RData")
 # load("data/CC_UI_metrics_SLP.RData")
 # load("data/CalC_UI_metrics_SLP.RData")
 # 
 # seasons_S_func <- function(df){
-#   df_seasons <- df %>% 
+#   df_seasons <- df %>%
 #     mutate(month = month(date_start, abbr = T, label = T),
-#            year = year(date_start)) %>% 
-#     mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Summer", 
+#            year = year(date_start)) %>%
+#     mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Summer",
 #                               month %in% c("Mar", "Apr", "May") ~ "Autumn",
 #                               month %in% c("Jun", "Jul", "Aug") ~ "Winter",
 #                               month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
@@ -135,10 +142,10 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
 # 
 # # Seasons for the Northern Hemisphere
 # seasons_N_func <- function(df){
-#   df_seasons <- df %>% 
+#   df_seasons <- df %>%
 #     mutate(month = month(date_start, abbr = T, label = T),
-#            year = year(date_start)) %>% 
-#     mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Winter", 
+#            year = year(date_start)) %>%
+#     mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Winter",
 #                               month %in% c("Mar", "Apr", "May") ~ "Spring",
 #                               month %in% c("Jun", "Jul", "Aug") ~ "Summer",
 #                               month %in% c("Sep", "Oct", "Nov") ~ "Autumn"))
@@ -149,50 +156,51 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
 # 
 # # Filtering out to specific regions (as defined by Varela) within each current:
 # # Benguela current: North and South Benguela
-# upwell_south_BC <- BC_UI_metrics %>% 
-#   filter(lat < -24) %>% 
+# upwell_south_BC <- BC_UI_metrics %>%
+#   filter(lat < -24) %>%
 #   mutate(current = "BC_south")
 # 
-# upwell_north_BC <- BC_UI_metrics %>% 
-#   #dplyr::filter(lat < -17) %>% 
-#   filter(lat >= -22, lat <= -17) %>% 
+# upwell_north_BC <- BC_UI_metrics %>%
+#   #dplyr::filter(lat < -17) %>%
+#   filter(lat >= -22, lat <= -17) %>%
 #   mutate(current = "BC_north")
 # 
 # # Canary Current
-# upwell_Canary_current <- CC_UI_metrics %>% 
-#   filter(lat > 21) %>% 
+# upwell_Canary_current <- CC_UI_metrics %>%
+#   filter(lat > 21) %>%
 #   mutate(current = "CC")
 # 
-# # Humbold current: Chile and Peru 
-# upwell_chile <- HC_UI_metrics %>% 
-#   filter(lat >= -41 , lat <= -17) %>% 
+# # Humbold current: Chile and Peru
+# upwell_chile <- HC_UI_metrics %>%
+#   filter(lat >= -41 , lat <= -17) %>%
 #   mutate(current = "HC_chile")
 # 
-# upwell_peru <- HC_UI_metrics %>% 
-#   filter(lat >= -18, lat <= -13) %>% 
+# upwell_peru <- HC_UI_metrics %>%
+#   filter(lat >= -18, lat <= -13) %>%
 #   mutate(current = "HC_peru")
 # 
 # # California current: North and South California
-# upwell_south_CalC <- CalC_UI_metrics %>% 
-#   filter(lat >= 34, lat <= 37) %>% 
+# upwell_south_CalC <- CalC_UI_metrics %>%
+#   filter(lat >= 34, lat <= 37) %>%
 #   mutate(current = "CalC_south")
 # 
-# upwell_north_CalC <- CalC_UI_metrics %>% 
-#   filter(lat >= 38, lat <= 43) %>% 
+# upwell_north_CalC <- CalC_UI_metrics %>%
+#   filter(lat >= 38, lat <= 43) %>%
 #   mutate(current = "CalC_north")
-# 
-# # save(upwell_south_BC, file = "data_official/upwell_south_BC.RData")
-# # save(upwell_north_BC, file = "data_official/upwell_north_BC.RData")
-# # save(upwell_Canary_current, file = "data_official/upwell_Canary_current.RData")
-# # save(upwell_chile, file = "data_official/upwell_chile.RData")
-# # save(upwell_peru, file = "data_official/upwell_peru.RData")
-# # save(upwell_south_CalC, file = "data_official/upwell_south_CalC.RData")
-# # save(upwell_north_CalC, file = "data_official/upwell_north_CalC.RData")
-# 
+
+# save(upwell_south_BC, file = "data_official/upwell_south_BC.RData")
+# save(upwell_north_BC, file = "data_official/upwell_north_BC.RData")
+# save(upwell_Canary_current, file = "data_official/upwell_Canary_current.RData")
+# save(upwell_chile, file = "data_official/upwell_chile.RData")
+# save(upwell_peru, file = "data_official/upwell_peru.RData")
+# save(upwell_south_CalC, file = "data_official/upwell_south_CalC.RData")
+# save(upwell_north_CalC, file = "data_official/upwell_north_CalC.RData")
+
 # current_upwelling <- rbind(upwell_south_BC, upwell_north_BC, upwell_Canary_current,upwell_chile,upwell_peru, upwell_south_CalC,upwell_north_CalC)
 # # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
-# # save(current_upwelling, file = "data_official/current_upwelling.RData")
+# save(current_upwelling, file = "data_official/current_upwelling.RData")
 
+# 5: Analysing the upwelling data - Specifically the number of signals detected and mean intensity -----------------------------------------------------------------------------
 # Loading the data
 load("data_official/upwell_south_BC.RData")
 load("data_official/upwell_north_BC.RData")
@@ -208,7 +216,7 @@ BC_S_signals <- upwell_south_BC %>%
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
   summarise(y = n()) %>% 
-  mutate(signal = y / 45) # This is the number of pixels within this region
+  mutate(signal = y / 45) # Here we are dividing by the number of pixels within this region
 
 BC_N_signals <- upwell_north_BC %>% 
   mutate(year = year(date_start)) %>% 
@@ -233,7 +241,6 @@ CalC_N_signals <- upwell_north_CalC %>%
   group_by(current, season,year, month) %>% 
   summarise(y = n()) %>% 
   mutate(signal = y / 20)
-
 
 Peru_signals <- upwell_peru %>% 
   mutate(year = year(date_start)) %>% 
