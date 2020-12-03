@@ -1,8 +1,12 @@
-# Official sites as per Varela (2018b)
-# Here EBUS is divided into specific region 
-# These regions are the same as Bakuns areas
-# Here I analyse the wind data - specifically wind the number of SE winds blown overtime and wind duration
+# Wind analyses
+# The purpose of this script is to...
+# The steps taken are:
+# 1: Setup environment
+# 2: Creating the new bounding boxes according to Varella (2018)
+# 3: ANOVA analyses
+# 4: Linear models
 
+# Here I analyse the wind data - specifically wind the number of SE winds blown overtime and wind duration
 # 1: Setup environment --------------------------------------------------------------------------------------------------------------------------------------------
 library(gridExtra)
 library(geosphere)
@@ -19,48 +23,47 @@ library(grid)
 source("functions/theme.R")
 options(scipen=999) 
 
-# 2: Wind pattern observation --------------------------------------------------------------------------------------------------------------------------------------
-# Analyses done to compare how the wind blown in a SE direction during summer months varied over a 30 year period
+# 2: Creating the new bounding boxes according to Varella (2018) ------------------------------------------------------------------------------------------------------
 
-# The datasets used here were created in script "5_SLP.R"
-# load("data/CC_coastal_SLP.RData") 
+# #The datasets used here were created in script "5_SLP.R"
+# load("data/CC_coastal_SLP.RData")
 # load("data/CalC_coastal_SLP.RData")
 # load("data/BC_coastal_SLP.RData")
 # load("data/HC_coastal_SLP.RData")
-
-# Filtering out to specific regions (as defined by Varela) within each current:
-
-# # Benguela current: North and South Benguela
-# south_BC <- BC_coastal_SLP %>% 
-#   filter(lat < -24) %>% 
+# 
+# # Filtering out to specific regions (as defined by Varela) within each current:
+# 
+# # # Benguela current: North and South Benguela
+# south_BC <- BC_coastal_SLP %>%
+#   filter(lat < -24) %>%
 #   mutate(current = "BC_south")
 # 
-# north_BC <- BC_coastal_SLP %>% 
-#   #dplyr::filter(lat < -17) %>% 
-#   filter(lat >= -22, lat <= -17) %>% 
+# north_BC <- BC_coastal_SLP %>%
+#   #dplyr::filter(lat < -17) %>%
+#   filter(lat >= -22, lat <= -17) %>%
 #   mutate(current = "BC_north")
 # 
 # # Canary Current
-# Canary_current <- CC_coastal_SLP %>% 
-#   filter(lat > 21) %>% 
+# Canary_current <- CC_coastal_SLP %>%
+#   filter(lat > 21) %>%
 #   mutate(current = "CC")
 # 
-# # Humbold current: Chile and Peru 
-# chile <- HC_coastal_SLP %>% 
-#   filter(lat >= -41 , lat <= -17) %>% 
+# # Humbold current: Chile and Peru
+# chile <- HC_coastal_SLP %>%
+#   filter(lat >= -41 , lat <= -17) %>%
 #   mutate(current = "HC_chile")
 # 
-# peru <- HC_coastal_SLP %>% 
-#   filter(lat >= -18, lat <= -13) %>% 
+# peru <- HC_coastal_SLP %>%
+#   filter(lat >= -18, lat <= -13) %>%
 #   mutate(current = "HC_peru")
 # 
 # # California current: North and South California
-# south_CalC <- CalC_coastal_SLP %>% 
-#   filter(lat >= 34, lat <= 37) %>% 
+# south_CalC <- CalC_coastal_SLP %>%
+#   filter(lat >= 34, lat <= 37) %>%
 #   mutate(current = "CalC_south")
 # 
-# north_CalC <- CalC_coastal_SLP %>% 
-#   filter(lat >= 38, lat <= 43) %>% 
+# north_CalC <- CalC_coastal_SLP %>%
+#   filter(lat >= 38, lat <= 43) %>%
 #   mutate(current = "CalC_north")
 # 
 # # save(south_BC, file = "data_official/south_BC.RData")
@@ -71,11 +74,11 @@ options(scipen=999)
 # # save(south_CalC, file = "data_official/south_CalC.RData")
 # # save(north_CalC, file = "data_official/north_CalC.RData")
 # 
-# current_winds <- rbind(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC)
-# rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
-# # save(current_winds, file = "data_official/current_winds.RData")
+# # current_winds <- rbind(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC)
+# # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
+# # # save(current_winds, file = "data_official/current_winds.RData")
 
-#----------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3: Identifying South easterly winds (SE)-------------------------------------------------------------------------------------------------------------------------
 # Then create different temporal results
 load("data_official/current_winds.RData")
 load("data_official/south_BC.RData")
