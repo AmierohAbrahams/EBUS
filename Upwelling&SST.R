@@ -196,10 +196,6 @@ The data below were enerated previously using the large EBUS areas (Before Varel
 # save(upwell_south_CalC, file = "data_official/upwell_south_CalC.RData")
 # save(upwell_north_CalC, file = "data_official/upwell_north_CalC.RData")
 
-# current_upwelling <- rbind(upwell_south_BC, upwell_north_BC, upwell_Canary_current,upwell_chile,upwell_peru, upwell_south_CalC,upwell_north_CalC)
-# # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
-# save(current_upwelling, file = "data_official/current_upwelling.RData")
-
 # 5: Analysing the upwelling data - Specifically the number of signals detected and mean intensity -----------------------------------------------------------------------------
 # Loading the data
 load("data_official/upwell_south_BC.RData")
@@ -209,9 +205,12 @@ load("data_official/upwell_chile.RData")
 load("data_official/upwell_peru.RData")
 load("data_official/upwell_south_CalC.RData")
 load("data_official/upwell_north_CalC.RData")
-load("data_official/current_upwelling.RData")
- 
-# Here I average the number of signals for each region by dividing the number by the pixels
+
+current_upwelling <- rbind(upwell_south_BC, upwell_north_BC, upwell_Canary_current,upwell_chile,upwell_peru, upwell_south_CalC,upwell_north_CalC)
+# # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
+# save(current_upwelling, file = "data_official/current_upwelling.RData")
+
+ # Here I average the number of signals for each region by dividing the number by the pixels
 BC_S_signals <- upwell_south_BC %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 

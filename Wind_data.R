@@ -74,13 +74,10 @@ options(scipen=999)
 # # save(south_CalC, file = "data_official/south_CalC.RData")
 # # save(north_CalC, file = "data_official/north_CalC.RData")
 # 
-# # current_winds <- rbind(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC)
-# # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
-# # # save(current_winds, file = "data_official/current_winds.RData")
+
 
 # 3: Identifying South easterly winds (SE)-------------------------------------------------------------------------------------------------------------------------
 # Then create different temporal results
-load("data_official/current_winds.RData")
 load("data_official/south_BC.RData")
 load("data_official/north_BC.RData")
 load("data_official/Canary_current.RData")
@@ -88,6 +85,10 @@ load("data_official/chile.RData")
 load("data_official/peru.RData")
 load("data_official/south_CalC.RData")
 load("data_official/north_CalC.RData")
+
+current_winds <- rbind(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC)
+rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
+# save(current_winds, file = "data_official/current_winds.RData")
 
 # First filter out only the SE (South easterly) winds
 SE_winds <- current_winds %>% 
@@ -249,7 +250,7 @@ CalC_south_prep[is.na(CalC_south_prep)] <- 0
 CalC_north_prep <- right_join(CalC_north_SE, CalC_north_wind_dur)
 CalC_north_prep[is.na(CalC_north_prep)] <- 0
 
-Chile_prep <- right_join(Chile_SE, chile_wind_dur)
+Chile_prep <- right_join(chile_SE, chile_wind_dur)
 Chile_prep[is.na(Chile_prep)] <- 0
 
 Peru_prep <- right_join(peru_SE, peru_wind_dur)
@@ -268,7 +269,11 @@ CC_dur <- dur_prep(df = CC_prep)
 CalC_south_dur <- dur_prep(df = CalC_south_prep)
 CalC_north_dur <- dur_prep(df = CalC_north_prep)
 Chile_dur <- dur_prep(df = Chile_prep)
+Chile_dur <- Chile_dur %>% 
+  arrange(t)
 Peru_dur <- dur_prep(df = Peru_prep)
+Peru_dur <- Peru_dur %>% 
+  arrange(t)
 
 exc_BC_south <- exceedance(BC_south_dur, minDuration = 1, threshold = 0)
 exc_BC_north <- exceedance(BC_north_dur, minDuration = 1, threshold = 0)
@@ -341,7 +346,7 @@ CalC_north_wind <- seasons_N_func(df = CalC_north_wind_duration)
 CalC_north_wind <- CalC_north_wind %>% 
   mutate(current = "CalC_north")
 
-duration_wind_currents <- rbind(BC_south_wind,Chile_wind,Peru_wind,CC_wind,CalC_north_wind,CalC_south_wind)
+duration_wind_currents <- rbind(BC_south_wind,BC_north_wind,Chile_wind,Peru_wind,CC_wind,CalC_north_wind,CalC_south_wind)
 
 wind_currents <- duration_wind_currents %>% 
   filter(season == "Summer") %>% 
@@ -352,13 +357,13 @@ wind_currents <- as.data.frame(wind_currents)
 
 wind_currents$month <- as.factor(wind_currents$month)
 wind_currents$month <- factor(wind_currents$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-wind_currents$current = factor(wind_currents$current, levels=c('BC_south', 'BC_south', 'Chile','Peru','CalC_south','CalC_north', 'CC'))
+wind_currents$current = factor(wind_currents$current, levels=c('BC_south', 'BC_north', 'Chile','Peru','CalC_south','CalC_north', 'CC'))
 
 # Plotting duration of wind patterns over time
 plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current)+#  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Duration of SE winds
 (Days)")+
   theme_bw() +
