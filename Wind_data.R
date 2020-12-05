@@ -7,7 +7,7 @@
 # 4: Linear models
 
 # Here I analyse the wind data - specifically wind the number of SE winds blown overtime and wind duration
-# 1: Setup environment --------------------------------------------------------------------------------------------------------------------------------------------
+# 1: Setup environment ------------------------------------------------------------
 library(gridExtra)
 library(geosphere)
 library(tidyverse)
@@ -23,7 +23,7 @@ library(grid)
 source("functions/theme.R")
 options(scipen=999) 
 
-# 2: Creating the new bounding boxes according to Varella (2018) ------------------------------------------------------------------------------------------------------
+# 2: Creating the new bounding boxes according to Varella (2018) -------------------
 
 # #The datasets used here were created in script "5_SLP.R"
 # load("data/CC_coastal_SLP.RData")
@@ -76,7 +76,7 @@ options(scipen=999)
 # 
 
 
-# 3: Identifying South easterly winds (SE)-------------------------------------------------------------------------------------------------------------------------
+# 3: Identifying South easterly winds (SE)----------------------------
 # Then create different temporal results
 load("data_official/south_BC.RData")
 load("data_official/north_BC.RData")
@@ -86,19 +86,20 @@ load("data_official/peru.RData")
 load("data_official/south_CalC.RData")
 load("data_official/north_CalC.RData")
 
-current_winds <- rbind(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC)
-rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
+current_winds <- rbind(south_BC, north_BC, Canary_current, chile, peru, south_CalC, north_CalC)
+# rm(south_BC, north_BC, Canary_current, chile, peru, south_CalC, north_CalC); gc()
 # save(current_winds, file = "data_official/current_winds.RData")
 
 # First filter out only the SE (South easterly) winds
 SE_winds <- current_winds %>% 
   filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
   unique()
-rm(current_winds);gc()
+rm(current_winds); gc()
 #save(SE_renamed, file = "data/SE_renamed.RData")
 
-# Then create diifferent temporal results
-# This is done to check if there are differences in the number of SE blown winds over time
+# Then create different temporal results
+# This is done to check if there are differences in the number of SE blown winds over time ... 
+# funny, never thought of winds being discrete events! 
 SE_monthly <- SE_winds %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
@@ -145,7 +146,7 @@ SE_monthly <- SE_winds %>%
 #   dplyr::select(lon, lat) %>%
 #   unique() # 20 pixels
 
-# Changes in the number of SE wind blown
+# Changes in the number of SE wind blown 
 south_BC_SE <- SE_monthly %>% 
   filter(current == "BC_south") %>% 
   mutate(no_SE = count/45) # The value here is the number of pixels occuring within this region
@@ -174,15 +175,14 @@ Chile_SE <- SE_monthly %>%
   filter(current == "HC_chile") %>% 
   mutate(no_SE = count/99)
 
-SE_winds <- rbind(south_BC_SE ,north_BC_SE,CC_SE,south_CalC,north_CalC,Peru_SE,Chile_SE)
+SE_winds <- rbind(south_BC_SE, north_BC_SE, CC_SE, south_CalC, north_CalC, Peru_SE, Chile_SE)
 
 # Plot showing the number of SE winds blown
 plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "SE wind events 
-(count)")+
+  labs(x = "", y = "SE wind events (count)") +
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
@@ -205,7 +205,7 @@ plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
 
 # Determining if there are changes in the duration of SE winds blown over the years
 
-wind_dur_func <- function(df){
+wind_dur_func <- function(df) {
   wind<- df %>% 
     select(date, wind_dir_from, lat, lon) %>% 
     rename(date = date,
@@ -220,7 +220,7 @@ CalC_north_wind_dur <- wind_dur_func(df = north_CalC)
 chile_wind_dur <- wind_dur_func(df = chile)
 peru_wind_dur <- wind_dur_func(df = peru)
 
-SE_wind_func <- function(df){
+SE_wind_func <- function(df) {
   SE<- df %>% 
     filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
     unique() %>% 
@@ -256,7 +256,7 @@ Chile_prep[is.na(Chile_prep)] <- 0
 Peru_prep <- right_join(peru_SE, peru_wind_dur)
 Peru_prep[is.na(Peru_prep)] <- 0
 
-dur_prep <- function(df){
+dur_prep <- function(df) {
   dur <- df %>% 
     rename(temp = wind_dir_from,
            t = date) %>% 
@@ -283,7 +283,7 @@ exc_CalC_north <- exceedance(CalC_north_dur, minDuration = 1, threshold = 0)
 exc_Chile <- exceedance(Chile_dur, minDuration = 1, threshold = 0)
 exc_Peru <- exceedance(Peru_dur, minDuration = 1, threshold = 0)
 
-wind_func <- function(df){
+wind_func <- function(df) {
   wind_duration <- df$exceedance %>%
     ungroup() %>%
     select(exceedance_no, duration, date_start, date_peak, intensity_max, intensity_cumulative) 
@@ -298,7 +298,7 @@ Chile_wind_duration <- wind_func(df = exc_Chile)
 Peru_wind_duration <- wind_func(df = exc_Peru)
 
 # Seasons for the southern hemisphere
-seasons_S_func <- function(df){
+seasons_S_func <- function(df) {
   df_seasons <- df %>% 
     mutate(month = month(date_start, abbr = T, label = T),
            year = year(date_start)) %>% 
@@ -325,7 +325,7 @@ Peru_wind <- Peru_wind %>%
   mutate(current = "Peru")
 
 # Seasons for the Northern Hemisphere
-seasons_N_func <- function(df){
+seasons_N_func <- function(df) {
   df_seasons <- df %>% 
     mutate(month = month(date_start, abbr = T, label = T),
            year = year(date_start)) %>% 
@@ -346,7 +346,8 @@ CalC_north_wind <- seasons_N_func(df = CalC_north_wind_duration)
 CalC_north_wind <- CalC_north_wind %>% 
   mutate(current = "CalC_north")
 
-duration_wind_currents <- rbind(BC_south_wind,BC_north_wind,Chile_wind,Peru_wind,CC_wind,CalC_north_wind,CalC_south_wind)
+duration_wind_currents <- rbind(BC_south_wind, BC_north_wind, Chile_wind,
+                                Peru_wind, CC_wind, CalC_north_wind, CalC_south_wind)
 
 wind_currents <- duration_wind_currents %>% 
   filter(season == "Summer") %>% 
@@ -356,16 +357,17 @@ wind_currents <- duration_wind_currents %>%
 wind_currents <- as.data.frame(wind_currents)
 
 wind_currents$month <- as.factor(wind_currents$month)
-wind_currents$month <- factor(wind_currents$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-wind_currents$current = factor(wind_currents$current, levels=c('BC_south', 'BC_north', 'Chile','Peru','CalC_south','CalC_north', 'CC'))
+wind_currents$month <- factor(wind_currents$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr",
+                                                              "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+wind_currents$current = factor(wind_currents$current, levels = c('BC_south', 'BC_north', 'Chile',
+                                                                 'Peru', 'CalC_south', 'CalC_north', 'CC'))
 
 # Plotting duration of wind patterns over time
 plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current)+#  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "Duration of SE winds
-(Days)")+
+  labs(x = "", y = "Duration of SE winds (Days)")+
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
@@ -387,4 +389,4 @@ plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
     legend.background = element_blank())
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------
