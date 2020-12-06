@@ -72,32 +72,31 @@ supp.labs <- c("Benguela current South", "Benguela current North", "Chile", "Per
 # 3:Observe how temperature change overtime ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Then create different temporal results
-load("data_official/current_winds.RData")
+load("data_official/south_BC.RData")
+load("data_official/north_BC.RData")
+load("data_official/Canary_current.RData")
+load("data_official/chile.RData")
+load("data_official/peru.RData")
+load("data_official/south_CalC.RData")
+load("data_official/north_CalC.RData")
 
-SE_winds <- current_winds %>% 
-  filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
-  unique()
-rm(current_winds);gc()
-#save(SE_renamed, file = "data/SE_renamed.RData")
+current_winds <- rbind(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC)
 
 # Then create diifferent temporal results
-SE_monthly <- SE_winds %>% 
+temp_monthly <- current_winds %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
-  summarise(count = n(),
-            circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
-            circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
-            mean_temp = mean(temp, na.rm = T),
+  summarise(mean_temp = mean(temp, na.rm = T),
             mean_SLP = mean(slp, na.rm = T))
 
-SE_monthly$month <- as.factor(SE_monthly$month)
-SE_monthly$month <- factor(SE_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-SE_monthly$current = factor(SE_monthly$current, levels=c('BC_south','BC_north','HC_chile', 'HC_peru','CalC_south','CalC_north','CC'))
+temp_monthly$month <- as.factor(temp_monthly$month)
+temp_monthly$month <- factor(temp_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south','BC_north','HC_chile', 'HC_peru','CalC_south','CalC_north','CC'))
 # Monthly mean temperature
-ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
+ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 7) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "SST (°C)")+
   theme_bw() +
   labs(colour = "Month") +
@@ -267,7 +266,7 @@ summer_signal$current = factor(summer_signal$current, levels=c('BC_south','BC_no
 plot_1 <- ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 4) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Upwelling events
 (count)")+
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
@@ -290,54 +289,85 @@ plot_1 <- ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)
         legend.text = element_text(size = 9, family = "Palatino"),
         legend.key.size = unit(0.2, "cm"))
 
-# Determining if there is changes in mean intensity of signals (I will repeat this for cummulative intensty)
-mean_intensity_BC_S <- upwell_south_BC %>% 
+# Determining if there is changes in mean and cummulative intensity
+intensity_BC_S <- upwell_south_BC %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
-  summarise(mean_intensity = mean(intensity_mean))
+  summarise(mean_intensity = mean(intensity_mean),
+            cum_intensity = mean(intensity_cumulative))
 
-mean_intensity_BC_N <- upwell_north_BC %>% 
+intensity_BC_N <- upwell_north_BC %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
-  summarise(mean_intensity = mean(intensity_mean))
+  summarise(mean_intensity = mean(intensity_mean),
+            cum_intensity = mean(intensity_cumulative))
 
-mean_intensity_CC <- upwell_Canary_current %>% 
+intensity_CC <- upwell_Canary_current %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
-  summarise(mean_intensity = mean(intensity_mean))
+  summarise(mean_intensity = mean(intensity_mean),
+            cum_intensity = mean(intensity_cumulative))
 
-mean_intensity_chile <- upwell_chile %>% 
+intensity_chile <- upwell_chile %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
-  summarise(mean_intensity = mean(intensity_mean)) 
+  summarise(mean_intensity = mean(intensity_mean),
+            cum_intensity = mean(intensity_cumulative)) 
 
-mean_intensity_peru <- upwell_peru %>% 
+intensity_peru <- upwell_peru %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
-  summarise(mean_intensity = mean(intensity_mean)) 
+  summarise(mean_intensity = mean(intensity_mean),
+            cum_intensity = mean(intensity_cumulative)) 
 
-mean_intensity_CalC_S <- upwell_south_CalC %>% 
+intensity_CalC_S <- upwell_south_CalC %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
-  summarise(mean_intensity = mean(intensity_mean)) 
+  summarise(mean_intensity = mean(intensity_mean),
+            cum_intensity = mean(intensity_cumulative)) 
 
-mean_intensity_CalC_N <- upwell_north_CalC %>% 
+intensity_CalC_N <- upwell_north_CalC %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
-  summarise(mean_intensity = mean(intensity_mean)) 
+  summarise(mean_intensity = mean(intensity_mean),
+            cum_intensity = mean(intensity_cumulative)) 
 
-mean_int <- rbind(mean_intensity_BC_S,mean_intensity_BC_N, mean_intensity_CC, mean_intensity_chile,mean_intensity_peru, mean_intensity_CalC_S, mean_intensity_CalC_N)
-mean_int <- mean_int %>% 
+intensity <- rbind(intensity_BC_S,intensity_BC_N,intensity_CC, intensity_chile, intensity_peru, intensity_CalC_S, intensity_CalC_N)
+intensity <- intensity %>% 
   filter(season == "Summer")
 
-mean_int$month <- as.factor(mean_int$month)
-mean_int$month <- factor(mean_int$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-mean_int$current = factor(mean_int$current, levels=c('BC_south','BC_north','HC_chile', 'HC_peru','CalC_south','CalC_north','CC'))
+intensity$month <- as.factor(intensity$month)
+intensity$month <- factor(intensity$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+intensity$current = factor(intensity$current, levels=c('BC_south','BC_north','HC_chile', 'HC_peru','CalC_south','CalC_north','CC'))
 
-plot_2 <- ggplot(data = mean_int, aes(x = year, y = mean_intensity, colour = Month)) +
+plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Month)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 4) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Mean intensity of 
+signals")+
+  theme_set(theme_grey()) +
+  theme_grey() +
+  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
+    # panel.grid.major = element_line(size = 0.2, linetype = 2),
+    # panel.grid.minor = element_line(colour = NA),
+    strip.text = element_text(size=8, family = "Palatino"),
+    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.2, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 18, hjust = 0),
+    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.text = element_text(size = 9, family = "Palatino"),
+    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.key.size = unit(0.2, "cm"),
+    legend.background = element_blank())
+
+plot_3 <- ggplot(data = intensity, aes(x = year, y = cum_intensity, colour = Month)) +
+  geom_line(aes(colour = month)) +
+  geom_smooth(aes(colour = month), method = "lm") +
+  facet_wrap(~current, ncol = 4) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Mean intensity of 
 signals")+
   theme_set(theme_grey()) +
