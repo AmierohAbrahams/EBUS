@@ -130,7 +130,6 @@ plot_0 <-ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
-
 # 4: Creating the new regions ---------------------------------------------
 
 # The data below were enerated previously using the large EBUS areas
