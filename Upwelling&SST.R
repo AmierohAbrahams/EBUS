@@ -108,12 +108,11 @@ temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south', 'BC_nor
 plot_0 <-ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 1, scales = "free") + #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "SST (°C)")+
   theme_bw() +
   labs(colour = "Month") +
-  theme_set(theme_grey()) +
-  theme_grey() +
+  theme_minimal() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
@@ -292,14 +291,13 @@ summer_signal$current = factor(summer_signal$current, levels=c('BC_south', 'BC_n
 plot_1 <- ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 1, scales = "free") + #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Upwelling events (count)")+
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
   # stat_poly_eq(formula = my.formula,
   #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
   #              parse = TRUE) +
-  theme_set(theme_grey()) +
-  theme_grey() +
+  theme_minimal() +
   theme(panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
         panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
         #panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
@@ -372,10 +370,9 @@ intensity$current = factor(intensity$current, levels=c('BC_south', 'BC_north', '
 plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 1, scales = "free") +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Mean intensity of signals")+
-  theme_set(theme_grey()) +
-  theme_grey() +
+  theme_minimal() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
@@ -396,10 +393,9 @@ plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Mo
 plot_3 <- ggplot(data = intensity, aes(x = year, y = cum_intensity, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 1, scales = "free") +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Cumulative intensity of signals")+
-  theme_set(theme_grey()) +
-  theme_grey() +
+  theme_minimal() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
@@ -427,9 +423,10 @@ New.Fig.3 <- ggarrange(
   common.legend = TRUE,
   labels = "AUTO"
 )
+New.Fig.3
 ggplot2::ggsave(
   "New_Figure_2.jpg",
-  width = 7.5 * (1 / 3),
+  width = 7.0 * (1 / 3),
   height = 5.2 * (1 / 3),
   scale = 3.7
 )
