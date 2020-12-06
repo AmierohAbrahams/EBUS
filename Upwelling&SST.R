@@ -2,12 +2,15 @@
 # The purpose of this script is to...
 # The steps taken are:
 # 1: Setup environment
-# 2: Create new bounding boxes for the correct upwelling regions as per Varela et al., 2018. I used theold EBUS regions and split them according 
+# 2: Create new bounding boxes for the correct upwelling regions as per Varela et al., 2018.
+# I used theold EBUS regions and split them according 
 # 3: Observe how temperature change overtime
 # 4:  Creating the new EBUS regions
 # 5: Analysing the upwelling data - Specifically the number of signals detected and cumulative intensity
 
-# 1: Setup environment --------------------------------------------------------------------------------------------------------------------------------------------
+
+# 1: Setup environment ----------------------------------------------------
+
 library(gridExtra)
 library(geosphere)
 library(tidyverse)
@@ -20,11 +23,16 @@ library(FNN)
 library(broom)
 library(circular)
 library(grid)
+library(ggpubr)
 source("functions/theme.R")
 options(scipen=999) 
-supp.labs <- c("Benguela current South", "Benguela current North", "Chile", "Peru", "California current South", "California current North", "Canary current")
+supp.labs <- c("Benguela Current South", "Benguela Current North", "Chile", "Peru",
+               "California Current South", "California Current North", "Canary Current")
 
-#2: Correcting the bounding boxes to fit the paper proposed by Varela et al., 2018 and many others----------------------------------------------------------------
+
+# 2: Correcting the bounding boxes ----------------------------------------
+
+# Correcting the bounding boxes to fit the paper proposed by Varela et al., 2018 and many others
 # # The datasets used here were created in script "5_SLP.R"
 # load("data/CC_coastal_SLP.RData") 
 # load("data/CalC_coastal_SLP.RData")
@@ -69,7 +77,8 @@ supp.labs <- c("Benguela current South", "Benguela current North", "Chile", "Per
 # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
 # # save(current_winds, file = "data_official/current_winds.RData")
 
-# 3:Observe how temperature change overtime ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 3: Observe how temperature change overtime ------------------------------
 
 # Then create different temporal results
 load("data_official/south_BC.RData")
@@ -80,9 +89,9 @@ load("data_official/peru.RData")
 load("data_official/south_CalC.RData")
 load("data_official/north_CalC.RData")
 
-current_winds <- rbind(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC)
+current_winds <- rbind(south_BC, north_BC, Canary_current, chile, peru, south_CalC,north_CalC)
 
-# Then create diifferent temporal results
+# Then create diffferent temporal results
 temp_monthly <- current_winds %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
@@ -90,13 +99,16 @@ temp_monthly <- current_winds %>%
             mean_SLP = mean(slp, na.rm = T))
 
 temp_monthly$month <- as.factor(temp_monthly$month)
-temp_monthly$month <- factor(temp_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south','BC_north','HC_chile', 'HC_peru','CalC_south','CalC_north','CC'))
+temp_monthly$month <- factor(temp_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                                            "Jul", "Aug", "Sep", "Oct", "Nov"))
+temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
+                                                             'CalC_south', 'CalC_north', 'CC'))
 # Monthly mean temperature
-ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current, ncol = 7) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+# This is Figure 2 in the manuscript
+plot_0 <-ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
+  geom_line(aes(colour = month), size = 0.3) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
+  facet_wrap(~current, ncol = 1) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "SST (°C)")+
   theme_bw() +
   labs(colour = "Month") +
@@ -105,20 +117,26 @@ ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    strip.text = element_text(size=8, family = "Palatino"),
+    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 14, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 15, hjust = 0),
-    legend.title = element_text(size = 12, family = "Palatino"),
-    legend.text = element_text(size = 10, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
+    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 18, hjust = 0),
+    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.position = "right",
+    legend.text = element_text(size = 9, family = "Palatino"),
+    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
-# # 4: Creating the new regions---------------------------------------------------------------------------------------------------------------------------------------------------------
-The data below were enerated previously using the large EBUS areas (Before Varela et al., 2018 split), this next steps simply takes the large areas and split it into the new regions 
+
+# 4: Creating the new regions ---------------------------------------------
+
+# The data below were enerated previously using the large EBUS areas
+# (before Varela et al., 2018 split), this next steps simply takes the
+# large areas and split it into the new regions 
 
 # Upwelling metrics 
 # load("data/BC_UI_metrics_SLP.RData")
@@ -195,7 +213,10 @@ The data below were enerated previously using the large EBUS areas (Before Varel
 # save(upwell_south_CalC, file = "data_official/upwell_south_CalC.RData")
 # save(upwell_north_CalC, file = "data_official/upwell_north_CalC.RData")
 
-# 5: Analysing the upwelling data - Specifically the number of signals detected and mean intensity -----------------------------------------------------------------------------
+
+# 5: Analysing the upwelling data -----------------------------------------
+
+# Specifically the number of signals detected and mean intensity
 # Loading the data
 load("data_official/upwell_south_BC.RData")
 load("data_official/upwell_north_BC.RData")
@@ -205,7 +226,8 @@ load("data_official/upwell_peru.RData")
 load("data_official/upwell_south_CalC.RData")
 load("data_official/upwell_north_CalC.RData")
 
-current_upwelling <- rbind(upwell_south_BC, upwell_north_BC, upwell_Canary_current,upwell_chile,upwell_peru, upwell_south_CalC,upwell_north_CalC)
+current_upwelling <- rbind(upwell_south_BC, upwell_north_BC, upwell_Canary_current,
+                           upwell_chile, upwell_peru, upwell_south_CalC, upwell_north_CalC)
 # # rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
 # save(current_upwelling, file = "data_official/current_upwelling.RData")
 
@@ -252,23 +274,26 @@ Chile_signals <- upwell_chile %>%
   summarise(y = n()) %>% 
   mutate(signal = y / 99)
 
-complete_signal <- rbind(BC_S_signals,BC_N_signals,CC_signals,CalC_N_signals, CalC_S_signals, Peru_signals, Chile_signals)
+complete_signal <- rbind(BC_S_signals, BC_N_signals, CC_signals, CalC_N_signals,
+                         CalC_S_signals, Peru_signals, Chile_signals)
 
 summer_signal <- complete_signal %>% 
   filter(season == "Summer") #%>% 
 # group_by(year, current, month)
 
 summer_signal$month <- as.factor(summer_signal$month)
-summer_signal$month <- factor(summer_signal$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-summer_signal$current = factor(summer_signal$current, levels=c('BC_south','BC_north','HC_chile', 'HC_peru','CalC_south','CalC_north','CC'))
+summer_signal$month <- factor(summer_signal$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May",
+                                                              "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+summer_signal$current = factor(summer_signal$current, levels=c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
+                                                               'CalC_south', 'CalC_north', 'CC'))
 
 # Plotting the number of signals per region
+# This is Figure 4A in the manuscript
 plot_1 <- ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current, ncol = 4) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "Upwelling events
-(count)")+
+  geom_line(aes(colour = month), size = 0.3) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
+  facet_wrap(~current, ncol = 1) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Upwelling events (count)")+
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
   # stat_poly_eq(formula = my.formula,
   #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
@@ -332,20 +357,23 @@ intensity_CalC_N <- upwell_north_CalC %>%
   summarise(mean_intensity = mean(intensity_mean),
             cum_intensity = mean(intensity_cumulative)) 
 
-intensity <- rbind(intensity_BC_S,intensity_BC_N,intensity_CC, intensity_chile, intensity_peru, intensity_CalC_S, intensity_CalC_N)
+intensity <- rbind(intensity_BC_S, intensity_BC_N, intensity_CC, intensity_chile,
+                   intensity_peru, intensity_CalC_S, intensity_CalC_N)
 intensity <- intensity %>% 
   filter(season == "Summer")
 
 intensity$month <- as.factor(intensity$month)
-intensity$month <- factor(intensity$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-intensity$current = factor(intensity$current, levels=c('BC_south','BC_north','HC_chile', 'HC_peru','CalC_south','CalC_north','CC'))
+intensity$month <- factor(intensity$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May",
+                                                      "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
+intensity$current = factor(intensity$current, levels=c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
+                                                       'CalC_south', 'CalC_north', 'CC'))
 
+# This is Figure 4B in the manuscript
 plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Month)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current, ncol = 4) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "Mean intensity of 
-signals")+
+  geom_line(aes(colour = month), size = 0.3) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
+  facet_wrap(~current, ncol = 1) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Mean intensity of signals")+
   theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
@@ -364,12 +392,12 @@ signals")+
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
+# This is Figure 4C in the manuscript
 plot_3 <- ggplot(data = intensity, aes(x = year, y = cum_intensity, colour = Month)) +
-  geom_line(aes(colour = month)) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current, ncol = 4) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "Mean intensity of 
-signals")+
+  geom_line(aes(colour = month), size = 0.3) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
+  facet_wrap(~current, ncol = 1) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "Cumulative intensity of signals")+
   theme_set(theme_grey()) +
   theme_grey() +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
@@ -383,7 +411,26 @@ signals")+
     axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
     legend.title = element_text(size = 10, family = "Palatino"),
+    legend.position = "right",
     legend.text = element_text(size = 9, family = "Palatino"),
     #legend.key = element_rect(size = 0.8, colour = NA),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
+
+# Combine to make the new Figure 2(A-D)
+New.Fig.3 <- ggarrange(
+  plot_0,
+  plot_1,
+  plot_2,
+  plot_3,
+  ncol = 4,
+  common.legend = TRUE,
+  labels = "AUTO"
+)
+ggplot2::ggsave(
+  "New_Figure_2.jpg",
+  width = 7.5 * (1 / 3),
+  height = 5.2 * (1 / 3),
+  scale = 3.7
+)
+
