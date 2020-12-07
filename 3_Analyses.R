@@ -101,7 +101,7 @@ SE_monthly_HC <- SE_monthly %>%
 
 SE_winds <- rbind(SE_monthly_BC,SE_monthly_CalC,SE_monthly_CC,SE_monthly_HC)
 
-plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
+  plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
@@ -114,17 +114,17 @@ plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=8, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 20, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 20, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 15, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.title = element_text(size = 14, family = "Palatino"),
     legend.text = element_text(size = 9, family = "Palatino"),
-   # legend.key = element_rect(size = 0.8, colour = NA),
-   legend.key.size = unit(0.2, "cm"),
+    legend.key = element_rect(size = 1, colour = NA),
+    legend.key.size = unit(0.8, "cm"),
     legend.background = element_blank())
 
 ggsave(filename = "PlotA.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
@@ -314,17 +314,17 @@ plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=8, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 20, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 8, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
+    axis.text = element_text(size = 20, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 15, hjust = 0),
+    legend.title = element_text(size = 14, family = "Palatino"),
     legend.text = element_text(size = 9, family = "Palatino"),
-   # legend.key = element_rect(size = 0.8, colour = NA),
-   legend.key.size = unit(0.2, "cm"),
+   legend.key = element_rect(size = 1, colour = NA),
+   legend.key.size = unit(0.8, "cm"),
     legend.background = element_blank())
 
 ggsave(filename = "PlotB.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")
@@ -398,15 +398,16 @@ ggplot(data = SE_monthly, aes(x = year, y = mean_temp)) +
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
     strip.text = element_text(size=14, family = "Palatino"),
-    axis.title = element_text(size = 18, face = "bold", family = "Palatino"),
+    axis.title = element_text(size = 20, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 14, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 20, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 15, hjust = 0),
-    legend.title = element_text(size = 12, family = "Palatino"),
-    legend.text = element_text(size = 10, family = "Palatino"),
-    legend.key = element_rect(size = 0.8, colour = NA),
+    legend.title = element_text(size = 14, family = "Palatino"),
+    legend.text = element_text(size = 9, family = "Palatino"),
+    legend.key = element_rect(size = 1, colour = NA),
+    legend.key.size = unit(0.8, "cm"),
     legend.background = element_blank())
 
 
@@ -497,9 +498,8 @@ plotC <- ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = Mont
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current,  labeller = labeller(current = supp.labs), ncol = 4) +
-  ylab(expression("SE wind intensity"~(m.s^-1))) + 
-  labs(x ="")
-#   labs(x = "", y = "SE wind intensity
+  #ylab(expression("SE wind intensity")) +
+  labs(x = "", y = "SE wind intensity")+
 # (m.s^-1)") +
   # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
   # stat_poly_eq(formula = my.formula,
@@ -510,17 +510,17 @@ plotC <- ggplot(data = complete_wind, aes(x = year, y = circ_wspd, colour = Mont
   theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
     # panel.grid.major = element_line(size = 0.2, linetype = 2),
     # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=8, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+    strip.text = element_text(size=14, family = "Palatino"),
+    axis.title = element_text(size = 20, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 9, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 20, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 15, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.title = element_text(size = 14, family = "Palatino"),
     legend.text = element_text(size = 9, family = "Palatino"),
-  #  legend.key = element_rect(size = 0.8, colour = NA),
-  legend.key.size = unit(0.2, "cm"),
+   legend.key = element_rect(size = 1, colour = NA),
+  legend.key.size = unit(0.8, "cm"),
   legend.background = element_blank())
 
 ggsave(filename = "plotC.jpg", plot = last_plot(), width=180, height = 50,units = "mm",dpi = 300, device = "jpg", path = "figures/")

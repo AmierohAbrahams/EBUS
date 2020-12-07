@@ -188,7 +188,7 @@ CC_clim <- clim_func(df = CC_UI)
 CalC_clim <- clim_func(df = CalC_UI)
 # save(CalC_clim, file = "data/CalC_clim.RData")
 
-HC_clim <- clim_func(df = HC_UI) 4
+HC_clim <- clim_func(df = HC_UI) 
 # save(HC_clim, file = "data/HC_clim.RData")
 
 BC_clim <- clim_func(df = BC_UI) 
