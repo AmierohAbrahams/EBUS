@@ -21,6 +21,7 @@ library(FNN)
 library(broom)
 library(circular)
 library(grid)
+library(doParallel); registerDoParallel(cores = 7)
 source("functions/theme.R")
 options(scipen = 999) 
 
@@ -75,9 +76,9 @@ options(scipen = 999)
 # # save(south_CalC, file = "data_official/south_CalC.RData")
 # # save(north_CalC, file = "data_official/north_CalC.RData")
 
-# 3: Identifying South easterly winds (SE) ------------------------------------------------------------------------------
+# 3: Detect winds ---------------------------------------------------------
 
-# Then create different temporal results
+# Load sub-domain data
 load("data_official/south_BC.RData")
 load("data_official/north_BC.RData")
 load("data_official/chile.RData")
@@ -86,94 +87,89 @@ load("data_official/south_CalC.RData")
 load("data_official/north_CalC.RData")
 load("data_official/Canary_current.RData")
 
-current_winds <- rbind(south_BC, north_BC, Canary_current, chile,peru, south_CalC, north_CalC)
-# rm(south_BC, north_BC, Canary_current,chile,peru, south_CalC,north_CalC);gc()
-# save(current_winds, file = "data_official/current_winds.RData")
+# Convenience wrapper used in the follwing pipeline for detecting wind events
+detect_wind <- function(df_sub){
+  res <- detect_event(df_sub, y = wind_spd, threshClim2 = df_sub$wind_deg, minDuration = 1, maxGap = 0)$event
+  return(res)
+}
 
-# First filter out only the SE (South easterly) winds
-# Southern Hemisphere
-SE_winds <- current_winds %>% 
-  filter(wind_dir_from >= 90, wind_dir_from <= 180) %>% 
-  distinct() # RWS: There shouldn't be repeated values. Where are they coming from?
+# Pipeline for detecting wind events
+# NB: Previously this was done over multiple steps, but if the calculations are very fast one should
+# rather aim to combine the calculations into a single function.
+# Keep in mind that the goal of efficient code is to repeat as little as possible.
+# Multiple individual steps should only be prioritised when the calculations are very RAM heavy
+# testers...
+# df <- north_BC
+# wind_from <- "SE"
+detect_wind_pipe <- function(df, wind_from){
+  # Set the range of wind angles
+  if(wind_from == "SE"){
+    deg_min = 90; deg_max = 180
+  } else if(wind_from == "NE"){
+    deg_min = 0; deg_max = 90
+  }
+  
+  # Find the number of distinct pixels
+  df_distinct <- df %>% 
+    dplyr::select(lon, lat) %>% 
+    distinct() %>% 
+    nrow()
+  
+  # Prep data for detection
+  df_prep <- df %>% 
+    # filter(season == "Summer") %>% # This is how we constrain the analysis to SUmmer only
+    dplyr::rename(t = date) %>% 
+    dplyr::select(lon, lat, t, season, wind_spd, wind_dir_from) %>% 
+    mutate(seas = 0, # By manually setting seas and thresh to 0 we can use the detect_event function 
+           thresh = 0, # like the exceedance function, but with the increased functionality it has
+           wind_deg = case_when(wind_dir_from >= deg_min & wind_dir_from <= deg_max ~ TRUE,
+                                TRUE ~ FALSE), # Check the documentation to see why this is done like this if it seems odd to you
+           wind_spd = case_when(season != "Summer" ~ 0,
+                                TRUE ~ wind_spd))
+  
+  # Calculate the summer wind events
+  df_sub <- df_prep %>% 
+    filter(lon == lon[1], lat == lat[1])
+  
+  res <- detect_event(df_sub, y = wind_spd, threshClim2 = df_sub$wind_deg, minDuration = 1, maxGap = 0)$event
+}
+
+detect_wind <- function(df){
+  dur <- df %>% 
+    rename(temp = wind_dir_from,
+           t = date) %>% 
+    select(t, temp)
+}
+
+BC_S_dur <- dur_prep(df = BC_S_prep)
+BC_N_dur <- dur_prep(df = BC_N_prep)
+chile_dur <- dur_prep(df = chile_prep) %>% 
+  arrange(t)
+peru_dur <- dur_prep(df = peru_prep) %>% 
+  arrange(t)
 
 
-NE_winds <- current_winds %>% 
-  filter(wind_dir_from >= 0, wind_dir_from <= 90) %>% 
-  distinct() 
+exc_BC_S <- exceedance(BC_S_dur, minDuration = 1, threshold = 0)
+exc_BC_N <- exceedance(BC_N_dur, minDuration = 1, threshold = 0)
+exc_chile <- exceedance(chile_dur, minDuration = 1, threshold = 0)
+exc_peru <- exceedance(peru_dur, minDuration = 1, threshold = 0)
 
-# Then create different temporal results
-# This is done to check if there are differences in the number of SE blown winds over time
-SE_monthly <- SE_winds %>% 
-  filter(season == "Summer") %>% 
-  group_by(current, year, season, month) %>% 
-  summarise(count = n(),
-            mean_wspd = mean(wind_spd),
-            mean_temp = mean(temp, na.rm = TRUE))
+wind_func <- function(df){
+  wind_duration <- df$exceedance %>%
+    ungroup() %>%
+    select(event_no, duration, date_start, date_peak, intensity_max, intensity_cumulative) 
+}
 
-# Determining the number of pixels within each current ---------------------------------------------------------------------
+BC_S_dur <- wind_func(df = exc_BC_S)
+BC_N_dur <- wind_func(df = exc_BC_N)
+chile_dur <- wind_func(df = exc_chile)
+peru_dur <- wind_func(df = exc_peru)
 
-BC_S_pixels <- SE_winds %>%
-  filter(current == "BC_south") %>%
-  dplyr::select(lon, lat) %>%
-  distinct() # 45 pixels
+# Divide by the pixels
+# south_BC_SE <- BC_S_dur %>% 
+#   mutate(dur_SE = duration/nrow(BC_S_pixels)) 
 
-BC_N_pixels <- SE_winds %>%
-  filter(current == "BC_north") %>%
-  dplyr::select(lon, lat) %>%
-  distinct() # 16 pixels
-
-HC_S_pixels <- SE_winds %>%
-  filter(current == "HC_chile") %>%
-  dplyr::select(lon, lat) %>%
-  distinct() # 99 pixels
-
-HC_N_pixels <- SE_winds %>%
-  filter(current == "HC_peru") %>%
-  dplyr::select(lon, lat) %>%
-  distinct() # 25 pixels
-
-
-CC_pixels <- NE_winds %>%
-  filter(current == "CC") %>%
-  dplyr::select(lon, lat) %>%
-  distinct() # 82 pixels
-
-CalC_S_pixels <- NE_winds %>%
-  filter(current == "CalC_south") %>%
-  dplyr::select(lon, lat) %>%
-  distinct() #24 pixels
-
-CalC_N_pixels <- NE_winds %>%
-  filter(current == "CalC_north") %>%
-  dplyr::select(lon, lat) %>%
-  distinct() # 20 pixels
-
-# SOUTHERN HEMISPHERE (Winds blow SE direction for upwelling)
-# Changes in the number of SE wind blown 
-
-# AJS: (number of winds? WTF?!)....Wind events. Yes. Number of winds. NO (Winds are not discrete)
-# RWS: You should never use static numbers to define the count of unique values etc. as this could always change
-  # Rather these value should be calculated as their own objects and referred to that way,
-  # or calculated on the fly within the following code chunks
-# south_BC_SE <- SE_monthly %>% 
-#   filter(current == "BC_south") %>% 
-#   mutate(no_SE = count/nrow(BC_S_pixels)) # The value here is the number of pixels occurring within this region
-# 
-# north_BC_SE <- SE_monthly %>% 
-#   filter(current == "BC_north") %>% 
-#   mutate(no_SE = count/nrow(BC_N_pixels))
-# 
-# Peru_SE <- SE_monthly %>% 
-#   filter(current == "HC_peru") %>% 
-#   mutate(no_SE = count/nrow(HC_N_pixels))
-# 
-# Chile_SE <- SE_monthly %>% 
-#   filter(current == "HC_chile") %>% 
-#   mutate(no_SE = count/nrow(HC_S_pixels))
-# 
-# SE_winds <- rbind(south_BC_SE, north_BC_SE, Peru_SE, Chile_SE)
-# 
-# # Plot showing the number of SE winds blown (hahahaha!!)
+# # Plot showing the number of SE wind events
 # plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
 #   geom_line(aes(colour = month)) +
 #   geom_smooth(aes(colour = month), method = "lm") +
@@ -199,37 +195,9 @@ CalC_N_pixels <- NE_winds %>%
 #     legend.key.size = unit(0.2, "cm"),
 #     legend.background = element_blank())
 # 
-# # NORTHERN HEMISPHERE (Winds blow NE direction for upwelling) -----------------------------------------------
 # 
-# NE_winds <- current_winds %>% 
-#   filter(wind_dir_from >= 0, wind_dir_from <= 90) %>% 
-#   unique()
-# # rm(current_winds);gc()
-# # save(NE_winds, file = "data_official/NE_winds.RData")
-# 
-# # Then create diifferent temporal results
-# # This is done to check if there are differences in the number of SE blown winds over time
-# NE_monthly <- NE_winds %>% 
-#   filter(season == "Summer") %>% 
-#   group_by(current, year, season, month) %>% 
-#   summarise(count = n(),
-#             mean_wspd = mean(wind_spd),
-#             mean_temp = mean(temp, na.rm = TRUE))
-# 
-# CC_NE <- NE_monthly %>% 
-#   filter(current == "CC") %>% 
-#   mutate(no_SE = count/nrow(CC_pixels))
-# 
-# south_CalC <- NE_monthly %>% 
-#   filter(current == "CalC_south") %>% 
-#   mutate(no_SE = count/nrow(CalC_S_pixels))
-# 
-# north_CalC <- NE_monthly %>% 
-#   filter(current == "CalC_north") %>% 
-#   mutate(no_SE = count/nrow(CalC_N_pixels))
-# 
-# NE_winds <- rbind(CC_NE, south_CalC, north_CalC)
-# 
+#
+#
 # plotB <- ggplot(data = NE_winds, aes(x = year, y = no_SE)) +
 #   geom_line(aes(colour = month)) +
 #   geom_smooth(aes(colour = month), method = "lm") +
@@ -258,100 +226,58 @@ CalC_N_pixels <- NE_winds %>%
 
 # Changes in the duration of SE winds? ---------------------------------------------------------------------------------
 
-load("data_official/south_BC.RData")
-load("data_official/north_BC.RData")
-load("data_official/Canary_current.RData")
-load("data_official/chile.RData")
-load("data_official/peru.RData")
-load("data_official/south_CalC.RData")
-load("data_official/north_CalC.RData")
+# load("data_official/south_BC.RData")
+# load("data_official/north_BC.RData")
+# load("data_official/Canary_current.RData")
+# load("data_official/chile.RData")
+# load("data_official/peru.RData")
+# load("data_official/south_CalC.RData")
+# load("data_official/north_CalC.RData")
 
-wind_dur_func <- function(df){
-  wind <- df %>% 
-    select(date, wind_dir_from, lat, lon) %>% 
-    rename(date = date,
-    wind_se = wind_dir_from)
-}
-
-BC_south_wind_dur <- wind_dur_func(df = south_BC)
-BC_north_wind_dur <- wind_dur_func(df = north_BC)
-CC_wind_dur <- wind_dur_func(df = Canary_current)
-CalC_south_wind_dur <- wind_dur_func(df = south_CalC)
-CalC_north_wind_dur <- wind_dur_func(df = north_CalC)
-chile_wind_dur <- wind_dur_func(df = chile)
-peru_wind_dur <- wind_dur_func(df = peru)
+# RWS: Why was this being done as a separate step?
+# wind_dur_func <- function(df){
+#   wind <- df %>% 
+#     select(date, wind_dir_from, lat, lon) %>% 
+#     rename(date = date,
+#            wind_se = wind_dir_from)
+# }
+# 
+# BC_south_wind_dur <- wind_dur_func(df = south_BC)
+# BC_north_wind_dur <- wind_dur_func(df = north_BC)
+# CC_wind_dur <- wind_dur_func(df = Canary_current)
+# CalC_south_wind_dur <- wind_dur_func(df = south_CalC)
+# CalC_north_wind_dur <- wind_dur_func(df = north_CalC)
+# chile_wind_dur <- wind_dur_func(df = chile)
+# peru_wind_dur <- wind_dur_func(df = peru)
 
 # Southern Hemisphere -----------------------------------------------------
 # not sure what's happening here? Should you not first calculate the number of days with
 # wind that blows from the range of directions across ALL THE PIXELS and then divide by pixels
 
-SE_wind_func <- function(df){
-  SE <- df %>% 
-    filter(wind_dir_from >= 90, wind_dir_from <= 180) %>% 
-    distinct() %>% 
-    select(date,wind_dir_from,lat,lon)
-}
+# SE_wind_func <- function(df){
+#   SE <- df %>% 
+#     filter(wind_dir_from >= 90, wind_dir_from <= 180) %>% 
+#     select(lat, lon, date, wind_dir_from, wind_spd) %>% 
+#     distinct()
+# }
 
-BC_S_SE <- SE_wind_func(df = south_BC)
-BC_N_SE <- SE_wind_func(df = north_BC)
-chile_SE <- SE_wind_func(df = chile)
-peru_SE<- SE_wind_func(df = peru)
+# BC_S_SE <- SE_wind_func(df = south_BC)
+# BC_N_SE <- SE_wind_func(df = north_BC)
+# chile_SE <- SE_wind_func(df = chile)
+# peru_SE <- SE_wind_func(df = peru)
+# 
+# BC_S_prep <- right_join(BC_S_SE, BC_south_wind_dur)
+# BC_S_prep[is.na(BC_S_prep)] <- 0
+# 
+# BC_N_prep <- right_join(BC_N_SE, BC_north_wind_dur)
+# BC_N_prep[is.na(BC_N_prep)] <- 0
+# 
+# chile_prep <- right_join(chile_SE, chile_wind_dur)
+# chile_prep[is.na(chile_prep)] <- 0
+# 
+# peru_prep <- right_join(peru_SE, peru_wind_dur)
+# peru_prep[is.na(peru_prep)] <- 0
 
-BC_S_prep <- right_join(BC_S_SE, BC_south_wind_dur)
-BC_S_prep[is.na(BC_S_prep)] <- 0
-
-BC_N_prep <- right_join(BC_N_SE, BC_north_wind_dur)
-BC_N_prep[is.na(BC_N_prep)] <- 0
-
-chile_prep <- right_join(chile_SE, chile_wind_dur)
-chile_prep[is.na(chile_prep)] <- 0
-
-peru_prep <- right_join(peru_SE, peru_wind_dur)
-peru_prep[is.na(peru_prep)] <- 0
-
-dur_prep <- function(df){
-  dur <- df %>% 
-    rename(temp = wind_dir_from,
-           t = date) %>% 
-    select(temp,t)
-}
-
-BC_S_dur <- dur_prep(df = BC_S_prep)
-BC_N_dur <- dur_prep(df = BC_N_prep)
-chile_dur <- dur_prep(df = chile_prep) %>% 
-  arrange(t)
-peru_dur <- dur_prep(df = peru_prep) %>% 
-  arrange(t)
-
-
-exc_BC_S <- exceedance(BC_S_dur, minDuration = 1, threshold = 0)
-exc_BC_N <- exceedance(BC_N_dur, minDuration = 1, threshold = 0)
-exc_chile <- exceedance(chile_dur, minDuration = 1, threshold = 0)
-exc_peru <- exceedance(peru_dur, minDuration = 1, threshold = 0)
-
-wind_func <- function(df){
-  wind_duration <- df$exceedance %>%
-    ungroup() %>%
-    select(exceedance_no, duration, date_start, date_peak, intensity_max, intensity_cumulative) 
-}
-
-BC_S_dur <- wind_func(df = exc_BC_S)
-BC_N_dur <- wind_func(df = exc_BC_N)
-chile_dur <- wind_func(df = exc_chile)
-peru_dur <- wind_func(df = exc_peru)
-
-# Divide by the pixels
-south_BC_SE <- BC_S_dur %>% 
-  mutate(dur_SE = duration/nrow(BC_S_pixels)) 
-
-north_BC_SE <- BC_N_dur %>% 
-  mutate(dur_SE = duration/nrow(BC_N_pixels))
-
-Chile_SE <- chile_dur %>% 
-  mutate(dur_SE = duration/nrow(HC_S_pixels))
-
-Peru_SE <- peru_dur %>% 
-  mutate(dur_SE = duration/nrow(HC_N_pixels))
 
 seasons_S_func <- function(df){
   df_seasons <- df %>% 
@@ -415,8 +341,8 @@ plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
     legend.background = element_blank())
   
   
-To observe changes in the duration, intensity and the count of upwelling favourable wind events in the southern and 
-northern hemisphere, we made use of the exceedance() function in the heatwaveR package, this function detects the consecutive days in exceedance of a given threshold.  
+# To observe changes in the duration, intensity and the count of upwelling favourable wind events in the southern and 
+# northern hemisphere, we made use of the exceedance() function in the heatwaveR package, this function detects the consecutive days in exceedance of a given threshold.  
   
 # Change in number of SE wind events over 27 yrs
 
