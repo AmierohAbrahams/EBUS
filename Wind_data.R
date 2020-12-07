@@ -24,7 +24,7 @@ library(broom)
 library(circular)
 library(grid)
 source("functions/theme.R")
-options(scipen=999) 
+options(scipen = 999) 
 
 # 2: Creating the new bounding boxes according to Varella (2018) ------------------------------------------------------------
 
@@ -95,66 +95,69 @@ current_winds <- rbind(south_BC, north_BC, Canary_current, chile,peru, south_Cal
 # First filter out only the SE (South easterly) winds
 # Southern Hemisphere
 SE_winds <- current_winds %>% 
-  filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
-  unique()
+  filter(wind_dir_from >= 90, wind_dir_from <= 180) %>% 
+  distinct() # RWS: There shouldn't be repeated values. Where are they coming from?
 # rm(current_winds);gc()
 #save(SE_renamed, file = "data/SE_renamed.RData")
 
-# Then create diifferent temporal results
+# Then create different temporal results
 # This is done to check if there are differences in the number of SE blown winds over time
 SE_monthly <- SE_winds %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
   summarise(count = n(),
             circ_dir = mean.circular(circular(wind_dir_from, units = "degrees")),
-            circ_wspd = mean.circular(circular(wind_spd, units = "degrees")),
+            circ_wspd = mean.circular(circular(wind_spd, units = "degrees")), # RWS: This is wrong. Please correct this.
             mean_temp = mean(temp, na.rm = TRUE),
             mean_SLP = mean(slp, na.rm = TRUE))
 
 # Determining the number of pixels within each current ---------------------------------------------------------------------
 
-# BC_S_pixels <- SE_winds %>%
-#   filter(current == "BC_south") %>%
-#   dplyr::select(lon, lat) %>%
-#   unique()# 45 pixels
+BC_S_pixels <- SE_winds %>%
+  filter(current == "BC_south") %>%
+  dplyr::select(lon, lat) %>%
+  distinct() # 45 pixels
 
-# BC_N_pixels <- SE_winds %>%
-#   filter(current == "BC_north") %>%
-#   dplyr::select(lon, lat) %>%
-#   unique() # 16 pixels
+BC_N_pixels <- SE_winds %>%
+  filter(current == "BC_north") %>%
+  dplyr::select(lon, lat) %>%
+  unique() # 16 pixels
 
-# CC_pixels <- SE_winds %>%
-#   filter(current == "CC") %>%
-#   dplyr::select(lon, lat) %>%
-#   unique() # 82 pixels
+CC_pixels <- SE_winds %>%
+  filter(current == "CC") %>%
+  dplyr::select(lon, lat) %>%
+  unique() # 82 pixels
 
-# HC_pixels <- SE_winds %>%
-#   filter(current == "HC_chile") %>%
-#   dplyr::select(lon, lat) %>%
-#   unique() # 99 pixels
+HC_S_pixels <- SE_winds %>%
+  filter(current == "HC_chile") %>%
+  dplyr::select(lon, lat) %>%
+  unique() # 99 pixels
 
-# HC_pixels <- SE_winds %>%
-#   filter(current == "HC_peru") %>%
-#   dplyr::select(lon, lat) %>%
-#   unique() # 25 pixels
+HC_N_pixels <- SE_winds %>%
+  filter(current == "HC_peru") %>%
+  dplyr::select(lon, lat) %>%
+  unique() # 25 pixels
 
-# CalC_pixels <- SE_winds %>%
-#   filter(current == "CalC_south") %>%
-#   dplyr::select(lon, lat) %>%
-#   unique() #24 pixels
+CalC_S_pixels <- SE_winds %>%
+  filter(current == "CalC_south") %>%
+  dplyr::select(lon, lat) %>%
+  unique() #24 pixels
 
-# CalC_pixels <- SE_winds %>%
-#   filter(current == "CalC_north") %>%
-#   dplyr::select(lon, lat) %>%
-#   unique() # 20 pixels
+CalC_N_pixels <- SE_winds %>%
+  filter(current == "CalC_north") %>%
+  dplyr::select(lon, lat) %>%
+  unique() # 20 pixels
 
 # SOUTHERN HEMISPHERE (Winds blow SE direction for upwelling)
 # Changes in the number of SE wind blown 
 
 # AJS: (number of winds? WTF?!)....Wind events. Yes. Number of winds. NO (Winds are not discrete)
+# RWS: You should never use static numbers to define the count of unique values etc. as this could always change
+  # Rather these value should be calculated as their own objects and referred to that way,
+  # or calculated on the fly within the following code chunks
 south_BC_SE <- SE_monthly %>% 
   filter(current == "BC_south") %>% 
-  mutate(no_SE = count/45) # The value here is the number of pixels occuring within this region
+  mutate(no_SE = count/nrow(BC_S_pixels)) # The value here is the number of pixels occurring within this region
 
 north_BC_SE <- SE_monthly %>% 
   filter(current == "BC_north") %>% 
@@ -175,8 +178,7 @@ plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current, ncol = 2) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "SE wind events 
-(count)")+
+  labs(x = "", y = "SE wind events (count)")+
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
@@ -200,7 +202,7 @@ plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
 # NORTHERN HEMISPHERE (Winds blow NE direction for upwelling) -----------------------------------------------
 
 NE_winds <- current_winds %>% 
-  filter(wind_dir_from >= 0, wind_dir_from <= 180) %>% 
+  filter(wind_dir_from >= 0, wind_dir_from <= 90) %>% 
   unique()
 # rm(current_winds);gc()
 # save(NE_winds, file = "data_official/NE_winds.RData")
@@ -267,7 +269,7 @@ load("data_official/south_CalC.RData")
 load("data_official/north_CalC.RData")
 
 wind_dur_func <- function(df){
-  wind<- df %>% 
+  wind <- df %>% 
     select(date, wind_dir_from, lat, lon) %>% 
     rename(date = date,
     wind_se = wind_dir_from)
@@ -286,7 +288,7 @@ peru_wind_dur <- wind_dur_func(df = peru)
 # wind that blows from the range of directions across ALL THE PIXELS and then divide by pixels
 
 SE_wind_func <- function(df){
-  SE<- df %>% 
+  SE <- df %>% 
     filter(wind_dir_from >= 180, wind_dir_from <= 270) %>% 
     unique() %>% 
     select(date,wind_dir_from,lat,lon)
@@ -396,8 +398,7 @@ plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current) #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "Duration of SE winds
-(Days)")+
+  labs(x = "", y = "Duration of SE winds (Days)") +
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
