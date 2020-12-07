@@ -415,6 +415,9 @@ plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
     legend.background = element_blank())
   
   
+To observe changes in the duration, intensity and the count of upwelling favourable wind events in the southern and 
+northern hemisphere, we made use of the exceedance() function in the heatwaveR package, this function detects the consecutive days in exceedance of a given threshold.  
+  
 # Change in number of SE wind events over 27 yrs
 
 number_wind_events <- duration_wind_S %>% 
