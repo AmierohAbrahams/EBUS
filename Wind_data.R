@@ -94,19 +94,23 @@ detect_wind <- function(df_sub){
 }
 
 # Pipeline for detecting wind events
+# This outputs annual summary statistics for: wind event count, duration, and intensity
+# These values are averaged for the number of pixels in the EBUS sub-domain
 # NB: Previously this was done over multiple steps, but if the calculations are very fast one should
 # rather aim to combine the calculations into a single function.
-# Keep in mind that the goal of efficient code is to repeat as little as possible.
+# Keep in mind that the goal of efficient code is to repeat yourself as little as possible.
 # Multiple individual steps should only be prioritised when the calculations are very RAM heavy
 # testers...
-# df <- north_BC
-# wind_from <- "SE"
+# df <- south_CalC
+# wind_from <- "NE"
 detect_wind_pipe <- function(df, wind_from){
   # Set the range of wind angles
   if(wind_from == "SE"){
     deg_min = 90; deg_max = 180
   } else if(wind_from == "NE"){
     deg_min = 0; deg_max = 90
+  } else{
+    stop("Enter a correct value for 'wind_from'")
   }
   
   # Find the number of distinct pixels
@@ -117,57 +121,57 @@ detect_wind_pipe <- function(df, wind_from){
   
   # Prep data for detection
   df_prep <- df %>% 
-    # filter(season == "Summer") %>% # This is how we constrain the analysis to SUmmer only
+    # filter(season == "Summer") %>%
     dplyr::rename(t = date) %>% 
-    dplyr::select(lon, lat, t, season, wind_spd, wind_dir_from) %>% 
+    dplyr::select(current, lon, lat, t, season, month, wind_spd, wind_dir_from) %>% 
     mutate(seas = 0, # By manually setting seas and thresh to 0 we can use the detect_event function 
            thresh = 0, # like the exceedance function, but with the increased functionality it has
            wind_deg = case_when(wind_dir_from >= deg_min & wind_dir_from <= deg_max ~ TRUE,
                                 TRUE ~ FALSE), # Check the documentation to see why this is done like this if it seems odd to you
-           wind_spd = case_when(season != "Summer" ~ 0,
+           wind_spd = case_when(season != "Summer" ~ 0,  # This is how we constrain the analysis to Summer only
                                 TRUE ~ wind_spd))
   
   # Calculate the summer wind events
-  df_sub <- df_prep %>% 
-    filter(lon == lon[1], lat == lat[1])
+  event_res <- plyr::ddply(df_prep, c("current", "lon", "lat"), detect_wind, .parallel = T)
   
-  res <- detect_event(df_sub, y = wind_spd, threshClim2 = df_sub$wind_deg, minDuration = 1, maxGap = 0)$event
+  # If no events are detected in a year an NA dataframe is returned
+  # But when combined with the results this value forces the dates into integers
+  # This is a strange bug that we correct for here
+  if(is.na(min(event_res$event_no))){
+    event_res <- event_res %>% 
+      filter(!is.na(event_no)) %>% 
+      mutate(date_start = as.Date(date_start, origin = "1970-01-01"))
+  }
+  
+  # Find annual summary statistics
+  event_summary <- event_res %>% 
+    mutate(year = year(date_start), # This is somewhat problematic because December is in the for summer in the Southern Hemisphere
+           month = month(date_start, label = T, abbr = T)) %>%
+    group_by(year, month) %>% 
+    summarise(event_count = n()/df_distinct,
+              wind_days = sum(duration)/df_distinct,
+              duration_mean = mean(duration),
+              intensity_mean = mean(intensity_mean),
+              intensity_max = mean(intensity_max), .groups = "drop") %>% 
+    mutate(month = factor(month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov")))
+  return(event_summary)
 }
 
-detect_wind <- function(df){
-  dur <- df %>% 
-    rename(temp = wind_dir_from,
-           t = date) %>% 
-    select(t, temp)
-}
-
-BC_S_dur <- dur_prep(df = BC_S_prep)
-BC_N_dur <- dur_prep(df = BC_N_prep)
-chile_dur <- dur_prep(df = chile_prep) %>% 
-  arrange(t)
-peru_dur <- dur_prep(df = peru_prep) %>% 
-  arrange(t)
+# Calculate the wind events
+# Note that the count of wind days per month may be more than 30 because the calculation is seeing 
+# how long the events are on average that start in a given month
+# So if events start in June, but then last 40 days, these 40 days will be attributed to June even though the event is ending in July
+south_BC_wind <- detect_wind_pipe(south_BC, "SE")
+north_BC_wind <- detect_wind_pipe(north_BC, "SE")
+chile_wind <- detect_wind_pipe(chile, "SE")
+peru_wind <- detect_wind_pipe(peru, "SE")
+south_CalC_wind <- detect_wind_pipe(south_CalC, "NE") # This one is funny because there are almost never NE winds. You need to look into why this is.
+north_CalC_wind <- detect_wind_pipe(north_CalC, "NE")
+Canary_current_wind <- detect_wind_pipe(Canary_current, "NE")
 
 
-exc_BC_S <- exceedance(BC_S_dur, minDuration = 1, threshold = 0)
-exc_BC_N <- exceedance(BC_N_dur, minDuration = 1, threshold = 0)
-exc_chile <- exceedance(chile_dur, minDuration = 1, threshold = 0)
-exc_peru <- exceedance(peru_dur, minDuration = 1, threshold = 0)
-
-wind_func <- function(df){
-  wind_duration <- df$exceedance %>%
-    ungroup() %>%
-    select(event_no, duration, date_start, date_peak, intensity_max, intensity_cumulative) 
-}
-
-BC_S_dur <- wind_func(df = exc_BC_S)
-BC_N_dur <- wind_func(df = exc_BC_N)
-chile_dur <- wind_func(df = exc_chile)
-peru_dur <- wind_func(df = exc_peru)
-
-# Divide by the pixels
-# south_BC_SE <- BC_S_dur %>% 
-#   mutate(dur_SE = duration/nrow(BC_S_pixels)) 
+# RWS: The results you need are produced above.
+# Adapt the rest of your following code for your figures accordingly.
 
 # # Plot showing the number of SE wind events
 # plotA <- ggplot(data = SE_winds, aes(x = year, y = no_SE)) +
@@ -224,97 +228,6 @@ peru_dur <- wind_func(df = exc_peru)
 #     legend.key.size = unit(0.2, "cm"),
 #     legend.background = element_blank())
 
-# Changes in the duration of SE winds? ---------------------------------------------------------------------------------
-
-# load("data_official/south_BC.RData")
-# load("data_official/north_BC.RData")
-# load("data_official/Canary_current.RData")
-# load("data_official/chile.RData")
-# load("data_official/peru.RData")
-# load("data_official/south_CalC.RData")
-# load("data_official/north_CalC.RData")
-
-# RWS: Why was this being done as a separate step?
-# wind_dur_func <- function(df){
-#   wind <- df %>% 
-#     select(date, wind_dir_from, lat, lon) %>% 
-#     rename(date = date,
-#            wind_se = wind_dir_from)
-# }
-# 
-# BC_south_wind_dur <- wind_dur_func(df = south_BC)
-# BC_north_wind_dur <- wind_dur_func(df = north_BC)
-# CC_wind_dur <- wind_dur_func(df = Canary_current)
-# CalC_south_wind_dur <- wind_dur_func(df = south_CalC)
-# CalC_north_wind_dur <- wind_dur_func(df = north_CalC)
-# chile_wind_dur <- wind_dur_func(df = chile)
-# peru_wind_dur <- wind_dur_func(df = peru)
-
-# Southern Hemisphere -----------------------------------------------------
-# not sure what's happening here? Should you not first calculate the number of days with
-# wind that blows from the range of directions across ALL THE PIXELS and then divide by pixels
-
-# SE_wind_func <- function(df){
-#   SE <- df %>% 
-#     filter(wind_dir_from >= 90, wind_dir_from <= 180) %>% 
-#     select(lat, lon, date, wind_dir_from, wind_spd) %>% 
-#     distinct()
-# }
-
-# BC_S_SE <- SE_wind_func(df = south_BC)
-# BC_N_SE <- SE_wind_func(df = north_BC)
-# chile_SE <- SE_wind_func(df = chile)
-# peru_SE <- SE_wind_func(df = peru)
-# 
-# BC_S_prep <- right_join(BC_S_SE, BC_south_wind_dur)
-# BC_S_prep[is.na(BC_S_prep)] <- 0
-# 
-# BC_N_prep <- right_join(BC_N_SE, BC_north_wind_dur)
-# BC_N_prep[is.na(BC_N_prep)] <- 0
-# 
-# chile_prep <- right_join(chile_SE, chile_wind_dur)
-# chile_prep[is.na(chile_prep)] <- 0
-# 
-# peru_prep <- right_join(peru_SE, peru_wind_dur)
-# peru_prep[is.na(peru_prep)] <- 0
-
-
-seasons_S_func <- function(df){
-  df_seasons <- df %>% 
-    mutate(month = month(date_start, abbr = T, label = T),
-           year = year(date_start)) %>% 
-    mutate(season = case_when(month %in% c("Dec", "Jan", "Feb") ~ "Summer", 
-                              month %in% c("Mar", "Apr", "May") ~ "Autumn",
-                              month %in% c("Jun", "Jul", "Aug") ~ "Winter",
-                              month %in% c("Sep", "Oct", "Nov") ~ "Spring"))
-}
-
-BC_S_wind<- seasons_S_func(df = south_BC_SE)
-BC_S_wind <- BC_S_wind %>% 
-  mutate(current = "BC_S")
-BC_N_wind <- seasons_S_func(df = north_BC_SE)
-BC_N_wind <- BC_N_wind %>% 
-  mutate(current = "BC_N")
-Chile_wind <- seasons_S_func(df = Chile_SE)
-Chile_wind <- Chile_wind %>% 
-  mutate(current = "Chile")
-Peru_wind <- seasons_S_func(df = Peru_SE)
-Peru_wind <- Peru_wind %>% 
-  mutate(current = "Peru")
-
-duration_wind_S <- rbind(BC_S_wind,BC_N_wind,Chile_wind,Peru_wind)
-
-
-wind_currents <- duration_wind_S %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, month, current) %>% 
-  summarise(mean_dur = mean(duration))
-
-wind_currents <- as.data.frame(wind_currents)
-wind_currents$month <- as.factor(wind_currents$month)
-wind_currents$month <- factor(wind_currents$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-# wind_currents$current = factor(wind_currents$current, levels=c('BC','HC','CalC','CC'))
-
 plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
@@ -346,17 +259,11 @@ plotB <- ggplot(data = wind_currents, aes(x = year, y = mean_dur)) +
   
 # Change in number of SE wind events over 27 yrs
 
-number_wind_events <- duration_wind_S %>% 
-  filter(season == "Summer") %>% 
-  group_by(year, current, month) %>% 
-  summarise(count = as.numeric(n())) %>% 
-  rename(SE_count = count)
-
 ggplot(data = number_wind_events, aes(x = year, y = SE_count)) +
   geom_line(aes(colour = month)) +
   geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current) #,  labeller = labeller(current = supp.labs), ncol = 4) +
-labs(x = "", y = "SE wind event (count)") +
+  facet_wrap(~current) +#,  labeller = labeller(current = supp.labs), ncol = 4) +
+  labs(x = "", y = "SE wind event (count)") +
   theme_bw() +
   labs(colour = "Month") +
   theme_set(theme_grey()) +
@@ -377,29 +284,6 @@ labs(x = "", y = "SE wind event (count)") +
     legend.key.size = unit(0.8, "cm"),
     legend.background = element_blank())
 
-# Wind intensity ----------------------------------------------------------
-# Southern Hemisphere
-load("data_official/south_BC.RData")
-load("data_official/north_BC.RData")
-load("data_official/chile.RData")
-load("data_official/peru.RData")
-
-current_S_winds <- rbind(south_BC, north_BC, chile,peru)
-
-SE_winds <- current_S_winds %>% 
-  filter(wind_dir_from >= 90, wind_dir_from <= 180) %>% 
-  distinct()
-
-# To get seasons and months
-SE_monthly <- SE_winds %>% 
-  filter(season == "Summer") %>% 
-  group_by(current, year, season, month) %>% 
-  summarise(mean_wspd = mean(wind_spd))
-
-SE_monthly$month <- as.factor(SE_monthly$month)
-SE_monthly$month <- factor(SE_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May",
-                                                        "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"))
-# SE_monthly$current = factor(SE_monthly$current, levels=c('BC_south', 'BC_north', 'HC_chile','HC_peru'))
 
 # Wind intensity
 plotD <- ggplot(data = SE_monthly, aes(x = year, y = mean_wspd, colour = Month)) +
