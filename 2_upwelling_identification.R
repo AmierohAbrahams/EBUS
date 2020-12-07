@@ -26,7 +26,7 @@ load("data/HC_complete.RData")
 load("data/BC_complete.RData")
 
 CC_complete <- CC_complete %>% 
-  mutate(lon = lon - 360)
+  mutate(lon = lon - 360) # Fix all use of a static -360
 
 CalC_complete <- CalC_complete %>% 
   mutate(lon = lon - 360)
@@ -34,7 +34,7 @@ CalC_complete <- CalC_complete %>%
 HC_complete <- HC_complete %>% 
   mutate(lon = lon - 360)
 
-# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVscript in the data extraction folder)
+# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSV script in the data extraction folder)
 load("~/Documents/EBUS/data/BC.RData")
 load("~/Documents/EBUS/data/HC.RData")
 load("~/Documents/EBUS/data/CC.RData")
@@ -46,7 +46,7 @@ load("~/Documents/EBUS/data/CalC.RData")
 coord_func <- function(df){
   coords <- df %>% 
     dplyr::select(lon, lat) %>%
-    mutate(lon = lon - 360) %>% 
+    mutate(lon = lon - 360) %>% # Fix
     unique()
 }
 
@@ -94,7 +94,7 @@ CalC_coastal_index <- coastal_index_func(coord_df = CalC_coords, coastline_df = 
 HC_coastal_index <- coastal_index_func(coord_df = HC_coords, coastline_df = HC_coastline)
 BC_coastal_index <- coastal_index_func(coord_df = BC_coords, coastline_df = BC_coastline)
 
-BC_coastal_coords <- unique(BC_coords[BC_coastal_index,])
+BC_coastal_coords <- unique(BC_coords[BC_coastal_index,]) # Rather use "distinct" instead of "unique"
 CC_coastal_coords <- unique(CC_coords[CC_coastal_index,])
 CalC_coastal_coords <- unique(CalC_coords[CalC_coastal_index,])
 HC_coastal_coords <- unique(HC_coords[HC_coastal_index,])
@@ -188,7 +188,11 @@ CC_clim <- clim_func(df = CC_UI)
 CalC_clim <- clim_func(df = CalC_UI)
 # save(CalC_clim, file = "data/CalC_clim.RData")
 
+<<<<<<< HEAD
 HC_clim <- clim_func(df = HC_UI) 
+=======
+HC_clim <- clim_func(df = HC_UI)
+>>>>>>> 09fe0ed976130e21c8d543760db451cd72e16a1e
 # save(HC_clim, file = "data/HC_clim.RData")
 
 BC_clim <- clim_func(df = BC_UI) 

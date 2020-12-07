@@ -23,15 +23,15 @@ load("data/HC_wind.RData")
 load("data/BC_wind.RData") 
 
 BC_wind_fin <- BC_wind %>% 
-  mutate( lat = lat - 0.125,
+  mutate(lat = lat - 0.125,
          lon = lon + 0.125) %>% 
   rename(date = t)
 
 wind_func <- function(df){
   wind <- df %>% 
     mutate(lat = lat - 0.125,
-           lon = lon + 360, #Adding 360 so that it will match the temperature data. 
-           lon = lon + 0.125) %>% 
+           lon = ifelse(lon < 0, lon+360, lon), # Adding 360 so that it will match the temperature data.
+           lon = lon + 0.125) %>%
     rename(date = t)
 }
 
@@ -40,7 +40,7 @@ CalC_wind_fin <- wind_func(df = CalC_wind)
 HC_wind_fin <- wind_func(df = HC_wind)
 
 # Function for matching temps and wind
-# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSVs cript in the data extraction folder)
+# Loading the temperature data this is the OISST data extracted to the regions (See netCDF2CSV script in the data extraction folder)
 load("~/Documents/EBUS/data/BC.RData")
 load("~/Documents/EBUS/data/HC.RData")
 load("~/Documents/EBUS/data/CC.RData")
