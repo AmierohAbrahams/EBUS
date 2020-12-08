@@ -41,7 +41,7 @@ load("data_official/north_CalC.RData")
 
 current_winds <- rbind(south_BC, north_BC, Canary_current, chile, peru, south_CalC,north_CalC)
 
-# Then create diffferent temporal results
+# Then create different temporal results
 temp_monthly <- current_winds %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
@@ -51,11 +51,11 @@ temp_monthly <- current_winds %>%
 temp_monthly$month <- as.factor(temp_monthly$month)
 temp_monthly$month <- factor(temp_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                                             "Jul", "Aug", "Sep", "Oct", "Nov"))
-temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
-                                                             'CalC_south', 'CalC_north', 'CC'))
+temp_monthly$current <- factor(temp_monthly$current, levels = c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
+                                                                'CalC_south', 'CalC_north', 'CC'))
 # Monthly mean temperature
 # This is Figure 2 in the manuscript
-plot_0 <-ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
+plot_0 <- ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
   facet_wrap(~current, ncol = 1, scales = "free", labeller = labeller(current = supp.labs)) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
@@ -156,8 +156,8 @@ detect_wind <- function(df_sub){
 # Keep in mind that the goal of efficient code is to repeat yourself as little as possible.
 # Multiple individual steps should only be prioritised when the calculations are very RAM heavy
 # testers...
-# df <- south_CalC
-# wind_from <- "NE"
+# df <- peru
+# wind_from <- "SE"
 detect_wind_pipe <- function(df, wind_from){
   # Set the range of wind angles
   if(wind_from == "SE"){
@@ -176,7 +176,7 @@ detect_wind_pipe <- function(df, wind_from){
   
   # Prep data for detection
   df_prep <- df %>% 
-    # filter(season == "Summer") %>%
+    distinct() %>% 
     dplyr::rename(t = date) %>% 
     dplyr::select(current, lon, lat, t, season, month, wind_spd, wind_dir_from) %>% 
     mutate(seas = 0, # By manually setting seas and thresh to 0 we can use the detect_event function 
@@ -185,6 +185,12 @@ detect_wind_pipe <- function(df, wind_from){
                                 TRUE ~ FALSE), # Check the documentation to see why this is done like this if it seems odd to you
            wind_spd = case_when(season != "Summer" ~ 0,  # This is how we constrain the analysis to Summer only
                                 TRUE ~ wind_spd))
+  
+  # Count the number of SE wind days per year+month
+  df_days <- df_prep %>% 
+    mutate(year = year(t)) %>% 
+    group_by(lon, lat, year, month) %>% 
+    summarise(wind_days = sum(wind_deg), .groups = "drop")
   
   # Calculate the summer wind events
   event_res <- plyr::ddply(df_prep, c("current", "lon", "lat"), detect_wind, .parallel = T)
@@ -202,9 +208,10 @@ detect_wind_pipe <- function(df, wind_from){
   event_summary <- event_res %>% 
     mutate(year = year(date_start), # This is somewhat problematic because December is in the for summer in the Southern Hemisphere
            month = month(date_start, label = T, abbr = T)) %>%
-    group_by(year, month) %>% 
+    left_join(df_days, by = c("lon", "lat", "year", "month")) %>% 
+    group_by(current, year, month) %>% 
     summarise(event_count = n()/df_distinct,
-              wind_days = sum(duration)/df_distinct,
+              wind_days = mean(wind_days),
               duration_mean = mean(duration),
               intensity_mean = mean(intensity_mean),
               intensity_max = mean(intensity_max), .groups = "drop") %>% 
@@ -213,29 +220,19 @@ detect_wind_pipe <- function(df, wind_from){
 }
 
 # Calculate the wind events
-# Note that the count of wind days per month may be more than 30 because the calculation is seeing 
-# how long the events are on average that start in a given month
-# So if events start in June, but then last 40 days, these 40 days will be attributed to June even though the event is ending in July
-south_BC_wind <- detect_wind_pipe(south_BC, "SE") %>% 
-  mutate(current = "BC_south")
-north_BC_wind <- detect_wind_pipe(north_BC, "SE") %>% 
-  mutate(current = "BC_north")
-chile_wind <- detect_wind_pipe(chile, "SE") %>% 
-  mutate(current = "HC_chile")
-peru_wind <- detect_wind_pipe(peru, "SE") %>% 
-  mutate(current = "HC_peru")
-south_CalC_wind <- detect_wind_pipe(south_CalC, "NE") %>% 
-  mutate(current = "CalC_south")
-north_CalC_wind <- detect_wind_pipe(north_CalC, "NE") %>% 
-  mutate(current = "CalC_north")
-Canary_current_wind <- detect_wind_pipe(Canary_current, "NE") %>% 
-  mutate(current = "CC")
+south_BC_wind <- detect_wind_pipe(south_BC, "SE")
+north_BC_wind <- detect_wind_pipe(north_BC, "SE")
+chile_wind <- detect_wind_pipe(chile, "SE")
+peru_wind <- detect_wind_pipe(peru, "SE")
+south_CalC_wind <- detect_wind_pipe(south_CalC, "NE")
+north_CalC_wind <- detect_wind_pipe(north_CalC, "NE")
+Canary_current_wind <- detect_wind_pipe(Canary_current, "NE")
 
 winds <- rbind(south_BC_wind, north_BC_wind, chile_wind, peru_wind, south_CalC_wind, north_CalC_wind, Canary_current_wind)
 # save(winds, file = "data_official/winds.RData")
 
-winds$current <- factor(winds$current, levels=c("BC_south","BC_north","HC_chile","HC_peru","CalC_south","CalC_north","CC"))
-#NE_winds <- rbind(south_CalC_wind, north_CalC_wind, Canary_current_wind)
+winds$current <- factor(winds$current, levels = c("BC_south","BC_north","HC_chile","HC_peru","CalC_south","CalC_north","CC"))
+# NE_winds <- rbind(south_CalC_wind, north_CalC_wind, Canary_current_wind)
 
 # RWS: The results you need are produced above.
 # Adapt the rest of your following code for your figures accordingly.
@@ -312,7 +309,7 @@ plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean)) +
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
-New.Fig.2 <- ggarrange(
+New.Fig.2 <- ggpubr::ggarrange(
   plot_0,
   plotA,
   plotB,
