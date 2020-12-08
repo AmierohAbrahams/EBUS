@@ -239,7 +239,7 @@ winds$current <- factor(winds$current, levels = c("BC_south","BC_north","HC_chil
 
 # # Plot showing the number of SE wind events
 plotA <- ggplot(data = winds, aes(x = year, y = event_count)) +
-  geom_line(aes(colour = month)) +
+  geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Upwelling wind events (count)")+
@@ -263,7 +263,7 @@ plotA <- ggplot(data = winds, aes(x = year, y = event_count)) +
 
 # Duration
 plotB <- ggplot(data = winds, aes(x = year, y = duration_mean)) +
-  geom_line(aes(colour = month)) +
+  geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Duration of upwelling winds (Days)")+
@@ -287,7 +287,7 @@ plotB <- ggplot(data = winds, aes(x = year, y = duration_mean)) +
 
 # Intensity
 plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean)) +
-  geom_line(aes(colour = month)) +
+  geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm") +
   facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Mean intensity of winds")+
