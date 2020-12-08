@@ -225,13 +225,15 @@ chile_wind <- detect_wind_pipe(chile, "SE") %>%
 peru_wind <- detect_wind_pipe(peru, "SE") %>% 
   mutate(current = "HC_peru")
 south_CalC_wind <- detect_wind_pipe(south_CalC, "NE") %>% 
-  mutate(current = "CalC_south")# This one is funny because there are almost never NE winds. You need to look into why this is.
+  mutate(current = "CalC_south")
 north_CalC_wind <- detect_wind_pipe(north_CalC, "NE") %>% 
   mutate(current = "CalC_north")
 Canary_current_wind <- detect_wind_pipe(Canary_current, "NE") %>% 
   mutate(current = "CC")
 
 winds <- rbind(south_BC_wind, north_BC_wind, chile_wind, peru_wind, south_CalC_wind, north_CalC_wind, Canary_current_wind)
+# save(winds, file = "data_official/winds.RData")
+
 winds$current <- factor(winds$current, levels=c("BC_south","BC_north","HC_chile","HC_peru","CalC_south","CalC_north","CC"))
 #NE_winds <- rbind(south_CalC_wind, north_CalC_wind, Canary_current_wind)
 
@@ -309,8 +311,6 @@ plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean)) +
     #legend.key = element_rect(size = 0.8, colour = NA),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
-
-
 
 New.Fig.2 <- ggarrange(
   plot_0,

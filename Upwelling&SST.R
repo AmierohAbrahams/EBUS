@@ -105,6 +105,8 @@ temp_monthly$month <- factor(temp_monthly$month, levels = c("Dec", "Jan", "Feb",
                                                             "Jul", "Aug", "Sep", "Oct", "Nov"))
 temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
                                                              'CalC_south', 'CalC_north', 'CC'))
+# save(temp_monthly, file = "data_official/temp_monthly.RData")
+
 # Monthly mean temperature
 # This is Figure 2 in the manuscript
 plot_0 <-ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
