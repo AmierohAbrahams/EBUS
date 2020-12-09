@@ -26,8 +26,9 @@ library(grid)
 library(ggpubr)
 source("functions/theme.R")
 options(scipen=999) 
-supp.labs <- c("Benguela Current South", "Benguela Current North", "Chile", "Peru",
-               "California Current South", "California Current North", "Canary Current")
+
+supp.labs <- c("Benguela South", "Benguela North", "Humboldt Chile", "Humboldt Peru",
+               "California South", "California North", "Canary Current")
 names(supp.labs) <- c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
                       'CalC_south', 'CalC_north', 'CC')
 my.formula <- y ~ x
@@ -109,28 +110,28 @@ temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south', 'BC_nor
 
 # Monthly mean temperature
 # This is Figure 2 in the manuscript
-plot_0 <-ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
+plot_0 <- ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1, scales = "free", labeller = labeller(current = supp.labs)) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = (labeller(current = supp.labs)), 
+             strip.position = "left") +
   labs(x = "", y = "SST (°C)")+
   theme_bw() +
   labs(colour = "Month") +
   theme_minimal() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=6, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+  theme(
+    strip.text = element_text(size = 7, family = "Palatino"),
+    strip.placement = "outside",
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
+    axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.title = element_text(size = 8, family = "Palatino"),
     legend.position = "right",
-    legend.text = element_text(size = 9, family = "Palatino"),
-    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.text = element_text(size = 7, family = "Palatino"),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
@@ -294,26 +295,24 @@ summer_signal$current = factor(summer_signal$current, levels=c('BC_south', 'BC_n
 plot_1 <- ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1, scales = "free", labeller = labeller(current = supp.labs)) + #,  , ncol = 4) +
-  labs(x = "", y = "Upwelling events (count)")+
-  # geom_smooth(aes(colour = month), method = "lm", se=FALSE, formula = my.formula) +
-  # stat_poly_eq(formula = my.formula,
-  #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-  #              parse = TRUE) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = (labeller(current = supp.labs)), 
+             strip.position = "right") +
+  labs(x = "", y = "Upwelling events (count)") +
   theme_minimal() +
-  theme(panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
-        panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-        #panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-        # panel.grid.major = element_line(size = 0.2, linetype = 2),
-        # panel.grid.minor = element_line(colour = NA),
-        strip.text = element_text(size=6, family = "Palatino"),
-        axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
-        axis.ticks.length = unit(0.2, "cm"),
-        axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
-        plot.title = element_text(size = 18, hjust = 0),
-        legend.title = element_text(size = 10, family = "Palatino"),
-        legend.text = element_text(size = 9, family = "Palatino"),
-        legend.key.size = unit(0.2, "cm"))
+  theme(
+    strip.text = element_blank(),
+    axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
+    axis.ticks.length = unit(0.2, "cm"),
+    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
+    plot.title = element_text(size = 18, hjust = 0),
+    legend.title = element_text(size = 8, family = "Palatino"),
+    legend.position = "right",
+    legend.text = element_text(size = 7, family = "Palatino"),
+    legend.key.size = unit(0.2, "cm"),
+    legend.background = element_blank())
 
 # Determining if there is changes in mean and cummulative intensity
 intensity_BC_S <- upwell_south_BC %>% 
@@ -372,52 +371,51 @@ intensity$current = factor(intensity$current, levels=c('BC_south', 'BC_north', '
 # This is Figure 4B in the manuscript
 plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1, scales = "free", labeller = labeller(current = supp.labs)) +  #, ncol = 4) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = (labeller(current = supp.labs)), 
+             strip.position = "right") +
   labs(x = "", y = "Mean intensity of signals")+
   theme_minimal() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=6, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+  theme_minimal() +
+  theme(
+    strip.text = element_blank(),
+    axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
-    legend.text = element_text(size = 9, family = "Palatino"),
-    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.title = element_text(size = 8, family = "Palatino"),
+    legend.position = "right",
+    legend.text = element_text(size = 7, family = "Palatino"),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
 # This is Figure 4C in the manuscript
 plot_3 <- ggplot(data = intensity, aes(x = year, y = cum_intensity, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = (labeller(current = supp.labs)), 
+             strip.position = "right") +
   labs(x = "", y = "Cumulative intensity of signals")+
   theme_minimal() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=6, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+  theme(
+    strip.text = element_text(size = 7, family = "Palatino"),
+    axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
-    legend.position = "right",
-    legend.text = element_text(size = 9, family = "Palatino"),
-    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.title = element_text(size = 8, family = "Palatino"),
+    legend.text = element_text(size = 7, family = "Palatino"),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
 # Combine to make the new Figure 2(A-D)
-New.Fig.3 <- ggarrange(
+New.Fig.3 <- ggpubr::ggarrange(
   plot_0,
   plot_1,
   plot_2,
@@ -425,13 +423,6 @@ New.Fig.3 <- ggarrange(
   ncol = 4,
   common.legend = TRUE,
   labels = "AUTO"
-)
-New.Fig.3
-ggplot2::ggsave(
-  "New.Fig.3.jpg",
-  width = 7.0 * (1 / 3),
-  height = 5.2 * (1 / 3),
-  scale = 3.7
 )
 
 ggsave(filename = "New.Fig.3.jpg", plot = New.Fig.3, width=180, height = 200, units = "mm",dpi = 300,  path = "figures/")
