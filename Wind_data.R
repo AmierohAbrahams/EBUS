@@ -267,7 +267,7 @@ plotB <- ggplot(data = winds, aes(x = year, y = duration_mean)) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
-  labs(x = "", y = "Duration of upwelling winds (Days)") +
+  labs(x = "", y = "Duration of upwelling winds (days)") +
   theme_minimal() +
     theme(
       strip.text = element_blank(),
