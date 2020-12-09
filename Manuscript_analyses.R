@@ -35,7 +35,6 @@ load("data_official/upwell_north_CalC.RData")
 current_upwelling <- rbind(upwell_south_BC, upwell_north_BC, upwell_Canary_current,
                            upwell_chile, upwell_peru, upwell_south_CalC, upwell_north_CalC)
 
-
 upwelling_metrics <- current_upwelling %>% 
   mutate(year = year(date_start)) %>% 
   group_by(current, season,year, month) %>% 
