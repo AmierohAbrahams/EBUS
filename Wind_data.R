@@ -244,16 +244,19 @@ load("data_official/winds.RData")
 plotA <- ggplot(data = winds, aes(x = year, y = event_count)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
-  facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = labeller(current = supp.labs), 
+             strip.position = "left") +  
   labs(x = "", y = "Upwelling wind events (count)")+
   theme_minimal() +
   theme(
-    strip.text = element_blank(),
+    strip.text = element_text(size = 7, family = "Palatino"),
+    strip.placement = "outside",
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
     axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
     legend.title = element_text(size = 8, family = "Palatino"),
     legend.position = "right",
@@ -307,14 +310,13 @@ plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean)) +
     legend.background = element_blank())
 
 New.Fig.2 <- ggpubr::ggarrange(
-  plot_0,
   plotA,
   plotB,
   plotC,
-  ncol = 4,
+  ncol = 3,
   common.legend = TRUE,
   labels = "AUTO"
 )
 
-ggsave(filename = "New.Fig.2.jpg", plot = New.Fig.2, width=180, height = 200, units = "mm",dpi = 300,  path = "figures/")
+ggsave(filename = "New.Fig.2.jpg", plot = New.Fig.2, width = (180/4)*3, height = 200, units = "mm",dpi = 300,  path = "figures/")
 
