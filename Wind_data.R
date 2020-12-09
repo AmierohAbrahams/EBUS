@@ -25,8 +25,8 @@ library(doParallel); registerDoParallel(cores = 7)
 source("functions/theme.R")
 options(scipen = 999) 
 
-supp.labs <- c("Benguela Current South", "Benguela Current North", "Chile", "Peru",
-               "California Current South", "California Current North", "Canary Current")
+supp.labs <- c("Benguela South", "Benguela North", "Humboldt Chile", "Humboldt Peru",
+               "California South", "California North", "Canary Current")
 names(supp.labs) <- c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
                       'CalC_south', 'CalC_north', 'CC')
 
@@ -45,8 +45,8 @@ current_winds <- rbind(south_BC, north_BC, Canary_current, chile, peru, south_Ca
 temp_monthly <- current_winds %>% 
   filter(season == "Summer") %>% 
   group_by(current, year, season, month) %>% 
-  summarise(mean_temp = mean(temp, na.rm = T),
-            mean_SLP = mean(slp, na.rm = T))
+  summarise(mean_temp = mean(temp, na.rm = TRUE),
+            mean_SLP = mean(slp, na.rm = TRUE))
 
 temp_monthly$month <- as.factor(temp_monthly$month)
 temp_monthly$month <- factor(temp_monthly$month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -57,26 +57,26 @@ temp_monthly$current <- factor(temp_monthly$current, levels = c('BC_south', 'BC_
 # This is Figure 2 in the manuscript
 plot_0 <- ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
   geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
-  facet_wrap(~current, ncol = 1, scales = "free", labeller = labeller(current = supp.labs)) + #,  labeller = labeller(current = supp.labs), ncol = 4) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = labeller(current = supp.labs), 
+             strip.position = "left") + 
   labs(x = "", y = "SST (°C)")+
   theme_bw() +
   labs(colour = "Month") +
   theme_minimal() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=6, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+  theme(
+    strip.text = element_text(size = 7, family = "Palatino"),
+    strip.placement = "outside",
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
+    axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.title = element_text(size = 8, family = "Palatino"),
     legend.position = "right",
-    legend.text = element_text(size = 9, family = "Palatino"),
-    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.text = element_text(size = 7, family = "Palatino"),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
@@ -158,13 +158,13 @@ detect_wind <- function(df_sub){
 # testers...
 # df <- peru
 # wind_from <- "SE"
-detect_wind_pipe <- function(df, wind_from){
+detect_wind_pipe <- function(df, wind_from) {
   # Set the range of wind angles
   if(wind_from == "SE"){
     deg_min = 90; deg_max = 180
-  } else if(wind_from == "NE"){
+  } else if(wind_from == "NE") {
     deg_min = 0; deg_max = 90
-  } else{
+  } else {
     stop("Enter a correct value for 'wind_from'")
   }
   
@@ -193,12 +193,12 @@ detect_wind_pipe <- function(df, wind_from){
     summarise(wind_days = sum(wind_deg), .groups = "drop")
   
   # Calculate the summer wind events
-  event_res <- plyr::ddply(df_prep, c("current", "lon", "lat"), detect_wind, .parallel = T)
+  event_res <- plyr::ddply(df_prep, c("current", "lon", "lat"), detect_wind, .parallel = TRUE)
   
   # If no events are detected in a year an NA dataframe is returned
   # But when combined with the results this value forces the dates into integers
   # This is a strange bug that we correct for here
-  if(is.na(min(event_res$event_no))){
+  if(is.na(min(event_res$event_no))) {
     event_res <- event_res %>% 
       filter(!is.na(event_no)) %>% 
       mutate(date_start = as.Date(date_start, origin = "1970-01-01"))
@@ -215,7 +215,8 @@ detect_wind_pipe <- function(df, wind_from){
               duration_mean = mean(duration),
               intensity_mean = mean(intensity_mean),
               intensity_max = mean(intensity_max), .groups = "drop") %>% 
-    mutate(month = factor(month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov")))
+    mutate(month = factor(month, levels = c("Dec", "Jan", "Feb", "Mar", "Apr", "May",
+                                            "Jun", "Jul", "Aug", "Sep", "Oct", "Nov")))
   return(event_summary)
 }
 
@@ -231,7 +232,8 @@ Canary_current_wind <- detect_wind_pipe(Canary_current, "NE")
 winds <- rbind(south_BC_wind, north_BC_wind, chile_wind, peru_wind, south_CalC_wind, north_CalC_wind, Canary_current_wind)
 # save(winds, file = "data_official/winds.RData")
 
-winds$current <- factor(winds$current, levels = c("BC_south","BC_north","HC_chile","HC_peru","CalC_south","CalC_north","CC"))
+winds$current <- factor(winds$current, levels = c("BC_south", "BC_north", "HC_chile", "HC_peru",
+                                                  "CalC_south", "CalC_north", "CC"))
 # NE_winds <- rbind(south_CalC_wind, north_CalC_wind, Canary_current_wind)
 
 # RWS: The results you need are produced above.
@@ -240,72 +242,66 @@ winds$current <- factor(winds$current, levels = c("BC_south","BC_north","HC_chil
 # # Plot showing the number of SE wind events
 plotA <- ggplot(data = winds, aes(x = year, y = event_count)) +
   geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm") +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
   facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
   labs(x = "", y = "Upwelling wind events (count)")+
   theme_minimal() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=6, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+  theme(
+    strip.text = element_blank(),
+    axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
+    legend.title = element_text(size = 8, family = "Palatino"),
     legend.position = "right",
-    legend.text = element_text(size = 9, family = "Palatino"),
-    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.text = element_text(size = 7, family = "Palatino"),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
 # Duration
 plotB <- ggplot(data = winds, aes(x = year, y = duration_mean)) +
   geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "Duration of upwelling winds (Days)")+
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = (labeller(current = supp.labs)), 
+             strip.position = "right") +
+  labs(x = "", y = "Duration of upwelling winds (Days)") +
   theme_minimal() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=6, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
-    axis.ticks.length = unit(0.2, "cm"),
-    panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
-    panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
-    plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
-    legend.position = "right",
-    legend.text = element_text(size = 9, family = "Palatino"),
-    #legend.key = element_rect(size = 0.8, colour = NA),
-    legend.key.size = unit(0.2, "cm"),
-    legend.background = element_blank())
+    theme(
+      strip.text = element_blank(),
+      axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
+      axis.ticks.length = unit(0.2, "cm"),
+      panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
+      panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
+      axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
+      plot.title = element_text(size = 18, hjust = 0),
+      legend.title = element_text(size = 8, family = "Palatino"),
+      legend.position = "right",
+      legend.text = element_text(size = 7, family = "Palatino"),
+      legend.key.size = unit(0.2, "cm"),
+      legend.background = element_blank())
 
 # Intensity
 plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean)) +
   geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm") +
-  facet_wrap(~current, ncol = 1, scales = "free",  labeller = labeller(current = supp.labs)) +  #,  labeller = labeller(current = supp.labs), ncol = 4) +
-  labs(x = "", y = "Mean intensity of winds")+
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  facet_wrap(~current, ncol = 1, scales = "free",
+             labeller = (labeller(current = supp.labs)), 
+             strip.position = "right") +  
+  labs(x = "", y = "Mean intensity of winds") +
   theme_minimal() +
-  theme(#panel.border = element_rect(colour = "black", fill = NA, size = 1.0),
-    # panel.grid.major = element_line(size = 0.2, linetype = 2),
-    # panel.grid.minor = element_line(colour = NA),
-    strip.text = element_text(size=6, family = "Palatino"),
-    axis.title = element_text(size = 9, face = "bold", family = "Palatino"),
+  theme(
+    strip.text = element_text(size = 7, family = "Palatino"),
+    axis.title = element_text(size = 8, face = "bold", family = "Palatino"),
     axis.ticks.length = unit(0.2, "cm"),
     panel.grid.major = element_line("grey70", linetype = "dashed", size = 0.2),
     panel.grid.minor = element_line("grey70", linetype = "dashed", size = 0.2),
-    axis.text = element_text(size = 5, colour = "black", family = "Palatino"),
+    axis.text = element_text(size = 6, colour = "black", family = "Palatino"),
     plot.title = element_text(size = 18, hjust = 0),
-    legend.title = element_text(size = 10, family = "Palatino"),
-    legend.position = "right",
-    legend.text = element_text(size = 9, family = "Palatino"),
-    #legend.key = element_rect(size = 0.8, colour = NA),
+    legend.title = element_text(size = 8, family = "Palatino"),
+    legend.text = element_text(size = 7, family = "Palatino"),
     legend.key.size = unit(0.2, "cm"),
     legend.background = element_blank())
 
@@ -317,13 +313,6 @@ New.Fig.2 <- ggpubr::ggarrange(
   ncol = 4,
   common.legend = TRUE,
   labels = "AUTO"
-)
-New.Fig.2
-ggplot2::ggsave(
-  "New.Fig.3.jpg",
-  width = 7.0 * (1 / 3),
-  height = 5.2 * (1 / 3),
-  scale = 3.7
 )
 
 ggsave(filename = "New.Fig.2.jpg", plot = New.Fig.2, width=180, height = 200, units = "mm",dpi = 300,  path = "figures/")
