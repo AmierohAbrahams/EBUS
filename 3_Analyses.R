@@ -790,7 +790,7 @@ lm_metrics_wide <- pivot_wider(lm_metrics,
 
 
 summary(aov(duration ~ current + season, data = lm_metrics_wide))
-  summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
+summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
 summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
 summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
 

@@ -239,7 +239,7 @@ Canary_current_wind <- detect_wind_pipe(Canary_current, "NE")
 
 # Correct and complete datset can be loaded from here 
 load("data_official/winds.RData")
-
+  
 # # Plot showing the number of SE wind events
 plotA <- ggplot(data = winds, aes(x = year, y = event_count)) +
   geom_line(aes(colour = month), size = 0.3) +

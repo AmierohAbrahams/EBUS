@@ -23,6 +23,36 @@ load("data_official/winds.RData")
 # Loading the temperature data4
 load("data_official/temp_monthly.RData")
 
+anova_func <- function(df){
+  sites_aov <- aov(mean_temp ~ current * year * month, data = df)
+  return(sites_aov)
+}
+
+summary(count_aov <- anova_func(df = temp_monthly))
+
+temp <- temp_monthly %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(mean_temp ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+count_month <- temp_monthly %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(mean_temp ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
 # Loading the upwelling metrics
 load("data_official/upwell_south_BC.RData")
 load("data_official/upwell_north_BC.RData")
@@ -65,6 +95,17 @@ wind_dur <- winds %>%
   dplyr::rename(slope = estimate) %>% 
   mutate(p.value = round(p.value, 4))
 
+winds_month <- winds %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(duration_mean ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
 # Upwelling favourable wind event count
 anova_func <- function(df){
   sites_aov <- aov(event_count ~ current * year * month, data = df)
@@ -85,6 +126,17 @@ wind_event_count <- winds %>%
   dplyr::rename(slope = estimate) %>% 
   mutate(p.value = round(p.value, 4))
 
+winds_month <- winds %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(event_count ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
 # Upwelling favourable wind intensity
 anova_func <- function(df){
   sites_aov <- aov(intensity_mean ~ current * year * month, data = df)
@@ -97,7 +149,7 @@ wind_intensity <- winds %>%
   group_by(current) %>% 
   mutate(year_month = 1:n()) %>% 
   nest() %>% 
-  mutate(model_out = purrr::map(data, ~lm(event_count ~ year_month, data = .)),
+  mutate(model_out = purrr::map(data, ~lm(intensity_mean ~ year_month, data = .)),
          model_tidy = purrr::map(model_out, broom::tidy)) %>% 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
@@ -105,5 +157,101 @@ wind_intensity <- winds %>%
   dplyr::rename(slope = estimate) %>% 
   mutate(p.value = round(p.value, 4))
 
+winds_month <- winds %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(intensity_mean ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
 # Analysing trends in upwelling metrics
+
+load("data_official/current_upwelling.RData")
+
+current_upwelling <- as.data.frame(current_upwelling)
+
+# Calculate all of the linear models
+lm_coeff <- function(df){
+  res <- lm(formula = val ~ date_peak, data = df)
+  res_coeff <- as.numeric(res$coefficient[2])
+}
+
+lm_metrics <- current_upwelling %>% 
+  ungroup() %>% 
+  drop_na() %>% 
+  dplyr::select(-c(lon:index_end), -c(month)) %>% 
+  pivot_longer(cols = c(duration, intensity_mean:rate_decline), 
+               names_to = "var", values_to = "val") %>% 
+  group_by(current, season, year, var) %>% 
+  nest() %>% 
+  mutate(slope = purrr::map(data, lm_coeff)) %>% 
+  dplyr::select(-data) %>% 
+  unnest(cols = slope) %>% 
+  # convert from daily to decadal values
+  mutate(slope = round((slope*365.25*10), 2)) %>% 
+  ungroup()
+
+#save(lm_metrics, file = "data/lm_metrics.RData")
+
+
+lm_metrics_wide <- pivot_wider(lm_metrics, 
+                               id_cols = current:season, 
+                               names_from = var, values_from = slope,
+                               values_fn = mean) %>% 
+  filter(season == "Summer")
+
+
+summary(aov(duration ~ current + season, data = lm_metrics_wide))
+summary(aov(intensity_mean ~ current + season, data = lm_metrics_wide))
+summary(aov(intensity_max ~ current  + season, data = lm_metrics_wide))
+summary(aov(intensity_cumulative ~ current + season, data = lm_metrics_wide))
+
+
+summary(aov(duration ~ current + year, data = lm_metrics_wide))
+summary(aov(intensity_mean ~ current + year, data = lm_metrics_wide))
+summary(aov(intensity_max ~ current  + year, data = lm_metrics_wide))
+summary(aov(intensity_cumulative ~ year + season, data = lm_metrics_wide))
+
+
+##### Upwelling metrics
+load("data_official/current_upwelling.RData")
+
+current_upwelling <- current_upwelling %>% 
+  filter(season == "Summer")
+
+anova_func <- function(df){
+  sites_aov <- aov(intensity_mean ~ current * year * month, data = df)
+  return(sites_aov)
+}
+
+summary(intensity_aov <- anova_func(df = current_upwelling))
+
+upwell_intensity <- current_upwelling %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(intensity_mean ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+
+upwell_month <- current_upwelling %>% 
+  group_by(current, month) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(intensity_mean ~ year, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year") %>% 
+  dplyr::rename(slope = estimate) %>% 
+  mutate(p.value = round(p.value, 4))
+  
+
 

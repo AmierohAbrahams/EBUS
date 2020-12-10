@@ -2,12 +2,7 @@
 # The steps taken in this script are:
 # 1: Setup environment
 # 2: Plotting the EBUS
-# 3: Using plotdap to plot EBUS
-# 4: Plotting Robs suggestion
-# 5: Plotting paper discription
-
-# 1: Setup environment ----------------------------------------------------------------------------------------------------
-library(tidyverse) # Base suite of functions
+# 3: Using plotdap to plot EBUSlibrary(tidyverse) # Base suite of functions
 library(raster)
 library(sf)
 library(ggspatial)
@@ -22,6 +17,11 @@ library(FNN) # For fastest nearest neighbour searches
 library(tidync) # For a more tidy approach to managing NetCDF data
 # library(SDMTools) # For finding points within polygons
 library(lubridate)
+
+# 4: Plotting Robs suggestion
+# 5: Plotting paper discription
+
+# 1: Setup environment ----------------------------------------------------------------------------------------------------
 
 
 # 2: Plotting EBUS ----------------------------------------------------------------------------------------------------------
@@ -180,6 +180,43 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
   mutate(group = ifelse(lon > 180, group+9999, group),
          lon = ifelse(lon > 180, lon-360, lon))
 
+load("data_official/south_BC.RData")
+load("data_official/north_BC.RData")
+load("data_official/chile.RData")
+load("data_official/peru.RData")
+load("data_official/south_CalC.RData")
+load("data_official/north_CalC.RData")
+load("data_official/Canary_current.RData")
+
+south_BC <- south_BC %>% 
+  dplyr::select(lat,lon) %>% 
+  distinct()
+north_BC <- north_BC %>% 
+  dplyr::select(lat,lon) %>% 
+  distinct()
+
+chile <- chile %>% 
+  dplyr::select(lat,lon) %>% 
+  distinct() 
+
+write_csv(chile, path = "chile.csv")
+
+peru <- peru %>% 
+  dplyr::select(lat,lon) %>% 
+  distinct()
+
+Canary_current <- Canary_current %>% 
+  dplyr::select(lat,lon) %>% 
+  distinct()
+
+write_csv(Canary_current, path = "Canary_current.csv")
+
+south_CalC <- south_CalC %>% 
+  dplyr::select(lat,lon) %>% 
+  distinct()
+north_CalC <- north_CalC %>% 
+  dplyr::select(lat,lon) %>% 
+  distinct()
 # ggplot(map_base, aes(lon, lat, group = group)) + 
 #   geom_polygon()
 # world <- ne_countries(scale = "medium", returnclass = "sf")
@@ -200,6 +237,7 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 #   theme_map2()
 
 Map <- ggplot() +
+  # geom_point(data = south_BC, aes(x = lon, y = lat), colour = "Red") +
   geom_raster(data = OISST_global, aes(x = lon, y = lat, fill = temp), show.legend = TRUE) +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
   geom_rect(data = site_squares, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
@@ -219,6 +257,13 @@ Map <- ggplot() +
   coord_quickmap(ylim = c(-78.5, 90), expand = FALSE) +
   scale_fill_gradientn("SST (°C)", values = scales::rescale(c(-1, 7,19,26)),
                        colors = c("lightcyan1", "orchid1", "skyblue", "blue3")) +
+  geom_point(data = south_BC, aes(x = lon, y = lat), colour = "Red", size = 1)+
+  geom_point(data = north_BC, aes(x = lon, y = lat), colour = "Blue", size = 1)+
+  geom_point(data = chile, aes(x = lon, y = lat), colour = "Red", size = 1)+
+  geom_point(data = peru, aes(x = lon, y = lat), colour = "Blue", size = 1)+
+  geom_point(data = south_CalC, aes(x = lon, y = lat), colour = "Red", size = 1)+
+  geom_point(data = north_CalC, aes(x = lon, y = lat), colour = "Blue", size = 1)+
+  geom_point(data = Canary_current, aes(x = lon, y = lat), colour = "Red", size = 1)+
   labs(x = NULL, y = NULL) +
   theme_set(theme_grey()) +
   theme_grey() +
