@@ -20,9 +20,13 @@ options(scipen = 999)
 # Loading the wind data
 load("data_official/winds.RData")
 
+wind_means <- winds %>% 
+  group_by(current) %>% 
+  summarise(mean_duration = mean(duration_mean))
+
 # Loading the temperature data4
 load("data_official/temp_monthly.RData")
-
+  
 anova_func <- function(df){
   sites_aov <- aov(mean_temp ~ current * year * month, data = df)
   return(sites_aov)
@@ -35,7 +39,7 @@ temp <- temp_monthly %>%
   mutate(year_month = 1:n()) %>% 
   nest() %>% 
   mutate(model_out = purrr::map(data, ~lm(mean_temp ~ year_month, data = .)),
-         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% #change glance to rtidy
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
   filter(term == "year_month") %>% 
@@ -87,18 +91,18 @@ wind_dur <- winds %>%
   mutate(year_month = 1:n()) %>% 
   nest() %>% 
   mutate(model_out = purrr::map(data, ~lm(duration_mean ~ year_month, data = .)),
-         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Replace glance with tidy
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
   filter(term == "year_month") %>% 
   dplyr::rename(slope = estimate) %>% 
   mutate(p.value = round(p.value, 4))
-
+# - lowering in value means more intense
 winds_month <- winds %>% 
   group_by(current, month) %>% 
   nest() %>% 
   mutate(model_out = purrr::map(data, ~lm(duration_mean ~ year, data = .)),
-         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+         model_tidy = purrr::map(model_out, broom::glance)) %>% # Using 'broom::glance' will provide the R2 value 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
   filter(term == "year") %>% 
@@ -129,7 +133,7 @@ winds_month <- winds %>%
   group_by(current, month) %>% 
   nest() %>% 
   mutate(model_out = purrr::map(data, ~lm(event_count ~ year, data = .)),
-         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+         model_tidy = purrr::map(model_out, broom::glance)) %>% # Using 'broom::glance' will provide the R2 value 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
   filter(term == "year") %>% 
@@ -160,7 +164,7 @@ winds_month <- winds %>%
   group_by(current, month) %>% 
   nest() %>% 
   mutate(model_out = purrr::map(data, ~lm(intensity_mean ~ year, data = .)),
-         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
+         model_tidy = purrr::map(model_out, broom::glance)) %>% # Using 'broom::glance' will provide the R2 value 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
   filter(term == "year") %>% 
@@ -252,5 +256,14 @@ upwell_month <- current_upwelling %>%
   dplyr::rename(slope = estimate) %>% 
   mutate(p.value = round(p.value, 4))
   
-
-
+summer_signal_year <- summer_signal_new %>% 
+  group_by(current) %>% 
+  mutate(year_month = 1:n()) %>% 
+  nest() %>% 
+  mutate(model_out = purrr::map(data, ~lm(signal ~ year_month, data = .)),
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% 
+  dplyr::select(-data, -model_out) %>% 
+  unnest(cols = "model_tidy") %>% 
+  filter(term == "year_month") %>%
+  dplyr::rename(slope = estimate) %>%
+  mutate(p.value = round(p.value, 4))

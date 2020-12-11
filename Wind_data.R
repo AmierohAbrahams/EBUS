@@ -241,7 +241,7 @@ Canary_current_wind <- detect_wind_pipe(Canary_current, "NE")
 load("data_official/winds.RData")
   
 # # Plot showing the number of SE wind events
-plotA <- ggplot(data = winds, aes(x = year, y = event_count)) +
+plotA <- ggplot(data = winds, aes(x = year, y = event_count, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
   facet_wrap(~current, ncol = 1, scales = "free",
@@ -265,7 +265,7 @@ plotA <- ggplot(data = winds, aes(x = year, y = event_count)) +
     legend.background = element_blank())
 
 # Duration
-plotB <- ggplot(data = winds, aes(x = year, y = duration_mean)) +
+plotB <- ggplot(data = winds, aes(x = year, y = duration_mean, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
   facet_wrap(~current, ncol = 1, scales = "free",
@@ -288,13 +288,14 @@ plotB <- ggplot(data = winds, aes(x = year, y = duration_mean)) +
       legend.background = element_blank())
 
 # Intensity
-plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean)) +
+plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean, colour = Month)) +
   geom_line(aes(colour = month), size = 0.3) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +  
-  labs(x = "", y = "Mean intensity of winds") +
+  ylab(expression(bold("Mean intensity of wind" ~ "(m.s"^"-1"*")")))  + 
+    labs(x = "") +
   theme_minimal() +
   theme(
     strip.text = element_text(size = 7, family = "Palatino"),

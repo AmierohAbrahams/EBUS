@@ -375,7 +375,7 @@ plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Mo
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
-  ylab(expression("Mean intensity of signals")) + #~(°C^-1)))+ 
+  ylab(expression(bold("Mean intensity of signals" ~ "(°C"*")")))+
   labs(x = "")+
   theme_minimal() +
   theme_minimal() +
@@ -400,7 +400,7 @@ plot_3 <- ggplot(data = intensity, aes(x = year, y = cum_intensity, colour = Mon
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
-  ylab(expression("Cumulative intensity of signals")) + #~(°C.day^-1)))+
+  ylab(expression(bold("Cumulative intensity of signals" ~ "(°C.days"^"-1"*")")))  + 
   labs(x = "")+
   theme_minimal() +
   theme(
