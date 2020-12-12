@@ -53,11 +53,14 @@ temp_monthly$month <- factor(temp_monthly$month, levels = c("Dec", "Jan", "Feb",
                                                             "Jul", "Aug", "Sep", "Oct", "Nov"))
 temp_monthly$current <- factor(temp_monthly$current, levels = c('BC_south', 'BC_north', 'HC_chile', 'HC_peru',
                                                                 'CalC_south', 'CalC_north', 'CC'))
+cols <- c("#269BB1", "#F73047", "#6C32BE", "#03677A", "#BE0016", "#3E0B87")
+
 # Monthly mean temperature
 # This is Figure 2 in the manuscript
 plot_0 <- ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
-  geom_line(aes(colour = month), size = 0.3) +
+  geom_line(aes(colour = month), size = 0.4) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = labeller(current = supp.labs), 
              strip.position = "left") + 
@@ -242,8 +245,9 @@ load("data_official/winds.RData")
   
 # # Plot showing the number of SE wind events
 plotA <- ggplot(data = winds, aes(x = year, y = event_count, colour = Month)) +
-  geom_line(aes(colour = month), size = 0.3) +
+  geom_line(aes(colour = month), size = 0.4) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = labeller(current = supp.labs), 
              strip.position = "left") +  
@@ -266,8 +270,9 @@ plotA <- ggplot(data = winds, aes(x = year, y = event_count, colour = Month)) +
 
 # Duration
 plotB <- ggplot(data = winds, aes(x = year, y = duration_mean, colour = Month)) +
-  geom_line(aes(colour = month), size = 0.3) +
+  geom_line(aes(colour = month), size = 0.4) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
@@ -289,8 +294,9 @@ plotB <- ggplot(data = winds, aes(x = year, y = duration_mean, colour = Month)) 
 
 # Intensity
 plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean, colour = Month)) +
-  geom_line(aes(colour = month), size = 0.3) +
+  geom_line(aes(colour = month), size = 0.4) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +  

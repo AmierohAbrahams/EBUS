@@ -108,11 +108,14 @@ temp_monthly$current = factor(temp_monthly$current, levels=c('BC_south', 'BC_nor
                                                              'CalC_south', 'CalC_north', 'CC'))
 # save(temp_monthly, file = "data_official/temp_monthly.RData")
 
+cols <- c("#269BB1", "#F73047", "#6C32BE", "#03677A", "#BE0016", "#3E0B87")
+
 # Monthly mean temperature
 # This is Figure 2 in the manuscript
 plot_0 <- ggplot(data = temp_monthly, aes(x = year, y = mean_temp)) +
-  geom_line(aes(colour = month), size = 0.3) +
+  geom_line(aes(colour = month), size = 0.4) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "left") +
@@ -293,8 +296,9 @@ summer_signal$current = factor(summer_signal$current, levels=c('BC_south', 'BC_n
 # Plotting the number of signals per region
 # This is Figure 4A in the manuscript
 plot_1 <- ggplot(data = summer_signal, aes(x = year, y = signal, colour = Month)) +
-  geom_line(aes(colour = month), size = 0.3) +
-  geom_smooth(aes(colour = month), method = "lm", size = 0.2) +
+  geom_line(aes(colour = month), size = 0.4) +
+  geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
@@ -370,8 +374,9 @@ intensity$current = factor(intensity$current, levels=c('BC_south', 'BC_north', '
 
 # This is Figure 4B in the manuscript
 plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Month)) +
-  geom_line(aes(colour = month), size = 0.3) +
+  geom_line(aes(colour = month), size = 0.4) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
@@ -395,12 +400,13 @@ plot_2 <- ggplot(data = intensity, aes(x = year, y = mean_intensity, colour = Mo
 
 # This is Figure 4C in the manuscript
 plot_3 <- ggplot(data = intensity, aes(x = year, y = cum_intensity, colour = Month)) +
-  geom_line(aes(colour = month), size = 0.3) +
+  geom_line(aes(colour = month), size = 0.4) +
   geom_smooth(aes(colour = month), method = "lm", size = 0.3) +
+  scale_colour_manual(values = cols) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
-  ylab(expression(bold("Cumulative intensity of signals" ~ "(°C.days"^"-1"*")")))  + 
+  ylab(expression(bold("Cumulative intensity of signals" ~ "(°C.days"*")")))  + 
   labs(x = "")+
   theme_minimal() +
   theme(
