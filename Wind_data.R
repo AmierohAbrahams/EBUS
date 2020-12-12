@@ -251,7 +251,7 @@ plotA <- ggplot(data = winds, aes(x = year, y = event_count, colour = Month)) +
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = labeller(current = supp.labs), 
              strip.position = "left") +  
-  labs(x = "", y = "Upwelling wind events (count)")+
+  labs(x = "", y = "Upwelling-favorable wind events (count)")+
   theme_minimal() +
   theme(
     strip.text = element_text(size = 7, family = "Palatino"),
@@ -276,7 +276,7 @@ plotB <- ggplot(data = winds, aes(x = year, y = duration_mean, colour = Month)) 
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +
-  labs(x = "", y = "Duration of upwelling winds (days)") +
+  labs(x = "", y = "Duration of upwelling-favorable wind (days)") +
   theme_minimal() +
     theme(
       strip.text = element_blank(),
@@ -300,7 +300,7 @@ plotC <- ggplot(data = winds, aes(x = year, y = intensity_mean, colour = Month))
   facet_wrap(~current, ncol = 1, scales = "free",
              labeller = (labeller(current = supp.labs)), 
              strip.position = "right") +  
-  ylab(expression(bold("Mean intensity of wind" ~ "(m.s"^"-1"*")")))  + 
+  ylab(expression(bold("Mean intensity of upwelling-favorable wind" ~ "(m.s"^"-1"*")")))  + 
     labs(x = "") +
   theme_minimal() +
   theme(
