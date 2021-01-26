@@ -133,7 +133,7 @@ winds_month <- winds %>%
   group_by(current, month) %>% 
   nest() %>% 
   mutate(model_out = purrr::map(data, ~lm(event_count ~ year, data = .)),
-         model_tidy = purrr::map(model_out, broom::glance)) %>% # Using 'broom::glance' will provide the R2 value 
+         model_tidy = purrr::map(model_out, broom::tidy)) %>% # Using 'broom::glance' will provide the R2 value 
   dplyr::select(-data, -model_out) %>% 
   unnest(cols = "model_tidy") %>% 
   filter(term == "year") %>% 
@@ -225,6 +225,51 @@ load("data_official/current_upwelling.RData")
 
 current_upwelling <- current_upwelling %>% 
   filter(season == "Summer")
+
+BC_S_signals <- upwell_south_BC %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 45) # Here we are dividing by the number of pixels within this region
+
+BC_N_signals <- upwell_north_BC %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 16)
+
+CC_signals <- upwell_Canary_current %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 82)
+
+CalC_S_signals <- upwell_south_CalC %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 24)
+
+CalC_N_signals <- upwell_north_CalC %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 20)
+
+Peru_signals <- upwell_peru %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 25)
+
+Chile_signals <- upwell_chile %>% 
+  mutate(year = year(date_start)) %>% 
+  group_by(current, season,year, month) %>% 
+  summarise(y = n()) %>% 
+  mutate(signal = y / 99)
+
+complete_signal <- rbind(BC_S_signals, BC_N_signals, CC_signals, CalC_N_signals,
+                         CalC_S_signals, Peru_signals, Chile_signals)
 
 anova_func <- function(df){
   sites_aov <- aov(intensity_mean ~ current * year * month, data = df)
